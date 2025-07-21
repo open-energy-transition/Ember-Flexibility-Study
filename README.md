@@ -107,7 +107,7 @@ Once the forked repository is cloned, you can set up the environment to run the 
 ```bash
 conda env create -f envs/win-64.lock.yaml -n ember-study
 ```
-Please choose the **appropriate** environment file based on your operating system. An environment named `ember-study` will be created. It contains the required dependencies to run the Ember Flexibility Study. Afterwards, you can activate the environment by running:
+Please choose the **appropriate** environment file based on your operating system, i.e. use the appropriate file if you use Linux (that includes WSL on Windows) or MacOS. The command creates an environment named `ember-study` with all the Python packages that you need to run the model installed. It contains the required dependencies to run the Ember Flexibility Study. Afterwards, you can activate the environment by running:
 
 ```bash
 conda activate ember-study
