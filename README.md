@@ -161,9 +161,9 @@ For a full list of options, see the [Snakemake documentation](https://snakemake.
 
 ## Important Rules in Ember Flexibility Study
 
-In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), some of the most important rules that structure the workflow include:
+In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), the Snakemake rules are included in dedicated `.smk` files contained `rules` directory. Some of the most important rules that structure the workflow include:
 
-- **retrieve**: downloads and prepares all required input data.
+- **retrieve**: downloads and prepares all required input data .
 - **build_network**: constructs the base energy system network from input data.
 - **prepare_sector**: prepares sector-coupling data (e.g., heating, transport).
 - **solve_network**: runs the optimization to solve the energy system model.
@@ -173,7 +173,7 @@ In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Fle
 - **download_ember_data**: downloads the necessary Ember and ENTSO-E data for the study.
 - **validate_ember_networks**: validates the Ember networks and triggers the plotting routines.
 
-These rules are typically defined in separate `.smk` files (e.g., `rules/retrieve.smk`, `rules/build_electricity.smk`) and are orchestrated by the main `Snakefile`.
+These rules are orchestrated by the main `Snakefile`.
 
 ## How to run the workflow
 
