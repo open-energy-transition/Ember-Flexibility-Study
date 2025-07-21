@@ -62,7 +62,7 @@ Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-tra
 
 ## 3. Clone the forked repository
 
-Once all the required software and system dependencies are installed, you can proceed to clone the **forked** Ember Flexibility Study repository to your local machine.
+Now proceed to clone the **forked** Ember Flexibility Study repository to your local machine.
 
 To do so, open a terminal and navigate to the directory where you’d like the project to be installed—referred to here as `{installation_directory}`. Then, run the following command:
 
