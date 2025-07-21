@@ -84,6 +84,23 @@ Once you have cloned your fork, you should add the following upstream remotes to
 
 This setup allows you to fetch and integrate changes from both the main study repository and the OET soft-fork of PyPSA-Eur.
 
+To verify that the remotes have been set up correctly, you can run:
+
+```bash
+git remote -v
+```
+
+The output should look like this:
+
+```plaintext                                                                             
+origin  https://github.com/<your-username>/Ember-Flexibility-Study.git (fetch)
+origin  https://github.com/<your-username>/Ember-Flexibility-Study.git (push)
+upstream        https://github.com/open-energy-transition/Ember-Flexibility-Study.git (fetch)
+upstream        https://github.com/open-energy-transition/Ember-Flexibility-Study.git (push)
+upstream_pypsa_eur_oet  https://github.com/open-energy-transition/pypsa-eur.git (fetch)
+upstream_pypsa_eur_oet  https://github.com/open-energy-transition/pypsa-eur.git (push)
+```
+
 ## 5. Set up the environment
   
 Once the forked repository is cloned, you can set up the environment to run the analysis. In the terminal, navigate to the repository directory `{installation_directory}/Ember-Flexibility-Study`:
