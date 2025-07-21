@@ -9,9 +9,23 @@ SPDX-License-Identifier: CC-BY-4.0
 
 This repository contains the code and analysis for the **Ember Flexibility Study**, conducted in collaboration with [Ember](https://ember-climate.org/) and [Open Energy Transition (OET)](https://openenergytransition.org/). The study investigates clean flexibility options for Europe's energy system, building on the PyPSA-Eur framework. All results are computed from raw data and code to ensure full reproducibility.
 
-This repository is a soft-fork of [OET-PyPSA-Eur](https://github.com/open-energy-transition/pypsa-eur) and contains the entire project **Clean Flexibility for Europe's Energy System** supported by [Open Energy Transition (OET)](https://openenergytransition.org/)<sup>*</sup>, including code and report. The philosophy behind this repository is that no intermediary results are included, but all results are computed from raw data and code.
+This repository is a soft-fork of [OET-PyPSA-Eur](https://github.com/open-energy-transition/pypsa-eur) and contains the entire project **Clean Flexibility for Europe's Energy System** supported by [Open Energy Transition (OET)](https://openenergytransition.org/), including code and report. 
 
 This repository is maintained using [OET's soft-fork strategy](https://open-energy-transition.github.io/handbook/docs/Engineering/SoftForkStrategy). OET's primary aim is to contribute as much as possible to the open source (OS) upstream repositories. For long-term changes that cannot be directly merged upstream, the strategy organizes and maintains OET forks, ensuring they remain up-to-date and compatible with upstream, while also supporting future contributions back to the OS repositories.
+
+---
+
+# PyPSA ecosystem
+PyPSA-Eur is an open model dataset of the European energy system at the transmission network level that covers the full ENTSO-E area. It covers demand and supply for all energy sectors. Built on a foundation of collaborative development, PyPSA-Eur leverages several other open-source tools that are co-maintained by [TU Berlin](https://www.tu.berlin/en/) in partnership with OET.
+
+These tools include:
+- **PyPSA**: a Python software package for simulating and optimizing modern power systems ([PyPSA](https://pypsa.readthedocs.io/en/stable/))
+- **Atlite**: a lightweight Python package for calculating renewable power potentials and time series ([Atlite](https://atlite.readthedocs.io/en/latest/))
+- **powerplantmatching**: a toolset for cleaning, standardizing and combining multiple power plant databases ([powerplantmatching](https://github.com/PyPSA/powerplantmatching))
+- **technology-data**: the repository compiles assumptions on energy system technologies (costs and efficiencies) for various years ([technology-data](https://github.com/PyPSA/technology-data))
+- **linopy**: a Python package that provides a linear optimization interface for N-D labeled variables, with the aim of making linear programming easy, flexible, and performant ([linopy](https://linopy.readthedocs.io/en/latest/))
+
+Together, these tools form a comprehensive framework that supports detailed, transparent, and reproducible energy system analysis across Europe.
 
 ---
 
@@ -31,13 +45,52 @@ This repository is maintained using [OET's soft-fork strategy](https://open-ener
 * `results`: will store the solved PyPSA network data, summary files and plots (does not exist initially)
 * `scripts`: includes all the Python scripts executed by the `snakemake` rules to build the model
 
-# Installation and Usage
+# Installation and usage
 
-## 1. Fork and clone the repository
+## 1. Installation guide
 
-First fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. Then, clone your fork locally:
+In order to run the Ember Flexibility Study, the following steps are required:
 
-    git clone https://github.com/<your-username>/Ember-Flexibility-Study.git
+1. [Install prerequisites](#1-install-prerequisites): set up the required software and system dependencies.
+2. [Fork the repository](#2-fork-the-repository): create your own copy of the repository on GitHub.
+3. [Clone the forked repository](#3-clone-the-forked-repository): download the source code to your local machine.
+4. [Set up the upstream repositories](#4-set-up-the-upstream-repositories): set up the upstream repositories to keep your fork up to date.
+5. [Set up the environment](#3-set-up-the-environment): Create and activate the project-specific virtual environment.
+
+### 1. Install prerequisites
+
+The Ember Flexibility Study project uses a series of software to run the analysis. The following steps describe how to install the required software and system dependencies.
+
+#### Install Git
+
+Git is a version control system used to track changes in code and support collaborative development. The Ember Flexibility Study project uses Git to manage its source code, making it easy for developers to contribute and for users to access the latest updates.
+
+To access the source code of the platform and run it locally, you’ll need Git installed on your system. You can find installation instructions on the [official Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+
+#### Install Miniconda
+
+Miniconda is a package manager for conda-based environments. An environment is an isolated workspace that contains specific versions of Python and other packages needed to run a project, preventing conflicts
+between different projects' dependencies. 
+
+We recommend to use Miniconda to manage the Ember Flexibility Study project environments. However, other package managers can be used, such as [Anaconda](https://www.anaconda.com/) or [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html). 
+
+To install Miniconda, follow the instructions on the [Anaconda website](https://www.anaconda.com/download/success).
+
+## 2. Fork the repository
+
+First fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
+
+## 3. Clone the forked repository
+
+Once all the required software and system dependencies are installed, you can proceed to clone the **forked** Ember Flexibility Study repository to your local machine.
+
+To do so, open a terminal and navigate to the directory where you’d like the project to be installed—referred to here as `{installation_directory}`. Then, run the following command:
+
+```bash
+git clone https://github.com/<your-username>/Ember-Flexibility-Study.git
+```
+
+## 4. Set up the upstream repositories
 
 Once you have cloned your fork, you should add the following upstream remotes to keep your repository up to date with the main projects:
 
@@ -51,7 +104,7 @@ Once you have cloned your fork, you should add the following upstream remotes to
 
 This setup allows you to fetch and integrate changes from both the main study repository and the OET soft-fork of PyPSA-Eur.
 
-## 2. Merging changes from upstream repositories
+### (Optional) Merging changes from upstream repositories
 
 To keep your fork up to date, you can merge changes from the master branch of either `upstream_pypsa_eur_oet` or `upstream` as follows:
 
@@ -66,30 +119,6 @@ To keep your fork up to date, you can merge changes from the master branch of ei
       git merge upstream/master
 
 Resolve any conflicts if they arise, then push the updates to your fork if needed.
-
-## 3. Installation
-
-Clone the repository:
-
-    git clone https://github.com/open-energy-transition/{{repository}}
-
-You need [mamba](https://mamba.readthedocs.io/en/latest/) to run the analysis. Users may also prefer to use [micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) or [conda](https://docs.conda.io/projects/conda/en/latest/index.html). Using `mamba`, you can create an environment from within you can run it:
-
-    mamba env create -f environment.yaml
-
-Activate the newly created `{{project_short_name}}` environment:
-
-    mamba activate {{project_short_name}}
-
-## 4. Run the analysis
-
-    snakemake -call
-
-This will run all analysis steps to reproduce results and build the report.
-
-To generate a PDF of the dependency graph of all steps `resources/dag.pdf` run:
-
-    snakemake -c1 dag
 
 ---
 
