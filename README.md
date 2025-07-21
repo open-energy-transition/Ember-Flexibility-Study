@@ -49,7 +49,7 @@ To access the source code of the platform and run it locally, you’ll need Git 
 
 ### Install Miniconda
 
-Miniconda is a package manager for conda-based environments. An environment is an isolated workspace that contains specific versions of Python and other packages needed to run a project, preventing conflicts
+Miniconda is a package manager for Python, allowing to manage environments with different versions using the `conda` package manager. An environment is an isolated workspace that contains specific versions of Python and other packages needed to run a project, preventing conflicts
 between different projects' dependencies. 
 
 We recommend to use Miniconda to manage the Ember Flexibility Study project environments. However, other package managers can be used, such as [Anaconda](https://www.anaconda.com/) or [mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html). 
