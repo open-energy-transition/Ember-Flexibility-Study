@@ -105,7 +105,7 @@ Resolve any conflicts if they arise, then push the updates to your fork if neede
 Once the forked repository is cloned, you can set up the environment to run the analysis. In the terminal, navigate to the repository directory `{installation_directory}/Ember-Flexibility-Study`, and run the following command:
 
 ```bash
-conda env create -f envs\win-64.lock.yaml -n ember-study
+conda env create -f envs/win-64.lock.yaml -n ember-study
 ```
 Please choose the **appropriate** environment file based on your operating system. An environment named `ember-study` will be created. It contains the required dependencies to run the Ember Flexibility Study. Afterwards, you can activate the environment by running:
 
