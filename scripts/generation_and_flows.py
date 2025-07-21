@@ -221,7 +221,7 @@ def process_pypsa_generation_sector():
     gen_renamed = gen_renamed.rename(columns={"country": "ISO", "Ember_Variable": "Variable"}).round()
 
     # then by aggregating thermal generation
-    conv_buses = list(n.generators.query("carrier in ['gas', 'coal']").bus)
+    conv_buses = list(n.generators.query("carrier in ['gas', 'coal', 'nuclear', 'lignite']").bus)
     AC_buses = n.buses.query("carrier == 'AC'").index
     link_meta = n.links[["bus1", "carrier"]].copy()
     link_meta.loc[:, "country"] = link_meta["bus1"].str[:2]
