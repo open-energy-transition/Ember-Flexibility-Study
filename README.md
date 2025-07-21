@@ -175,7 +175,9 @@ In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Fle
 
 These rules are orchestrated by the main `Snakefile`.
 
-## How to run the workflow
+---
+
+# How to run the workflow
 
 This section builds upon the detailed description of the available PyPSA-Eur [configurations](https://pypsa-eur.readthedocs.io/en/latest/configuration.html) and [wildcards](https://pypsa-eur.readthedocs.io/en/latest/wildcards.html), and the tutorials for the [electricy-only](https://pypsa-eur.readthedocs.io/en/latest/tutorial.html) and for the [sector-coupled](https://pypsa-eur.readthedocs.io/en/latest/tutorial_sector.html) models.
 
