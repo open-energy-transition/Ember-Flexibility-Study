@@ -58,7 +58,7 @@ To install Miniconda, follow the instructions on the [Anaconda website](https://
 
 ## 2. Fork the repository
 
-Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
+Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. This step requires a GitHub account. If you do not have one, you can create an account for free at [GitHub](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github).
 
 ## 3. Clone the forked repository
 
@@ -102,11 +102,18 @@ Resolve any conflicts if they arise, then push the updates to your fork if neede
 
 ## 5. Set up the environment
   
-Once the forked repository is cloned, you can set up the environment to run the analysis. In the terminal, navigate to the repository directory `{installation_directory}/Ember-Flexibility-Study`, and run the following command:
+Once the forked repository is cloned, you can set up the environment to run the analysis. In the terminal, navigate to the repository directory `{installation_directory}/Ember-Flexibility-Study`:
+
+```bash
+cd {installation_directory}/Ember-Flexibility-Study
+```
+
+and run the following command:
 
 ```bash
 conda env create -f envs/win-64.lock.yaml -n ember-study
 ```
+
 Please choose the **appropriate** environment file based on your operating system, i.e. use the appropriate file if you use Linux (that includes WSL on Windows) or MacOS. The command creates an environment named `ember-study` with all the Python packages that you need to run the model installed. It contains the required dependencies to run the Ember Flexibility Study. Afterwards, you can activate the environment by running:
 
 ```bash
@@ -137,7 +144,7 @@ The following is an overview of the directory structure of the Ember Flexibility
 
 # What is Snakemake?
 
-[Snakemake](https://snakemake.readthedocs.io/) is a workflow management system that enables reproducible and scalable data analyses. It allows you to define complex pipelines in a readable Python-based language, automatically handling dependencies, job execution, and resource management. Snakemake is widely used in scientific computing for automating data processing, analysis, and reporting.
+[Snakemake](https://snakemake.readthedocs.io/) is a workflow management system that enables reproducible and scalable data analyses. It allows you to define complex pipelines in a readable Python-based language, automatically handling dependencies, job execution, and resource management. Snakemake is widely used in scientific computing for automating data processing, analysis, and reporting. Snakemake is currently used by PyPSA-Eur. 
 
 ## Defining Rules in Snakemake
 
@@ -171,7 +178,7 @@ In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Fle
 - **postprocess**: processes and analyzes the results after solving.
 - **plot_network**: generates plots and visualizations from the results.
 - **report**: builds the final report or documentation from the results.
-- **download_ember_data**: downloads the necessary Ember and ENTSO-E data for the study.
+- **download_ember_data**: downloads the necessary Ember and ENTSO-E + GB data for the study.
 - **validate_ember_networks**: validates the network and triggers the plotting routines.
 
 These rules are orchestrated by the main `Snakefile`. Further information is available in the PyPSA-Eur documentation, specifically in the [Retrieving Data](https://pypsa-eur.readthedocs.io/en/latest/retrieve.html), [Build Electricity Networks](https://pypsa-eur.readthedocs.io/en/latest/preparation.html), [Build Sector-Coupled Networks](https://pypsa-eur.readthedocs.io/en/latest/sector.html), [Solving Networks](https://pypsa-eur.readthedocs.io/en/latest/solving.html) and [Plotting and Summaries](https://pypsa-eur.readthedocs.io/en/latest/plotting.html) pages.
