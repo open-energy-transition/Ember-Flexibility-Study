@@ -58,7 +58,7 @@ To install Miniconda, follow the instructions on the [Anaconda website](https://
 
 ## 2. Fork the repository
 
-<span style="color: grey;">**Note**: this step requires a GitHub account. If you do not have one, you can create an account for free at [GitHub](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github).</span>
+**Note**: *this step requires a GitHub account. If you do not have one, you can create an account for free at [GitHub](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github).*
 
 Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
 
@@ -76,15 +76,13 @@ git clone https://github.com/<your-username>/Ember-Flexibility-Study.git
 
 Once you have cloned your fork, you should add the following upstream remotes to keep your repository up to date with the main projects:
 
-- Add the main [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) repository as `upstream`:
+- Add the [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) repository as `upstream`:
 
       git remote add upstream https://github.com/open-energy-transition/Ember-Flexibility-Study.git
 
-- Add the main OET soft-fork of PyPSA-Eur as `upstream_pypsa_eur_oet`:
+- *(Optional)* Add the OET soft-fork of PyPSA-Eur as `upstream_pypsa_eur_oet`:
 
       git remote add upstream_pypsa_eur_oet https://github.com/open-energy-transition/pypsa-eur.git
-
-This setup allows you to fetch and integrate changes from both the main study repository and the OET soft-fork of PyPSA-Eur.
 
 To verify that the remotes have been set up correctly, you can run:
 
@@ -117,7 +115,7 @@ and run the following command:
 conda env create -f envs/win-64.lock.yaml -n ember-study
 ```
 
-Please choose the **appropriate** environment file based on your operating system, i.e. use the appropriate file if you use Linux (that includes WSL on Windows) or MacOS. The command creates an environment named `ember-study` with all the Python packages that you need to run the model installed. It contains the required dependencies to run the Ember Flexibility Study. Afterwards, you can activate the environment by running:
+Please choose the **appropriate** environment file based on your operating system, i.e. `envs/win-64.lock.yaml` for Windows, `envs/linux-64.lock.yaml` for Linux and `envs/osx-64.lock.yaml` or `envs/osx-arm64.lock.yaml` for MacOS. The command creates an environment named `ember-study` with all the Python packages and software dependencies necessary to run the model. Afterwards, you can activate the environment by running:
 
 ```bash
 conda activate ember-study
@@ -127,7 +125,7 @@ conda activate ember-study
 
 # Repository structure
 
-The following is an overview of the directory structure of the Ember Flexibility Study repository. Each folder serves a specific purpose within the workflow, facilitating reproducibility and efficient management of the project.
+The list below provides an overview of the directory structure of the Ember Flexibility Study repository. Each folder serves a specific purpose within the workflow, facilitating reproducibility and efficient management of the project.
 
 * `benchmarks`: will store `snakemake` benchmarks (does not exist initially)
 * `config`: configurations used in the study
@@ -147,7 +145,9 @@ The following is an overview of the directory structure of the Ember Flexibility
 
 # What is Snakemake?
 
-[Snakemake](https://snakemake.readthedocs.io/) is a workflow management system that enables reproducible and scalable data analyses. It allows you to define complex pipelines in a readable Python-based language, automatically handling dependencies, job execution, and resource management. Snakemake is widely used in scientific computing for automating data processing, analysis, and reporting. Snakemake is currently used by PyPSA-Eur. 
+The PyPSA-Eur workflow is managed with [Snakemake](https://snakemake.readthedocs.io/).
+
+Snakemake is a workflow management system that enables reproducible and scalable data analyses. It enables users to define complex pipelines in a readable Python-based language, automatically handling dependencies, job execution, and resource management. Snakemake is widely used in scientific computing for automating data processing, analysis, and reporting.
 
 ## Defining rules in Snakemake
 
@@ -172,7 +172,7 @@ For a full list of options, see the [Snakemake documentation](https://snakemake.
 
 ## Important rules in Ember Flexibility Study
 
-In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), the Snakemake rules are included in dedicated `.smk` files contained `rules` directory. Some of the most important rules that structure the workflow include:
+The Snakemake rules for the[Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) are included in dedicated `.smk` files under the `rules` directory. Some of the most important rules that structure the workflow include:
 
 - **retrieve**: downloads and prepares all required input data. 
 - **build_network**: constructs the base energy system network from input data.
@@ -194,7 +194,7 @@ This section builds upon the detailed description of the available PyPSA-Eur [co
 
 ## Configuration files
 
-The default configurations are defined in the [config/config.default.yaml](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/config/config.default.yaml) file. You can override the default configurations by creating your own configuration file, e.g. `config/my_config.yaml`, and passing it to the `snakemake` command using the `--configfile` option. The repository already contains the [config/validation_config_2023.yaml](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/config/validation_config_2023.yaml) file, which is used to run the Ember Flexibility Study.
+The default configurations are defined in the [config/config.default.yaml](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/config/config.default.yaml) file. Default configurations can be overridden by creating your own configuration file, e.g. `config/my_config.yaml`, and passing it to the `snakemake` command using the `--configfile` option. The repository already contains the [config/validation_config_2023.yaml](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/config/validation_config_2023.yaml) file, which is used to run the Ember Flexibility Study.
 
 ## Run the workflow
 
@@ -214,34 +214,35 @@ If you are instead only interested in solving the network for the Ember Flexibil
 
 `snakemake -call solve_elec_networks --configfile config/validation_config_2023.yaml`
 
-**Note**: If you first run `snakemake -call validate_ember_networks --configfile ...`, this will solve the network and generate the necessary plots. Subsequently, when you run  `snakemake -call plot_all_capacity_demand --configfile ...`, it will only generate the plots based on the existing network files without re-solving the network.  The process is the same in reverse: running either rule first will prevent re-solving the network when executing the other, ensuring that the network is only solved once.
+**Note**: *if you first run `snakemake -call validate_ember_networks --configfile ...`, this will solve the network and generate the necessary plots. Subsequently, when you run  `snakemake -call plot_all_capacity_demand --configfile ...`, the workflow will only generate the plots based on the existing network files without re-solving the network.  The process is the same in reverse: running either rule first will prevent re-solving the network when executing the other, ensuring that the network is only solved once.*
 
 ---
 
 # Contributing and support
 
-We strongly welcome anyone interested in contributing to this project. If you have any ideas, suggestions or encounter problems, feel invited to file issues or make pull requests on GitHub.
+Contributions to the Ember Flexibility Study can be made in various ways, including reporting issues, suggesting improvements, or contributing code. The following sections outline how to raise issues (bugs), request features, and contribute code.
 
 ## Raise issues, bugs or feature requests
 To raise **issues, bugs and feature requests**, please use the [GitHub Issues page](https://github.com/open-energy-transition/Ember-Flexibility-Study/issues) page.
 
 ## Contribute and issue a pull request
 
-The steps to follow to contribute to the Ember Flexibility Study are as follows:
+The steps to follow to contribute code to the Ember Flexibility Study are as follows:
 
 - Checkout the `master` branch of your forked repository with `git checkout master`
-- Create a new branch for your changes with `git checkout -b my-feature-branch`
+- Pull the latest changes from the `origin/master` branch with `git pull origin master`
+- Create a new branch for your changes with `git checkout -b my_new_branch`
 - Make your changes, stage them with `git add file_name` and commit them with `git commit -m "Description of my changes"`
-- Push your changes to your forked repository with `git push origin my-feature-branch`
+- Push your changes to your forked repository with `git push origin my_new_branch`
 - Issue a pull request to the `master` branch of the upstream repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), following the [instructions](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request). Please make sure to consider also the checklist from the pull request [template](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/.github/pull_request_template.md).
 
 ---
 
 # Advance topics
 
-## Merging changes from upstream repositories
+## Merging changes from the upstream repositories
 
-To keep your fork up to date, you can merge changes from the master branch of either `upstream_pypsa_eur_oet` or `upstream` as follows:
+To keep your fork up to date, you can merge changes from the `master` branch of either `upstream_pypsa_eur_oet` or `upstream` as follows:
 
 - To merge changes from the OET soft-fork of PyPSA-Eur:
 
