@@ -16,16 +16,14 @@ This repository is maintained using [OET's soft-fork strategy](https://open-ener
 ---
 
 # PyPSA ecosystem
-PyPSA-Eur is an open model dataset of the European energy system at the transmission network level that covers the full ENTSO-E area. It covers demand and supply for all energy sectors. Built on a foundation of collaborative development, PyPSA-Eur leverages several other open-source tools that are co-maintained by [TU Berlin](https://www.tu.berlin/en/) in partnership with OET.
-
-These tools include:
+PyPSA-Eur is an open model dataset of the European energy system at the transmission network level that covers the full ENTSO-E area. It covers demand and supply for all energy sectors. Built on a foundation of collaborative development, PyPSA-Eur leverages several other open-source tools that are co-maintained by [TU Berlin](https://www.tu.berlin/en/) in partnership with OET. These tools include:
 - **PyPSA**: a Python software package for simulating and optimizing modern power systems ([PyPSA](https://pypsa.readthedocs.io/en/stable/))
 - **Atlite**: a lightweight Python package for calculating renewable power potentials and time series ([Atlite](https://atlite.readthedocs.io/en/latest/))
 - **powerplantmatching**: a toolset for cleaning, standardizing and combining multiple power plant databases ([powerplantmatching](https://github.com/PyPSA/powerplantmatching))
 - **technology-data**: the repository compiles assumptions on energy system technologies (costs and efficiencies) for various years ([technology-data](https://github.com/PyPSA/technology-data))
 - **linopy**: a Python package that provides a linear optimization interface for N-D labeled variables, with the aim of making linear programming easy, flexible, and performant ([linopy](https://linopy.readthedocs.io/en/latest/))
 
-Together, these tools form a comprehensive framework that supports detailed, transparent, and reproducible energy system analysis across Europe.
+Together, these tools form a comprehensive ecosystem that supports detailed, transparent, and reproducible energy system analysis across Europe.
 
 ---
 
@@ -41,7 +39,7 @@ In order to run the Ember Flexibility Study, the following steps are required:
 
 ## 1. Install prerequisites
 
-The Ember Flexibility Study project uses a series of software to run the analysis. The following steps describe how to install the required software and system dependencies.
+The Ember Flexibility Study project uses a series of software tools. The following steps describe how to install the required software and system dependencies.
 
 ### Install Git
 
@@ -60,7 +58,7 @@ To install Miniconda, follow the instructions on the [Anaconda website](https://
 
 ## 2. Fork the repository
 
-First fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
+Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
 
 ## 3. Clone the forked repository
 
@@ -109,7 +107,7 @@ Once the forked repository is cloned, you can set up the environment to run the 
 ```bash
 conda env create -f envs\win-64.lock.yaml -n ember-study
 ```
-Please choose the appropriate environment file based on your operating system. An environment named `ember-study` will be created. It contains the required dependencies to run the Ember Flexibility Study. Afterward, you can activate the environment by running:
+Please choose the **appropriate** environment file based on your operating system. An environment named `ember-study` will be created. It contains the required dependencies to run the Ember Flexibility Study. Afterwards, you can activate the environment by running:
 
 ```bash
 conda activate ember-study
@@ -117,6 +115,8 @@ conda activate ember-study
 ---
 
 # Repository structure
+
+The following is an overview of the directory structure of the Ember Flexibility Study repository. Each folder serves a specific purpose within the workflow, facilitating reproducibility and efficient management of the project.
 
 * `benchmarks`: will store `snakemake` benchmarks (does not exist initially)
 * `config`: configurations used in the study
@@ -159,17 +159,19 @@ Here are some of the most important command-line options (keys) to control the w
 
 For a full list of options, see the [Snakemake documentation](https://snakemake.readthedocs.io/en/stable/executing/cli.html) or run `snakemake --help`.
 
-## Important Rules in PyPSA-Eur
+## Important Rules in Ember Flexibility Study
 
-In [PyPSA-Eur](https://github.com/PyPSA/pypsa-eur), some of the most important rules that structure the workflow include:
+In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), some of the most important rules that structure the workflow include:
 
-- **retrieve**: Downloads and prepares all required input data.
-- **build_network**: Constructs the base energy system network from input data.
-- **prepare_sector**: Prepares sector-coupling data (e.g., heating, transport).
-- **solve_network**: Runs the optimization to solve the energy system model.
-- **postprocess**: Processes and analyzes the results after solving.
-- **plot_network**: Generates plots and visualizations from the results.
-- **report**: Builds the final report or documentation from the results.
+- **retrieve**: downloads and prepares all required input data.
+- **build_network**: constructs the base energy system network from input data.
+- **prepare_sector**: prepares sector-coupling data (e.g., heating, transport).
+- **solve_network**: runs the optimization to solve the energy system model.
+- **postprocess**: processes and analyzes the results after solving.
+- **plot_network**: generates plots and visualizations from the results.
+- **report**: builds the final report or documentation from the results.
+- **download_ember_data**: downloads the necessary Ember and ENTSO-E data for the study.
+- **validate_ember_networks**: validates the Ember networks and triggers the plotting routines.
 
 These rules are typically defined in separate `.smk` files (e.g., `rules/retrieve.smk`, `rules/build_electricity.smk`) and are orchestrated by the main `Snakefile`.
 

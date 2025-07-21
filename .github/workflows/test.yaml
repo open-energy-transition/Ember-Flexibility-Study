@@ -75,7 +75,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-version: latest
-        activate-environment: pypsa-eur
+        activate-environment: ember-study
         channel-priority: strict
 
     - name: Cache Conda env
@@ -88,7 +88,7 @@ jobs:
     - name: Update environment
       if: steps.cache-env.outputs.cache-hit != 'true'
       run: |
-        conda env update -n pypsa-eur -f ${{ env.env_file }}
+        conda env update -n ember-study -f ${{ env.env_file }}
         echo "Run conda list" && conda list
 
     - name: Run pylint check on scripts
