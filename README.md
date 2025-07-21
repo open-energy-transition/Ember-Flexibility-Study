@@ -196,7 +196,7 @@ If you are instead only interested in solving the network for the Ember Flexibil
 
 ---
 
-# Contributing and Support
+# Contributing and support
 
 We strongly welcome anyone interested in contributing to this project. If you have any ideas, suggestions or encounter problems, feel invited to file issues or make pull requests on GitHub.
 
