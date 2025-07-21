@@ -5,7 +5,7 @@
 # platform: osx-arm64
 # input_hash: efead5e7dfc9ef6b2200329fbaf37ced8d2363527a7ef964537bd221db1a4304
 
-name: pypsa-eur
+name: ember-study
 channels:
   - conda-forge
   - bioconda

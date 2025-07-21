@@ -5,7 +5,7 @@
 # platform: win-64
 # input_hash: 5fa1c1561f9e1cd73a857edbd8df0e226e5690d856ad14b1bf17f2c454b734e5
 
-name: pypsa-eur
+name: ember-study
 channels:
   - conda-forge
   - bioconda

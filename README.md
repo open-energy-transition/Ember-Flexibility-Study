@@ -29,25 +29,7 @@ Together, these tools form a comprehensive framework that supports detailed, tra
 
 ---
 
-# Repository structure
-
-* `benchmarks`: will store `snakemake` benchmarks (does not exist initially)
-* `config`: configurations used in the study
-* `cutouts`: will store raw weather data cutouts from `atlite` (does not exist initially)
-* `data`: includes input data that is not produced by any `snakemake` rule
-* `doc`: includes all files necessary to build the `readthedocs` documentation of PyPSA-Eur
-* `envs`: includes all the `mamba` environment specifications to run the workflow
-* `logs`: will store log files (does not exist initially)
-* `notebooks`: includes all the `notebooks` used for ad-hoc analysis
-* `report`: contains all files necessary to build the report; plots and result files are generated automatically
-* `rules`: includes all the `snakemake`rules loaded in the `Snakefile`
-* `resources`: will store intermediate results of the workflow which can be picked up again by subsequent rules (does not exist initially)
-* `results`: will store the solved PyPSA network data, summary files and plots (does not exist initially)
-* `scripts`: includes all the Python scripts executed by the `snakemake` rules to build the model
-
 # Installation and usage
-
-## 1. Installation guide
 
 In order to run the Ember Flexibility Study, the following steps are required:
 
@@ -55,19 +37,19 @@ In order to run the Ember Flexibility Study, the following steps are required:
 2. [Fork the repository](#2-fork-the-repository): create your own copy of the repository on GitHub.
 3. [Clone the forked repository](#3-clone-the-forked-repository): download the source code to your local machine.
 4. [Set up the upstream repositories](#4-set-up-the-upstream-repositories): set up the upstream repositories to keep your fork up to date.
-5. [Set up the environment](#3-set-up-the-environment): Create and activate the project-specific virtual environment.
+5. [Set up the environment](#5-set-up-the-environment): create and activate the project-specific virtual environment.
 
-### 1. Install prerequisites
+## 1. Install prerequisites
 
 The Ember Flexibility Study project uses a series of software to run the analysis. The following steps describe how to install the required software and system dependencies.
 
-#### Install Git
+### Install Git
 
 Git is a version control system used to track changes in code and support collaborative development. The Ember Flexibility Study project uses Git to manage its source code, making it easy for developers to contribute and for users to access the latest updates.
 
 To access the source code of the platform and run it locally, you’ll need Git installed on your system. You can find installation instructions on the [official Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-#### Install Miniconda
+### Install Miniconda
 
 Miniconda is a package manager for conda-based environments. An environment is an isolated workspace that contains specific versions of Python and other packages needed to run a project, preventing conflicts
 between different projects' dependencies. 
@@ -120,6 +102,36 @@ To keep your fork up to date, you can merge changes from the master branch of ei
 
 Resolve any conflicts if they arise, then push the updates to your fork if needed.
 
+## 5. Set up the environment
+  
+Once the forked repository is cloned, you can set up the environment to run the analysis. In the terminal, navigate to the repository directory `{installation_directory}/Ember-Flexibility-Study`, and run the following command:
+
+```bash
+conda env create -f envs\win-64.lock.yaml -n ember-study
+```
+Please choose the appropriate environment file based on your operating system. An environment named `ember-study` will be created. It contains the required dependencies to run the Ember Flexibility Study. Afterward, you can activate the environment by running:
+
+```bash
+conda activate ember-study
+```
+---
+
+# Repository structure
+
+* `benchmarks`: will store `snakemake` benchmarks (does not exist initially)
+* `config`: configurations used in the study
+* `cutouts`: will store raw weather data cutouts from `atlite` (does not exist initially)
+* `data`: includes input data that is not produced by any `snakemake` rule
+* `doc`: includes all files necessary to build the `readthedocs` documentation of PyPSA-Eur
+* `envs`: includes all the `mamba` environment specifications to run the workflow
+* `logs`: will store log files (does not exist initially)
+* `notebooks`: includes all the `notebooks` used for ad-hoc analysis
+* `report`: contains all files necessary to build the report; plots and result files are generated automatically
+* `rules`: includes all the `snakemake`rules loaded in the `Snakefile`
+* `resources`: will store intermediate results of the workflow which can be picked up again by subsequent rules (does not exist initially)
+* `results`: will store the solved PyPSA network data, summary files and plots (does not exist initially)
+* `scripts`: includes all the Python scripts executed by the `snakemake` rules to build the model
+
 ---
 
 # What is Snakemake?
@@ -162,13 +174,14 @@ In [PyPSA-Eur](https://github.com/PyPSA/pypsa-eur), some of the most important r
 These rules are typically defined in separate `.smk` files (e.g., `rules/retrieve.smk`, `rules/build_electricity.smk`) and are orchestrated by the main `Snakefile`.
 
 ## How to run the workflow
+
 This section builds upon the detailed description of the available PyPSA-Eur [configurations](https://pypsa-eur.readthedocs.io/en/latest/configuration.html) and [wildcards](https://pypsa-eur.readthedocs.io/en/latest/wildcards.html), and the tutorials for the [electricy-only](https://pypsa-eur.readthedocs.io/en/latest/tutorial.html) and for the [sector-coupled](https://pypsa-eur.readthedocs.io/en/latest/tutorial_sector.html) models.
 
 As detailed in the [How to use Snakemake rules](https://pypsa-eur.readthedocs.io/en/latest/tutorial.html#how-to-use-snakemake-rules) section of the `electricy-only` tutorial, you can produce any output file mentioned in the `Snakefile` by running
 
 `snakemake -call <output file>`
 
-Furthermore, you can use the `config/validation_config_2023.yaml` to run the workflow with different configurations. The `validate_ember_networks` rule will solve the network, perform the validation and trigger the plotting routines for the Ember Flexibility Study. The command is as follows:
+Furthermore, you can use the [config/validation_config_2023.yaml](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/config/validation_config_2023.yaml) to run the workflow with different configurations. The `validate_ember_networks` rule will solve the network, perform the validation and trigger the plotting routines for the Ember Flexibility Study. The command is as follows:
 
 `snakemake -call validate_ember_networks --configfile config/validation_config_2023.yaml`
 
