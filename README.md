@@ -39,13 +39,13 @@ In order to run the Ember Flexibility Study, the following steps are required:
 
 ## 1. Install prerequisites
 
-The Ember Flexibility Study project uses a series of software tools. The following steps describe how to install the required software and system dependencies.
+The Ember Flexibility Study uses a series of software tools. The following steps describe how to install the required software and system dependencies.
 
 ### Install Git
 
-Git is a version control system used to track changes in code and support collaborative development. The Ember Flexibility Study project uses Git to manage its source code, making it easy for developers to contribute and for users to access the latest updates.
+Git is a version control system used to track changes in code and support collaborative development. The Ember Flexibility Study uses Git to manage its source code, making it easy for developers to contribute and for users to access the latest updates.
 
-To access the source code of the platform and run it locally, you’ll need Git installed on your system. You can find installation instructions on the [official Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+To access the source code and run it locally, you will need Git installed on your system. You can find installation instructions on the [official Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
 ### Install Miniconda
 
@@ -58,7 +58,9 @@ To install Miniconda, follow the instructions on the [Anaconda website](https://
 
 ## 2. Fork the repository
 
-Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. This step requires a GitHub account. If you do not have one, you can create an account for free at [GitHub](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github).
+<span style="color: grey;">**Note**: this step requires a GitHub account. If you do not have one, you can create an account for free at [GitHub](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github).</span>
+
+Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
 
 ## 3. Clone the forked repository
 
