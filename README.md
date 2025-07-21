@@ -171,7 +171,7 @@ In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Fle
 - **plot_network**: generates plots and visualizations from the results.
 - **report**: builds the final report or documentation from the results.
 - **download_ember_data**: downloads the necessary Ember and ENTSO-E data for the study.
-- **validate_ember_networks**: validates the Ember networks and triggers the plotting routines.
+- **validate_ember_networks**: validates the network and triggers the plotting routines.
 
 These rules are orchestrated by the main `Snakefile`.
 
