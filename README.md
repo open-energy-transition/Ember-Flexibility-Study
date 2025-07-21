@@ -112,6 +112,7 @@ Please choose the **appropriate** environment file based on your operating syste
 ```bash
 conda activate ember-study
 ```
+
 ---
 
 # Repository structure
@@ -163,7 +164,7 @@ For a full list of options, see the [Snakemake documentation](https://snakemake.
 
 In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), the Snakemake rules are included in dedicated `.smk` files contained `rules` directory. Some of the most important rules that structure the workflow include:
 
-- **retrieve**: downloads and prepares all required input data .
+- **retrieve**: downloads and prepares all required input data. 
 - **build_network**: constructs the base energy system network from input data.
 - **prepare_sector**: prepares sector-coupling data (e.g., heating, transport).
 - **solve_network**: runs the optimization to solve the energy system model.
@@ -173,7 +174,7 @@ In [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Fle
 - **download_ember_data**: downloads the necessary Ember and ENTSO-E data for the study.
 - **validate_ember_networks**: validates the network and triggers the plotting routines.
 
-These rules are orchestrated by the main `Snakefile`.
+These rules are orchestrated by the main `Snakefile`. Further information is available in the PyPSA-Eur documentation, specifically in the [Retrieving Data](https://pypsa-eur.readthedocs.io/en/latest/retrieve.html), [Build Electricity Networks](https://pypsa-eur.readthedocs.io/en/latest/preparation.html), [Build Sector-Coupled Networks](https://pypsa-eur.readthedocs.io/en/latest/sector.html), [Solving Networks](https://pypsa-eur.readthedocs.io/en/latest/solving.html) and [Plotting and Summaries](https://pypsa-eur.readthedocs.io/en/latest/plotting.html) pages.
 
 ---
 
@@ -204,8 +205,8 @@ We strongly welcome anyone interested in contributing to this project. If you ha
 To issue a pull request to the `master` branch of the upstream repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/), please follow the [instructions](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) and follow the instructions from the pull request [template](https://github.com/open-energy-transition/Ember-Flexibility-Study/blob/master/.github/pull_request_template.md).
 
 ## Raise issues, bugs or feature requests
-For **issues, bugs and feature requests**, please use the [GitHub Issues page](https://github.com/open-energy-transition/{{repository}}/issues).
+For **issues, bugs and feature requests**, please use the [GitHub Issues page](https://github.com/open-energy-transition/Ember-Flexibility-Study/issues).
 
 # Licence
 
-The code in this repository is released as free software under the [MIT License](https://opensource.org/licenses/MIT), see [`doc/licenses.rst`](doc/licenses.rst). However, different licenses and terms of use may apply to the various input data, see [`doc/data_sources.rst`](doc/data_sources.rst).
+The code in this repository is released as free software under the [`doc/licenses.rst`](doc/licenses.rst). However, different licenses and terms of use may apply to the various input data, see [`doc/data_sources.rst`](doc/data_sources.rst).
