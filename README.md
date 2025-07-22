@@ -176,7 +176,7 @@ For a full list of options, see the [Snakemake documentation](https://snakemake.
 
 ## Important rules in Ember Flexibility Study
 
-The Snakemake rules for the[Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) are included in dedicated `.smk` files under the `rules` directory. Some of the most important rules that structure the workflow include:
+The Snakemake rules for the [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) are included in dedicated `.smk` files under the `rules` directory. Some of the most important rules that structure the workflow include:
 
 - **retrieve**: downloads and prepares all required input data. 
 - **build_network**: constructs the base energy system network from input data.
@@ -217,6 +217,10 @@ The `plot_all_capacity_demand` rule will solve the network and trigger the capac
 If you are instead only interested in solving the network for the Ember Flexibility Study, you can run the command:
 
 `snakemake -call solve_elec_networks --configfile config/validation_config_2023.yaml`
+
+If you are instead only interested in preparing the network for the Ember Flexibility Study, you can run the command:
+
+`snakemake -call prepare_sector_networks --configfile config/validation_config_2023.yaml`
 
 **Note**: *if you first run `snakemake -call validate_ember_networks --configfile ...`, this will solve the network and generate the necessary plots. Subsequently, when you run  `snakemake -call plot_all_capacity_demand --configfile ...`, the workflow will only generate the plots based on the existing network files without re-solving the network.  The process is the same in reverse: running either rule first will prevent re-solving the network when executing the other, ensuring that the network is only solved once.*
 
