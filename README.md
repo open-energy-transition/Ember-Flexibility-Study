@@ -121,6 +121,10 @@ Please choose the **appropriate** environment file based on your operating syste
 conda activate ember-study
 ```
 
+Your terminal will now show the name of the activated environment, indicating that you are ready to run the Ember Flexibility Study.
+
+![img from static](/doc/img/cli_snapshot.png)
+
 ---
 
 # Repository structure
