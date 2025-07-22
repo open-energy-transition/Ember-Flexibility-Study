@@ -60,7 +60,7 @@ To install Miniconda, follow the instructions on the [Anaconda website](https://
 
 **Note**: *this step requires a GitHub account. If you do not have one, you can create an account for free at [GitHub](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github).*
 
-Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only`. 
+Fork the repository [Ember-Flexibility-Study](https://github.com/open-energy-transition/Ember-Flexibility-Study/) on GitHub to your own account. Please make sure to check the box `Copy the master branch only` and to follow the detailed instructions from [Github](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
 
 ## 3. Clone the forked repository
 
