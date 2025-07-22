@@ -22,17 +22,17 @@ countries = ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CY', 'CZ', 'DE', 'DK', 'EE', '
              'MK', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK']
 
 color_dict = {
-    "Bioenergy": "#0f9970",
-    "Gas": "#87530b",
-    "Hard coal": "#0000006E",
-    "Hydro": "#80b1d3",
-    "Lignite": "#61340c",
-    "Nuclear": "#f1dd02",
-    "Offshore wind": "#0c0a48",
-    "Onshore wind": "#2D9FAB",
-    "Other fossil": "#545454",
-    "Other renewables": "#9e1414",
-    "Solar": "#ffaa00"
+    "Bioenergy": "#baa741",
+    "Gas": "#e05b09",
+    "Hard coal": "#545454",
+    "Hydro": "#298c81",
+    "Lignite": "#826837",
+    "Nuclear": "#ff8c00",
+    "Offshore wind": "#6895dd",
+    "Onshore wind": "#235ebc",
+    "Other fossil": "#000000",
+    "Other renewables": "#e3d37d",
+    "Solar": "#f9d002"
 }
 
 # Load data from ember
