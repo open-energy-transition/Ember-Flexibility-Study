@@ -233,9 +233,11 @@ def compare_ember_processing(df_yearly, df_monthly, country_iso="DE"):
     plt.close()
 
 # Plotting functions
-def plot_country_generation_mix_donut_subplots(ember_generation_yearly, country_isos, color_dict=None):
+def plot_country_generation_mix_donut_subplots(ember_generation_yearly, country_isos, color_dict=None, group=""):
     n = len(country_isos)
-    fig, axes = plt.subplots(3, 2, figsize=(7, 10))
+    cols = 2
+    rows = (n + cols - 1) // cols
+    fig, axes = plt.subplots(rows, cols, figsize=(7, 3.5 * rows))
     axes = axes.flatten()
 
     pivot_df = ember_generation_yearly.unstack(level=1).fillna(0)
@@ -294,12 +296,15 @@ def plot_country_generation_mix_donut_subplots(ember_generation_yearly, country_
     fig.suptitle(f"Yearly Electricity Generation by Technology\n(TWh, Ember {year})", fontsize=16, weight='bold', y=1.12)
     plt.tight_layout(rect=[0, 0, 1, 0.98])
     
-    output_path = snakemake.output.donut_subplots if 'snakemake' in globals() else f"results/validation_{year}/plots/donut_subplots.png"
+    if 'snakemake' in globals():
+        output_path = str(snakemake.output.donut_subplots).replace(".png", f"{group}.png")
+    else:
+        output_path = f"results/validation_{year}/plots/donut_subplots{group}.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.savefig(output_path, bbox_inches='tight', dpi=300)
     plt.close()
 
-def plot_country_generation_mix_donut_comparison(df1, df2, country_isos, color_dict=None, df1_label="Ember", df2_label="PyPSA"):
+def plot_country_generation_mix_donut_comparison(df1, df2, country_isos, color_dict=None, df1_label="Ember", df2_label="PyPSA", group=""):
     n = len(country_isos)
     fig, axes = plt.subplots(n, 2, figsize=(6, 3 * n))
     plt.subplots_adjust(wspace=0.05)
@@ -366,7 +371,10 @@ def plot_country_generation_mix_donut_comparison(df1, df2, country_isos, color_d
     fig.suptitle("Yearly Electricity Generation [TWh]", fontsize=16, weight='bold', y=1.05)
     plt.tight_layout(rect=[0, 0, 1, 0.98])
 
-    output_path = snakemake.output.donut_comparison if 'snakemake' in globals() else f"results/validation_{year}/plots/donut_comparison.png"
+    if 'snakemake' in globals():
+        output_path = str(snakemake.output.donut_comparison).replace(".png", f"{group}.png")
+    else:
+        output_path = f"results/validation_{year}/plots/donut_comparison{group}.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.savefig(output_path, bbox_inches='tight', dpi=300)
     plt.close()
@@ -529,17 +537,36 @@ if __name__ == "__main__":
 
     plot_country_generation_mix_donut_subplots(
         ember_generation_yearly, 
-        ["DE", "NL", "IT", "PL", "CZ", "GR"], 
-        color_dict=color_dict
+        ["DE", "NL", "IT"], 
+        color_dict=color_dict,
+        group="_1"
+    )
+
+    plot_country_generation_mix_donut_subplots(
+        ember_generation_yearly, 
+        ["PL", "CZ", "GR"], 
+        color_dict=color_dict,
+        group="_2"
     )
 
     plot_country_generation_mix_donut_comparison(
         ember_generation_yearly, 
         pypsa_generation, 
-        ["DE", "NL", "GR"], 
+        ["DE", "NL", "IT"], 
         color_dict=color_dict, 
         df1_label="Ember", 
-        df2_label="PyPSA"
+        df2_label="PyPSA",
+        group="_1"
+    )
+
+    plot_country_generation_mix_donut_comparison(
+        ember_generation_yearly, 
+        pypsa_generation, 
+        ["PL", "CZ", "GR"], 
+        color_dict=color_dict, 
+        df1_label="Ember", 
+        df2_label="PyPSA",
+        group="_2"
     )
 
     analyze_power_flows()
