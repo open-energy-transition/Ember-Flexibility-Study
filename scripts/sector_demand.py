@@ -30,13 +30,13 @@ def parse_input_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--path_to_network",
         type=str,
-        help="Path to the PyPSA-Eur network file. Example: 'results/validation/networks/base_s_39_elec_Co2L-168H.nc'.",
+        help="Path to the PyPSA-Eur network file. Example: 'results/validation_2023/networks/base_s_39_elec_Co2L-168H.nc'.",
         required=True,
     )
     parser.add_argument(
         "--path_to_output",
         type=str,
-        help="Path to the output plot file. Example: 'results/validation/plots/sector_demand.png'.",
+        help="Path to the output plot file. Example: 'results/validation_2023/plots/sector_demand.png'.",
         required=True,
     )
     return parser.parse_args()
@@ -62,7 +62,6 @@ if __name__ == "__main__":
     args = parse_input_arguments()
     network_path = pathlib.Path(path_cwd, args.path_to_network)
     output_path = pathlib.Path(path_cwd, args.path_to_output)
-    print(network_path, output_path)
 
     # Load the PyPSA-Eur network
     network = pypsa.Network(network_path)
