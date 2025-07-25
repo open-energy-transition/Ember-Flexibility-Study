@@ -190,8 +190,10 @@ def process_pypsa_generation():
 
 def process_pypsa_generation_sector():
     pypsa_to_ember = {
-        "biomass": "Bioenergy", "Bioenergy": "Bioenergy",
-        "gas": "Gas", "Gas": "Gas", "CCGT": "Gas", "OCGT": "Gas",
+        "Bioenergy": "Bioenergy", "urban central solid biomass CHP": "Bioenergy",
+        "urban central solid biomass CHP CC": "Bioenergy",
+        "gas": "Gas", "Gas": "Gas", "CCGT": "Gas", "OCGT": "Gas", "urban central gas CHP": "Gas",
+        "urban central gas CHP": "Gas", "urban central gas CHP CC": "Gas",
         "coal": "Hard coal", "Hard coal": "Hard coal",
         "lignite": "Lignite", "Lignite": "Lignite",
         "hydro": "Hydro", "Hydro": "Hydro", "PHS": "Hydro", "ror": "Hydro",
@@ -201,15 +203,13 @@ def process_pypsa_generation_sector():
         "onwind": "Onshore wind", "Onshore wind": "Onshore wind",
         "oil": "Other fossil", "Other fossil": "Other fossil",
         "geothermal": "Other renewables", "Other renewables": "Other renewables",
-        "solar": "Solar", "solar-hsat": "Solar", "Solar": "Solar",
-        "solar rooftop": "Solar",
-        "urban central gas CHP": "Gas", "urban central gas CHP CC": "Gas"
+        "solar": "Solar", "solar-hsat": "Solar", "Solar": "Solar", "solar rooftop": "Solar"
     }
 
     gen_meta = n.generators[["bus", "carrier"]].copy()
     gen_meta.loc[:, "country"] = gen_meta["bus"].str[:2]
     # start by aggregating vres
-    vres_carriers = ['offwind-dc', 'offwind-ac', 'solar', 'solar-hsat', 'offwind-float', 'onwind', 'ror', 'solar rooftop', 'nuclear'] # ideally this is not hardcoded !
+    vres_carriers = ['offwind-dc', 'offwind-ac', 'solar', 'solar-hsat', 'offwind-float', 'onwind', 'ror', 'solar rooftop'] # ideally this is not hardcoded !
     vres =  n.generators.query("carrier in @vres_carriers").index
     gen_energy = n.generators_t.p.T.multiply(n.snapshot_weightings.generators).loc[vres].T.sum(axis=0) / 1e6  # MWh to TWh
     gen_energy.index.name = "generator"
@@ -220,23 +220,22 @@ def process_pypsa_generation_sector():
     gen_renamed = gen_grouped.groupby(["country", "Ember_Variable"], as_index=False)["Value"].sum()
     gen_renamed = gen_renamed.rename(columns={"country": "ISO", "Ember_Variable": "Variable"}).round()
 
-    # then by aggregating thermal generation
-    conv_buses = list(n.generators.query("carrier in ['gas', 'coal', 'nuclear', 'lignite']").bus)
+    # then by aggregating thermal generation & biomass
+    conv_buses = list(
+        n.generators.query("carrier in ['gas', 'coal', 'uranium', 'lignite', 'biomass', 'oil', 'solid biomass', 'unsustainable solid biomass']").bus
+    )
     AC_buses = n.buses.query("carrier == 'AC'").index
     link_meta = n.links[["bus1", "carrier"]].copy()
     link_meta.loc[:, "country"] = link_meta["bus1"].str[:2]
 
-    gen_links = n.links.query("(bus0 in @conv_buses or bus1 in @conv_buses) and bus1 in @AC_buses").index
+    gen_links = n.links.query("bus0 in @conv_buses and bus1 in @AC_buses").index
     gen_energy_links = -n.links_t.p1[gen_links].T.multiply(n.snapshot_weightings.generators).T.sum(axis=0) / 1e6
     gen_energy_links.index.name = "links"
 
     gen_energy_links = gen_energy_links.reset_index().rename(columns={0: "Value"})
     gen_energy_links = gen_energy_links.merge(link_meta, left_on="links", right_index=True)
-    print("1", gen_energy_links)
     gen_grouped_links = gen_energy_links.groupby(["country", "carrier"], as_index=False)["Value"].sum()
     gen_grouped_links["Ember_Variable"] = gen_grouped_links["carrier"].map(pypsa_to_ember).fillna(gen_grouped["carrier"])
-    print("2", gen_grouped_links)
-    gen_grouped_links.to_csv("martha.csv")
     gen_renamed_links = gen_grouped_links.groupby(["country", "Ember_Variable"], as_index=False)["Value"].sum()
     gen_renamed_links = gen_renamed_links.rename(columns={"country": "ISO", "Ember_Variable": "Variable"}).round()
 
