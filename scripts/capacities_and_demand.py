@@ -112,13 +112,30 @@ def process_pypsa_capacity():
             df = df.drop(columns=cols_to_merge, errors="ignore")
         return df
     
-    pypsa_country_tech = n.generators.groupby(['bus', 'carrier'])['p_nom'].sum().unstack(fill_value=0).reset_index()
-    pypsa_country_tech['country'] = pypsa_country_tech['bus'].str[:2]
+    conv_techs = [
+        'OCGT', 'CCGT', 'coal', 'lignite', 'nuclear', 'biomass',
+        'oil', 'urban central gas CHP', 'urban central solid biomass CHP'
+    ]
+    vres_tech = ['solar-hsat', 'solar', 'onwind', 'offwind-float', 'offwind-dc', 'offwind-ac', 'ror']
+    # currently ignoring solar rooftop because it's 0 & has a different bus label
+
+    pypsa_country_tech = (
+        n.generators.query("carrier in @vres_tech")
+        .groupby(['bus', 'carrier'])['p_nom']
+        .sum().unstack(fill_value=0).reset_index()
+    )
     
     sto_country_tech = n.storage_units.groupby(['bus', 'carrier'])['p_nom'].sum().unstack(fill_value=0).reset_index()
-    sto_country_tech['country'] = sto_country_tech['bus'].str[:2]
-    
-    pypsa_country_tech = pd.concat([pypsa_country_tech, sto_country_tech], ignore_index=True)
+
+    links_eff = n.links.query("carrier in @conv_techs").copy()
+    links_eff["effective_p_nom"] = links_eff["p_nom"] * links_eff["efficiency"]
+    link_country_tech = (
+        links_eff
+        .groupby(['bus1', 'carrier'])['effective_p_nom']
+        .sum().unstack(fill_value=0).reset_index()
+    ).rename(columns={'bus1': "bus"})
+
+    pypsa_country_tech = pd.concat([pypsa_country_tech, sto_country_tech, link_country_tech], ignore_index=True)
     pypsa_country_tech['country'] = pypsa_country_tech['bus'].str[:2]
     
     pypsa_country_tech_merged = pypsa_country_tech.groupby('country').sum(numeric_only=True).reset_index()
@@ -128,14 +145,13 @@ def process_pypsa_capacity():
     
     pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Wind", wind_cols)
     pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Solar", solar_cols)
-    pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Gas", ["CCGT", "OCGT"])
+    pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Gas", ["CCGT", "OCGT", "urban central gas CHP"])
     pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Coal", ["coal", "lignite"])
     pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Hydro", ["hydro", "ror", "PHS"])
     pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Other Fossil", ["oil"])
     pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Nuclear", ["nuclear"])
-    pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Other Renewables", ["geothermal"])
-    pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Bioenergy", ["biomass"])
-    
+    # pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Other Renewables", ["geothermal"]) # no geothermal raises error
+    pypsa_country_tech_merged = merge_and_replace(pypsa_country_tech_merged, "Bioenergy", ["urban central solid biomass CHP"])
     pypsa_country_tech_merged = pypsa_country_tech_merged.set_index("country").div(1000).round(2)
     print(f"Processed PyPSA capacity data sample:\n{pypsa_country_tech_merged.head().to_string()}")
     return pypsa_country_tech_merged
