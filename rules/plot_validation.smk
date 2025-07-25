@@ -32,15 +32,15 @@ rule validate_ember_networks:
 
 rule plot_capacity_demand:
     input:
-        network="results/validation_{year}/networks/base_s_{clusters}_elec_{opts}.nc",
+        network="results/validation_{year}/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc",
         ember_capacity="validation/ember_data/yearly_full_release_long_format.csv",
         ember_demand="validation/ember_data/europe_monthly_full_release_long_format.csv",
         regions_onshore=f"resources/validation_{{year}}/country_shapes.geojson"
     output:
-        network_plot="results/validation_{year}/plots/network_plot_base_s_{clusters}_elec_{opts}.png",
-        total_capacity_plot="results/validation_{year}/plots/total_capacity_plot_base_s_{clusters}_elec_{opts}.png",
-        country_capacity_plot="results/validation_{year}/plots/country_capacity_plot_base_s_{clusters}_elec_{opts}.png",
-        demand_plot="results/validation_{year}/plots/base_s_{clusters}_elec_{opts}_demand_plot.png"
+        network_plot="results/validation_{year}/plots/network_plot_base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.png",
+        total_capacity_plot="results/validation_{year}/plots/total_capacity_plot_base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.png",
+        country_capacity_plot="results/validation_{year}/plots/country_capacity_plot_base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.png",
+        demand_plot="results/validation_{year}/plots/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}_demand_plot.png"
     script:
         "../scripts/capacities_and_demand.py"
 
@@ -48,7 +48,7 @@ rule plot_capacity_demand:
 rule plot_all_capacity_demand:
     input:
         expand(
-            RESULTS + "plots/network_plot_base_s_{clusters}_elec_{opts}.png",
+            RESULTS + "plots/network_plot_base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.png",
             year=2023,
             **config["scenario"],
             run=config["run"]["name"],
