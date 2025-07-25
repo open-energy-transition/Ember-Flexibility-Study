@@ -13,7 +13,7 @@ scenario:
   sector_opts:
   - ''
   planning_horizons:
-  - 2025
+  - 2023
 
 
 snapshots:
@@ -87,7 +87,7 @@ electricity:
       Offshore: offwind-ac
       Onshore: onwind
       PV: solar
-      
+       
 load:
   fill_gaps:
     enable: true

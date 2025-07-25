@@ -160,7 +160,8 @@ def process_pypsa_capacity():
 def process_pypsa_demand():
     print("Processing PyPSA demand data")
     pypsa_loads = n.loads_t.p.groupby(lambda col: col[:2], axis=1).sum()
-    pypsa_loads_yearly = pypsa_loads.sum(axis=0).to_frame(name="Value")
+    weighted_loads = pypsa_loads.multiply(n.snapshot_weightings.generators, axis=0)
+    pypsa_loads_yearly = weighted_loads.sum(axis=0).to_frame(name="Value")
     pypsa_loads_yearly = (pypsa_loads_yearly / 1e6).round()
     print(f"Processed PyPSA demand data sample:\n{pypsa_loads_yearly.head().to_string()}")
     return pypsa_loads_yearly
