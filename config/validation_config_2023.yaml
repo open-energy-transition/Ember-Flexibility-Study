@@ -71,23 +71,17 @@ electricity:
   co2limit_enable: true
   co2limit: 1.35e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
 
-  extendable_carriers:      # forbid n
-  
-  
-  
   extendable_carriers:      # forbid new generation & storage
     Generator: []
     StorageUnit: []
     Store: []
   transmission_limit: v1.0  # keep today’s NTCs (default)
-
   custom_powerplants: true
-  powerplants_filter: "" 
+  powerplants_filter: ""
 
 
   estimate_renewable_capacities:
     enable: true
-
     from_gem: false
     year: 2023
     expansion_limit: false
@@ -95,7 +89,7 @@ electricity:
       Offshore: offwind-ac
       Onshore: onwind
       PV: solar
-       
+
 load:
   fill_gaps:
     enable: true
@@ -127,4 +121,4 @@ sector:
   keep_existing_capacities: true
 
 costs:
-  year: 2025
+  year: 2023

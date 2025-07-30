@@ -52,6 +52,7 @@ dconf
 /data/bundle/nuts*
 data/gas_network/scigrid-gas/
 data/costs_*.csv
+/validation/
 
 dask-worker-space/
 publications.jrc.ec.europa.eu/

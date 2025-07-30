@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: CC0-1.0
 
-name: pypsa-eur
+name: ember-study
 channels:
 - conda-forge
 - bioconda
@@ -32,7 +32,7 @@ dependencies:
 - numpy
 - pandas>=2.1
 - geopandas>=1
-- xarray>=2024.03.0
+- xarray>=2024.03.0,<2025.07.0
 - rioxarray
 - netcdf4
 - libgdal-netcdf
