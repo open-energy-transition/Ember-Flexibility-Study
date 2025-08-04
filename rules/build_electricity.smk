@@ -60,8 +60,6 @@ def input_base_network(w):
     components = {"buses", "lines", "links", "converters", "transformers"}
     if base_network == "osm-raw":
         inputs = {c: resources(f"osm-raw/build/{c}.csv") for c in components}
-    elif base_network == "tyndp":
-        inputs = {c: resources(f"tyndp/build/{c}.csv") for c in components}
     elif base_network == "osm-prebuilt":
         inputs = {
             c: f"data/{base_network}/{osm_prebuilt_version}/{c}.csv" for c in components
@@ -712,6 +710,17 @@ def input_conventional(w):
     }
 
 
+rule apply_ntcs:
+    input:
+        network=resources("networks/base_s_{clusters}_elec.nc"),
+        ntc_file=config["ntc"]["file"]
+       
+    output:
+        network=resources("networks/base_s_{clusters}_elec-ntc-applied.nc")
+    script: "../scripts/apply_ntcs.py"
+
+   
+
 rule add_electricity:
     params:
         line_length_factor=config_provider("lines", "length_factor"),
@@ -780,25 +789,33 @@ rule prepare_network:
         autarky=config_provider("electricity", "autarky", default={}),
         drop_leap_day=config_provider("enable", "drop_leap_day"),
         transmission_limit=config_provider("electricity", "transmission_limit"),
+    
     input:
-        resources("networks/base_s_{clusters}_elec.nc"),
-        tech_costs=lambda w: resources(
-            f"costs_{config_provider('costs', 'year')(w)}.csv"
-        ),
-        co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
+       network=lambda w: resources("networks/base_s_{clusters}_elec-ntc-applied.nc") if config_provider("ntc", "enable")(w)
+                      else resources("networks/base_s_{clusters}_elec.nc"),
+       tech_costs=lambda w: resources(f"costs_{config_provider('costs', 'year')(w)}.csv"),
+       co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
+    
     output:
         resources("networks/base_s_{clusters}_elec_{opts}.nc"),
+    
     log:
-        logs("prepare_network_base_s_{clusters}_elec_{opts}.log"),
+        logs("prepare_network_base_s_{clusters}elec{opts}.log"),
+    
     benchmark:
-        benchmarks("prepare_network_base_s_{clusters}_elec_{opts}")
+        benchmarks("prepare_network_base_s_{clusters}elec{opts}"),
+    
     threads: 1
+
     resources:
-        mem_mb=4000,
+        mem_mb=4000
+
     conda:
         "../envs/environment.yaml"
+
     script:
         "../scripts/prepare_network.py"
+
 
 
 if config["electricity"]["base_network"] == "osm-raw":
@@ -884,38 +901,3 @@ if config["electricity"]["base_network"] == "osm-raw":
             "../envs/environment.yaml"
         script:
             "../scripts/build_osm_network.py"
-
-
-if config["electricity"]["base_network"] == "tyndp":
-
-    rule build_tyndp_network:
-        params:
-            countries=config_provider("countries"),
-        input:
-            reference_grid="data/tyndp_2024_bundle/Line data/ReferenceGrid_Electricity.xlsx",
-            buses="data/tyndp_2024_bundle/Nodes/LIST OF NODES.xlsx",
-            bidding_shapes=resources("bidding_zones.geojson"),
-        output:
-            lines=resources("tyndp/build/lines.csv"),
-            links=resources("tyndp/build/links.csv"),
-            converters=resources("tyndp/build/converters.csv"),
-            transformers=resources("tyndp/build/transformers.csv"),
-            substations=resources("tyndp/build/buses.csv"),
-            substations_h2=resources("tyndp/build/buses_h2.csv"),
-            lines_geojson=resources("tyndp/build/geojson/lines.geojson"),
-            links_geojson=resources("tyndp/build/geojson/links.geojson"),
-            converters_geojson=resources("tyndp/build/geojson/converters.geojson"),
-            transformers_geojson=resources("tyndp/build/geojson/transformers.geojson"),
-            substations_geojson=resources("tyndp/build/geojson/buses.geojson"),
-            substations_h2_geojson=resources("tyndp/build/geojson/buses_h2.geojson"),
-        log:
-            logs("build_tyndp_network.log"),
-        benchmark:
-            benchmarks("build_tyndp_network")
-        threads: 1
-        resources:
-            mem_mb=4000,
-        conda:
-            "../envs/environment.yaml"
-        script:
-            "../scripts/build_tyndp_network.py"
