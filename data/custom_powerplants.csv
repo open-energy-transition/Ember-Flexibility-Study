@@ -47,6 +47,32 @@
 46,CH Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,CH,558.51,,0,0,0,0,,,,,46.95,7.45,[nan],{'ENTSOE': ['B11']}
 47,CH Hydro Water Reservoir,Hydro,Reservoir,PP,CH,5162.91,,0,0,0,0,,,,,46.95,7.45,[nan],{'ENTSOE': ['B12']}
 48,CH Nuclear,Nuclear,,PP,CH,3186.51,,0,0,0,0,,,,,46.95,7.45,[nan],{'ENTSOE': ['B14']}
+49,CZ Biomass,Bioenergy,,PP,CZ,755.49,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B01']}
+50,CZ Fossil Brown coal/Lignite,Lignite,Steam Turbine,PP,CZ,5246.11,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B02']}
+51,CZ Fossil Coal-derived gas,Other Fossil,Steam Turbine,PP,CZ,380,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B03']}
+52,CZ Gas,Natural Gas,OCGT,PP,CZ,782.91,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B04']}
+53,CZ Gas,Natural Gas,CCGT,PP,CZ,874.36,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B04']}
+54,CZ Fossil Hard coal,Hard Coal,Steam Turbine,PP,CZ,2281.47,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B05']}
+55,CZ Hydro Pumped Storage,Hydro,Pumped Storage,Store,CZ,682.84,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B10']}
+56,CZ Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,CZ,214.14,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B11']}
+57,CZ Hydro Water Reservoir,Hydro,Reservoir,PP,CZ,413.27,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B12']}
+58,CZ Nuclear,Nuclear,,PP,CZ,4334.51,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B14']}
+59,CZ Other renewable,Other Renewable,,PP,CZ,410,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B15']}
+60,CZ Solar,Solar,,PP,CZ,2583,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B16']}
+61,CZ Waste,Waste,,PP,CZ,135.49,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B17']}
+62,CZ Wind Onshore,Wind,Onshore,PP,CZ,339,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B19']}
+63,DE Biomass,Bioenergy,,PP,DE,9000.3,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B01']}
+64,DE Fossil Brown coal/Lignite,Lignite,Steam Turbine,PP,DE,18893.14,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B02']}
+65,DE Fossil Coal-derived gas,Other Fossil,Steam Turbine,PP,DE,600,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B03']}
+66,DE Gas,Natural Gas,OCGT,PP,DE,12952.5,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B04']}
+67,DE Gas,Natural Gas,CCGT,PP,DE,20428.75,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B04']}
+68,DE Fossil Hard coal,Hard Coal,Steam Turbine,PP,DE,20357.68,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B05']}
+69,DE Fossil Oil,Oil,Steam Turbine,PP,DE,4083,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B06']}
+70,DE Geothermal,Geothermal,,PP,DE,55.61,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B09']}
+71,DE Hydro Pumped Storage,Hydro,Pumped Storage,Store,DE,3574.05,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B10']}
+72,DE Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,DE,3432.62,,0,0,0,0,,,,,52.52,13.41,[nan],{'ENTSOE': ['B11']}
+47,CH Hydro Water Reservoir,Hydro,Reservoir,PP,CH,5162.91,,0,0,0,0,,,,,46.95,7.45,[nan],{'ENTSOE': ['B12']}
+48,CH Nuclear,Nuclear,,PP,CH,3186.51,,0,0,0,0,,,,,46.95,7.45,[nan],{'ENTSOE': ['B14']}
 49,CZ Biomass,Bioenergy,,PP,CZ,555.49,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B01']}
 50,CZ Fossil Brown coal/Lignite,Lignite,Steam Turbine,PP,CZ,7646.11,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B02']}
 51,CZ Fossil Coal-derived gas,Other Fossil,Steam Turbine,PP,CZ,380,,0,0,0,0,,,,,50.09,14.42,[nan],{'ENTSOE': ['B03']}
@@ -145,10 +171,12 @@
 144,FR Wind Onshore,Wind,Onshore,PP,FR,20841.9,,0,0,0,0,,,,,48.85,2.35,[nan],{'ENTSOE': ['B19']}
 145,GR Biomass,Bioenergy,,PP,GR,172.07,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B01']}
 146,GR Fossil Brown coal/Lignite,Lignite,Steam Turbine,PP,GR,2829.91,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B02']}
+147,GR Gas,Natural Gas,OCGT,PP,GR,1834.62,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B04']}
 147,GR Gas,Natural Gas,OCGT,PP,GR,2834.62,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B04']}
 148,GR Gas,Natural Gas,CCGT,PP,GR,4251.93,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B04']}
 149,GR Hydro Pumped Storage,Hydro,Pumped Storage,Store,GR,645.83,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B10']}
 150,GR Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,GR,296.58,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B11']}
+151,GR Hydro Water Reservoir,Hydro,Reservoir,PP,GR,2820.2,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B12']}
 151,GR Hydro Water Reservoir,Hydro,Reservoir,PP,GR,2220.2,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B12']}
 152,GR Other renewable,Other Renewable,,PP,GR,120,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B15']}
 153,GR Solar,Solar,,PP,GR,5100,,0,0,0,0,,,,,37.98,23.73,[nan],{'ENTSOE': ['B16']}
@@ -193,6 +221,7 @@
 192,IE Wind Onshore,Wind,Onshore,PP,IE,1918.73,,0,0,0,0,,,,,53.35,-6.26,[nan],{'ENTSOE': ['B19']}
 193,IT Biomass,Bioenergy,,PP,IT,2078.34,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B01']}
 194,IT Fossil Coal-derived gas,Other Fossil,Steam Turbine,PP,IT,2072,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B03']}
+195,IT Gas,Natural Gas,OCGT,PP,IT,23500.87,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B04']}
 195,IT Gas,Natural Gas,OCGT,PP,IT,22096.87,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B04']}
 196,IT Gas,Natural Gas,CCGT,PP,IT,33145.31,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B04']}
 197,IT Fossil Hard coal,Hard Coal,Steam Turbine,PP,IT,5954.56,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B05']}
@@ -200,12 +229,14 @@
 199,IT Geothermal,Geothermal,,PP,IT,869,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B09']}
 200,IT Hydro Pumped Storage,Hydro,Pumped Storage,Store,IT,6704.02,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B10']}
 201,IT Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,IT,9750.22,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B11']}
+202,IT Hydro Water Reservoir,Hydro,Reservoir,PP,IT,11164.45,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B12']}
 202,IT Hydro Water Reservoir,Hydro,Reservoir,PP,IT,6164.45,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B12']}
 203,IT Other,Other,,PP,IT,853,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B20']}
 204,IT Solar,Solar,,PP,IT,5431,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B16']}
 205,IT Waste,Waste,,PP,IT,162.58,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B17']}
 206,IT Wind Offshore,Wind,Offshore,PP,IT,30,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B18']}
 207,IT Wind Onshore,Wind,Onshore,PP,IT,11204,,0,0,0,0,,,,,41.89,12.51,[nan],{'ENTSOE': ['B19']}
+208,LT Biomass,Bioenergy,,PP,LT,634.13,,0,0,0,0,,,,,54.69,25.28,[nan],{'ENTSOE': ['B01']}
 208,LT Biomass,Bioenergy,,PP,LT,134.13,,0,0,0,0,,,,,54.69,25.28,[nan],{'ENTSOE': ['B01']}
 209,LT Gas,Natural Gas,OCGT,PP,LT,713.59,,0,0,0,0,,,,,54.69,25.28,[nan],{'ENTSOE': ['B04']}
 210,LT Gas,Natural Gas,CCGT,PP,LT,1070.39,,0,0,0,0,,,,,54.69,25.28,[nan],{'ENTSOE': ['B04']}
@@ -242,6 +273,10 @@
 241,MK Solar,Solar,,PP,MK,22,,0,0,0,0,,,,,42,21.43,[nan],{'ENTSOE': ['B16']}
 242,MK Wind Onshore,Wind,Onshore,PP,MK,37,,0,0,0,0,,,,,42,21.43,[nan],{'ENTSOE': ['B19']}
 243,NL Biomass,Bioenergy,,PP,NL,562.26,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B01']}
+244,NL Gas,Natural Gas,OCGT,PP,NL,3626.55,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B04']}
+245,NL Gas,Natural Gas,CCGT,PP,NL,12500.83,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B04']}
+246,NL Fossil Hard coal,Hard Coal,Steam Turbine,PP,NL,3200.97,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B05']}
+247,NL Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,NL,34.19,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B11']}
 244,NL Gas,Natural Gas,OCGT,PP,NL,8626.55,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B04']}
 245,NL Gas,Natural Gas,CCGT,PP,NL,12939.83,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B04']}
 246,NL Fossil Hard coal,Hard Coal,Steam Turbine,PP,NL,4277.97,,0,0,0,0,,,,,52.37,4.89,[nan],{'ENTSOE': ['B05']}
@@ -261,6 +296,15 @@
 260,NO Other renewable,Other Renewable,,PP,NO,99.5,,0,0,0,0,,,,,59.91,10.75,[nan],{'ENTSOE': ['B15']}
 261,NO Waste,Waste,,PP,NO,121.69,,0,0,0,0,,,,,59.91,10.75,[nan],{'ENTSOE': ['B17']}
 262,NO Wind Onshore,Wind,Onshore,PP,NO,5129.8,,0,0,0,0,,,,,59.91,10.75,[nan],{'ENTSOE': ['B19']}
+263,PL Biomass,Bioenergy,,PP,PL,1000.08,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B01']}
+264,PL Fossil Brown coal/Lignite,Lignite,Steam Turbine,PP,PL,8009.19,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B02']}
+265,PL Gas,Natural Gas,OCGT,PP,PL,779.91,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B04']}
+266,PL Gas,Natural Gas,CCGT,PP,PL,2669.85,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B04']}
+267,PL Fossil Coal-derived gas,Other Fossil,Steam Turbine,PP,PL,281.32,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B03']}
+268,PL Fossil Hard coal,Hard Coal,Steam Turbine,PP,PL,20500.38,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B05']}
+269,PL Fossil Oil,Oil,Steam Turbine,PP,PL,392.54,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B06']}
+270,PL Hydro Pumped Storage,Hydro,Pumped Storage,Store,PL,470.16,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B10']}
+271,PL Hydro Run-of-river and poundage,Hydro,Run-Of-River,PP,PL,298.44,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B11']}
 263,PL Biomass,Bioenergy,,PP,PL,899.08,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B01']}
 264,PL Fossil Brown coal/Lignite,Lignite,Steam Turbine,PP,PL,8009.19,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B02']}
 265,PL Gas,Natural Gas,OCGT,PP,PL,1779.91,,0,0,0,0,,,,,52.23,21.01,[nan],{'ENTSOE': ['B04']}
