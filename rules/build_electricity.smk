@@ -796,8 +796,7 @@ rule prepare_network:
     output:
         resources("networks/base_s_{clusters}_elec_{opts}.nc"),
     log:
-        logs("prepare_network_base_s_{clusters}elec{opts}.log"),
-    
+        logs("prepare_network_base_s_{clusters}_elec{opts}.log"),
     benchmark:
         benchmarks("prepare_network_base_s_{clusters}elec{opts}"),
     
