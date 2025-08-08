@@ -788,7 +788,6 @@ rule prepare_network:
         autarky=config_provider("electricity", "autarky", default={}),
         drop_leap_day=config_provider("enable", "drop_leap_day"),
         transmission_limit=config_provider("electricity", "transmission_limit"),
-    
     input:
        network=lambda w: resources("networks/base_s_{clusters}_elec-ntc-applied.nc") if config_provider("ntc", "enable")(w)
                       else resources("networks/base_s_{clusters}_elec.nc"),
