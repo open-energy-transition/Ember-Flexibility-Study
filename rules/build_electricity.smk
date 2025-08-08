@@ -802,8 +802,7 @@ rule prepare_network:
     
     threads: 1
     resources:
-        mem_mb=4000
-
+        mem_mb=4000,
     conda:
         "../envs/environment.yaml"
 
