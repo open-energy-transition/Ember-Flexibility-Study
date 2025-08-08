@@ -801,7 +801,6 @@ rule prepare_network:
         benchmarks("prepare_network_base_s_{clusters}elec{opts}"),
     
     threads: 1
-
     resources:
         mem_mb=4000
 
