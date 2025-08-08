@@ -795,7 +795,6 @@ rule prepare_network:
        co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
     output:
         resources("networks/base_s_{clusters}_elec_{opts}.nc"),
-    
     log:
         logs("prepare_network_base_s_{clusters}elec{opts}.log"),
     
