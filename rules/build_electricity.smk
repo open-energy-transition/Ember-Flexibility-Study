@@ -720,7 +720,6 @@ rule apply_ntcs:
     script: "../scripts/apply_ntcs.py"
 
    
-
 rule add_electricity:
     params:
         line_length_factor=config_provider("lines", "length_factor"),
