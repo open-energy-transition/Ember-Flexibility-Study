@@ -57,7 +57,6 @@ def add_custom_powerplants(ppl, custom_powerplants, custom_ppl_query=False):
         [ppl, add_ppls], sort=False, ignore_index=True, verify_integrity=True
     )
 def add_everywhere_powerplants(ppl, substations, everywhere_powerplants):
-    # Create a dataframe with "everywhere_powerplants" of stated carriers at the location of all substations
     everywhere_ppl = (
         pd.DataFrame(
             itertools.product(substations.index.values, everywhere_powerplants),
@@ -68,19 +67,15 @@ def add_everywhere_powerplants(ppl, substations, everywhere_powerplants):
             right_index=True,
         )
     ).drop(columns="substation_index")
-    # PPL uses different columns names compared to substations dataframe -> rename
     everywhere_ppl = everywhere_ppl.rename(
         columns={"x": "lon", "y": "lat", "country": "Country"}
     )
-    # Add default values for the powerplants
     everywhere_ppl["Name"] = (
         "Automatically added everywhere-powerplant " + everywhere_ppl.Fueltype
     )
     everywhere_ppl["Set"] = "PP"
     everywhere_ppl["Technology"] = everywhere_ppl["Fueltype"]
     everywhere_ppl["Capacity"] = 0.0
-    # Assign plausible values for the commissioning and decommissioning years
-    # required for multi-year models
     if ppl.empty or "DateIn" not in ppl.columns or ppl["DateIn"].isna().all():
         everywhere_ppl["DateIn"] = pd.to_datetime("1900-01-01")
     else:
@@ -89,7 +84,6 @@ def add_everywhere_powerplants(ppl, substations, everywhere_powerplants):
         everywhere_ppl["DateOut"] = pd.to_datetime("2100-01-01")
     else:
         everywhere_ppl["DateOut"] = ppl["DateOut"].max()
-    # NaN values for efficiency will be replaced by the generic efficiency by attach_conventional_generators(...) in add_electricity.py later
     everywhere_ppl["Efficiency"] = np.nan
     return pd.concat(
         [ppl, everywhere_ppl], sort=False, ignore_index=True, verify_integrity=True
@@ -126,7 +120,6 @@ if __name__ == "__main__":
             .assign(Fueltype=replace_natural_gas_fueltype)
             .replace({"Solid Biomass": "Bioenergy", "Biogas": "Bioenergy"})
         )
-        # Correct bioenergy for countries where possible
         opsd = pm.data.OPSD_VRE().powerplant.convert_country_to_alpha2()
         opsd = opsd.replace({"Solid Biomass": "Bioenergy", "Biogas": "Bioenergy"}).query(
             'Country in @countries and Fueltype == "Bioenergy"'
@@ -140,14 +133,12 @@ if __name__ == "__main__":
     else:
         ppl_columns = ['Name', 'Fueltype', 'Technology', 'Set', 'Country', 'Capacity', 'Efficiency', 'DateIn', 'DateRetrofit', 'DateOut', 'lat', 'lon', 'EIC', 'projectID']
         ppl = pd.DataFrame(columns=ppl_columns)
-    # add carriers from own powerplant files:
     custom_ppl_query = snakemake.params.custom_powerplants
     ppl = add_custom_powerplants(
         ppl, snakemake.input.custom_powerplants, custom_ppl_query
     )
     if countries_wo_ppl := set(countries) - set(ppl.Country.unique()):
         logger.warning(f"No powerplants known in: {', '.join(countries_wo_ppl)}")
-    # Add "everywhere powerplants" to all bus locations
     ppl = add_everywhere_powerplants(
         ppl, n.buses, snakemake.params.everywhere_powerplants
     )
@@ -160,7 +151,6 @@ if __name__ == "__main__":
             "Removing them from the powerplants list."
         )
         ppl = ppl[~bus_null_b]
-    
     cumcount = ppl.groupby(["bus", "Fueltype"]).cumcount() + 1
     ppl.Name = ppl.Name.where(cumcount == 1, ppl.Name + " " + cumcount.astype(str))
     ppl.reset_index(drop=True).to_csv(snakemake.output[0])
