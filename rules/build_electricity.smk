@@ -737,7 +737,6 @@ rule apply_ntcs:
     script: "../scripts/apply_ntcs.py"
 
    
-
 rule add_electricity:
     params:
         line_length_factor=config_provider("lines", "length_factor"),
@@ -818,6 +817,7 @@ rule prepare_network:
         benchmarks("prepare_network_base_s_{clusters}_elec_{opts}"),
     threads: 1
     resources:
+        mem_mb=4000,
         mem_mb=4000,
     conda:
         "../envs/environment.yaml"

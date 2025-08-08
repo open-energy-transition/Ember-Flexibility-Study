@@ -9,7 +9,7 @@ scenario:
   clusters:
   - 39
   opts:
-  - '6H'
+  - ''
   sector_opts:
   - ''
   planning_horizons:
