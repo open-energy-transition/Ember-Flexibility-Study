@@ -793,7 +793,6 @@ rule prepare_network:
                       else resources("networks/base_s_{clusters}_elec.nc"),
        tech_costs=lambda w: resources(f"costs_{config_provider('costs', 'year')(w)}.csv"),
        co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
-    
     output:
         resources("networks/base_s_{clusters}_elec_{opts}.nc"),
     
