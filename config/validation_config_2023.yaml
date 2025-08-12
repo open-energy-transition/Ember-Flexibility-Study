@@ -11,9 +11,9 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - ''
+  - '2190seg'
   planning_horizons:
-  - 2023
+  - 2025
 
 
 snapshots:
@@ -69,10 +69,9 @@ electricity:
     from_entsoe: false
     year: 2023
   co2limit_enable: true
-  co2limit: 1.35e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
+  co2limit: 1.42e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
 
   extendable_carriers:      # forbid n
-  
   
   
   extendable_carriers:      # forbid new generation & storage
@@ -129,6 +128,9 @@ sector:
 costs:
   year: 2025
 
+clustering:
+  exclude_carriers: [coal, nuclear, lignite]
+
 ntc:
   enable: true
-  file: "REF_NTC.csv"
+  file: "validation/ember_data/REF_NTC.csv"
