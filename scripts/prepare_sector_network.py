@@ -45,6 +45,8 @@ from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials
 
+from scripts.ember_customization import apply_custom_ramping
+
 spatial = SimpleNamespace()
 logger = logging.getLogger(__name__)
 
@@ -603,7 +605,7 @@ def add_carrier_buses(
         capital_cost=capital_cost,
     )
 
-    fossils = ["coal", "gas", "oil", "lignite"]
+    fossils = ["coal", "gas", "oil", "lignite", "uranium"]
     if options["fossil_fuels"] and carrier in fossils:
         suffix = ""
 
@@ -1301,6 +1303,7 @@ def add_generation(
     ext_carriers,
     existing_capacities=None,
     existing_efficiencies=None,
+    existing_buses=None,
 ) -> None:
     """
     Add conventional electricity generation to the network.
@@ -1357,13 +1360,17 @@ def add_generation(
         p_nom = pd.Series(0, index=nodes + " " + generator)
         efficiency = pd.Series(costs.at[generator, "efficiency"], index=nodes + " " + generator)
         if existing_capacities is not None:
+            #overwrite in case units where not aggregated
+            p_nom = pd.Series(0, index=existing_capacities[generator].index)
+            efficiency = pd.Series(costs.at[generator, "efficiency"], index=existing_efficiencies[generator].index)
+            nodes = existing_buses[generator]
             # NB: existing capacities are MWel
             p_nom[existing_capacities[generator].index] = existing_capacities[generator] / existing_efficiencies[generator]
             efficiency[existing_efficiencies[generator].index] = existing_efficiencies[generator]
 
         n.add(
             "Link",
-            nodes + " " + generator,
+            p_nom.index,
             bus0=carrier_nodes,
             bus1=nodes,
             bus2="co2 atmosphere",
@@ -1614,7 +1621,7 @@ def insert_electricity_distribution_grid(
             suffix=" rooftop",
             bus=n.generators.loc[solar, "bus"] + " low voltage",
             carrier="solar rooftop",
-            p_nom_extendable=True,
+            p_nom_extendable=True if "solar rooftop" in snakemake.params.electricity.get("extendable_carriers", []) else False,
             p_nom_max=potential.loc[solar],
             marginal_cost=n.generators.loc[solar, "marginal_cost"],
             capital_cost=costs.at["solar-rooftop", "capital_cost"],
@@ -6052,6 +6059,7 @@ def get_capacities_from_elec(n, carriers, component):
 
     capacity_dict = {}
     efficiency_dict = {}
+    buses_dict = {}
     for carrier in carriers:
         capacity_dict[carrier] = component_dict[component].query("carrier in @carrier")[
             nom_col[component]
@@ -6059,8 +6067,9 @@ def get_capacities_from_elec(n, carriers, component):
         efficiency_dict[carrier] = component_dict[component].query(
             "carrier in @carrier"
         )[eff_col]
+        buses_dict[carrier] = component_dict[component].query("carrier in @carrier").bus
 
-    return capacity_dict, efficiency_dict
+    return capacity_dict, efficiency_dict, buses_dict
 
 
 def add_import_options(
@@ -6216,13 +6225,13 @@ if __name__ == "__main__":
     gas_input_nodes = pd.read_csv(fn, index_col=0)
 
     if options.get("keep_existing_capacities", False):
-        existing_capacities, existing_efficiencies = get_capacities_from_elec(
+        existing_capacities, existing_efficiencies, existing_buses = get_capacities_from_elec(
             n,
             carriers=options.get("conventional_generation").keys(),
             component="generators",
         )
     else:
-        existing_capacities = existing_efficiencies = None
+        existing_capacities = existing_efficiencies = existing_buses = None
 
     carriers_to_keep = snakemake.params.pypsa_eur
     profiles = {
@@ -6277,6 +6286,7 @@ if __name__ == "__main__":
         ext_carriers=snakemake.params.electricity.get("extendable_carriers", dict()),
         existing_capacities=existing_capacities,
         existing_efficiencies=existing_efficiencies,
+        existing_buses=existing_buses,
     )
 
     add_storage_and_grids(
@@ -6524,5 +6534,7 @@ if __name__ == "__main__":
 
     sanitize_carriers(n, snakemake.config)
     sanitize_locations(n)
+
+    apply_custom_ramping(n)
 
     n.export_to_netcdf(snakemake.output[0])
