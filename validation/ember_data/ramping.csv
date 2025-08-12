@@ -1,0 +1,7 @@
+,coal,lignite,nuclear
+min_up_time,6,6,48
+min_down_time,6,6,48
+ramp_limit_up,0.4,0.3,0.05
+ramp_limit_down,0.4,0.3,0.05
+ramp_limit_start_up,0.4,0.3,0.05
+ramp_limit_shut_down,0.4,0.3,0.05
