@@ -52,6 +52,10 @@ from scripts._helpers import (
     update_config_from_wildcards,
 )
 
+from scripts.ember_customization import (
+    apply_custom_pf_constraint,
+)
+
 logger = logging.getLogger(__name__)
 pypsa.network.power_flow.logger.setLevel(logging.WARNING)
 
@@ -1189,6 +1193,7 @@ def extra_functionality(
         add_SAFE_constraints(n, config)
     if constraints["CCL"] and n.generators.p_nom_extendable.any():
         add_CCL_constraints(n, config, planning_horizons)
+    apply_custom_pf_constraint(n)
 
     reserve = config["electricity"].get("operational_reserve", {})
     if reserve.get("activate"):
