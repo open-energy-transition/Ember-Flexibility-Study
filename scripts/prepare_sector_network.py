@@ -6534,7 +6534,8 @@ if __name__ == "__main__":
 
     sanitize_carriers(n, snakemake.config)
     sanitize_locations(n)
-
-    apply_custom_ramping(n)
+    if snakemake.config["ember_settings"].get("ramping", False):
+        apply_custom_ramping(n)
+        logger.info("Ramping constraints applied to relevant units.")
 
     n.export_to_netcdf(snakemake.output[0])
