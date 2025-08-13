@@ -60,6 +60,8 @@ import pypsa
 import xarray as xr
 from pypsa.clustering.spatial import DEFAULT_ONE_PORT_STRATEGIES, normed_or_uniform
 
+from scripts.apply_ntcs import apply_ntc
+
 from scripts._helpers import (
     PYPSA_V1,
     configure_logging,
@@ -1290,4 +1292,16 @@ if __name__ == "__main__":
         sanitize_locations(n)
 
     n.meta = dict(snakemake.config, **dict(wildcards=dict(snakemake.wildcards)))
+
+    if snakemake.params["apply_ntcs"]:
+        logger.warning(
+            "Applying NTCs is generally recommended **only** when the network is clustered "
+            "to 39 buses for the default country selection. "
+            "If you are using a different clustering level or country set, please verify "
+            "that this step is appropriate for your scenario."
+        )
+        year = snakemake.params.costs["year"]
+        apply_ntc(n, snakemake.input.ntc_file, year)
+        logger.info(f"NTCs applied for year {year} (interpolated if needed).")
+
     n.export_to_netcdf(snakemake.output[0])

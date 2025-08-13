@@ -69,7 +69,7 @@ electricity:
     from_entsoe: false
     year: 2023
   co2limit_enable: true
-  co2limit: 1.42e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
+  co2limit: 1.47e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
 
   extendable_carriers:      # forbid n
   
@@ -131,6 +131,7 @@ costs:
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
 
-ntc:
-  enable: true
-  file: "validation/ember_data/REF_NTC.csv"
+ember_settings:
+  ntc: true
+  ntc_cross_country_pf_restriction: true
+  ramping: false

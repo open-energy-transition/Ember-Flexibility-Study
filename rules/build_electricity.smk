@@ -725,17 +725,6 @@ def input_conventional(w):
         for attr, fn in d.items()
         if str(fn).startswith("data/")
     }
-
-
-rule apply_ntcs:
-    input:
-        network=resources("networks/base_s_{clusters}_elec.nc"),
-        ntc_file=config["ntc"]["file"]
-       
-    output:
-        network=resources("networks/base_s_{clusters}_elec-ntc-applied.nc")
-    script: "../scripts/apply_ntcs.py"
-
    
 rule add_electricity:
     params:
@@ -755,6 +744,7 @@ rule add_electricity:
         ),
         aggregation_strategies=config_provider("clustering", "aggregation_strategies"),
         exclude_carriers=config_provider("clustering", "exclude_carriers"),
+        apply_ntcs=config_provider("ember_settings", "ntc"),
     input:
         unpack(input_profile_tech),
         unpack(input_class_regions),
@@ -774,6 +764,7 @@ rule add_electricity:
         ),
         load=resources("electricity_demand_base_s.nc"),
         busmap=resources("busmap_base_s_{clusters}.csv"),
+        ntc_file="validation/ember_data/REF_NTC.csv",
     output:
         resources("networks/base_s_{clusters}_elec.nc"),
     log:
@@ -806,7 +797,7 @@ rule prepare_network:
         drop_leap_day=config_provider("enable", "drop_leap_day"),
         transmission_limit=config_provider("electricity", "transmission_limit"),
     input:
-        network=lambda w: resources("networks/base_s_{clusters}_elec-ntc-applied.nc") if config_provider("ntc", "enable")(w) else resources("networks/base_s_{clusters}_elec.nc"),
+        network=lambda w: resources("networks/base_s_{clusters}_elec.nc"),
         tech_costs=lambda w: resources(f"costs_{config_provider('costs', 'year')(w)}.csv"),
         co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
     output:
