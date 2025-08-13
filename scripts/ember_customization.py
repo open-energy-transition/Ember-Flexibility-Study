@@ -19,7 +19,6 @@ def apply_custom_ramping(n):
             ]:
                 param_value /= n.snapshot_weightings.generators.mean()
                 param_value = int(np.ceil(param_value))
-            print(tech, param, param_value)
             n.links.loc[idx, param] = param_value
 
 
