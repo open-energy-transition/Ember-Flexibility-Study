@@ -7,13 +7,13 @@ run:
 
 scenario:
   clusters:
-  - 39
+  - 90
   opts:
   - ''
   sector_opts:
-  - '2190seg'
+  - ''
   planning_horizons:
-  - 2025
+  - 2023
 
 
 snapshots:
@@ -69,7 +69,7 @@ electricity:
     from_entsoe: false
     year: 2023
   co2limit_enable: true
-  co2limit: 1.47e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
+  co2limit: 1.1e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
 
   extendable_carriers:      # forbid n
   
@@ -101,7 +101,7 @@ load:
     interpolate_limit: 3
     time_shift_for_large_gaps: 1w
   manual_adjustments: false # false
-  scaling_factor: 1.0
+  scaling_factor: 1.0 
   fixed_year: false # false or year (e.g. 2013)
   supplement_synthetic: true
   distribution_key:
@@ -131,7 +131,11 @@ costs:
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
 
+
+simplify_network:
+  remove_stubs_across_borders: true
+
 ember_settings:
   ntc: true
-  ntc_cross_country_pf_restriction: true
+  ntc_cross_country_pf_restriction: false
   ramping: true
