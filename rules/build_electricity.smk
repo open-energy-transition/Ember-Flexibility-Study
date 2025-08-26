@@ -64,8 +64,7 @@ def input_base_network(w):
         inputs = {c: resources(f"tyndp/build/{c}.csv") for c in components}
     elif base_network == "osm-prebuilt":
         inputs = {
-            c: f"data/{base_network}/{osm_prebuilt_version}/{c}.csv"
-            for c in components
+            c: f"data/{base_network}/{osm_prebuilt_version}/{c}.csv" for c in components
         }
     elif base_network == "entsoegridkit":
         inputs = {c: f"data/{base_network}/{c}.csv" for c in components}
@@ -784,15 +783,17 @@ rule prepare_network:
         drop_leap_day=config_provider("enable", "drop_leap_day"),
         transmission_limit=config_provider("electricity", "transmission_limit"),
     input:
-        network=lambda w: resources("networks/base_s_{clusters}_elec.nc"),
-        tech_costs=lambda w: resources(f"costs_{config_provider('costs', 'year')(w)}.csv"),
+        resources("networks/base_s_{clusters}_elec.nc"),
+        tech_costs=lambda w: resources(
+            f"costs_{config_provider('costs', 'year')(w)}.csv"
+        ),
         co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
     output:
         resources("networks/base_s_{clusters}_elec_{opts}.nc"),
     log:
         logs("prepare_network_base_s_{clusters}_elec_{opts}.log"),
     benchmark:
-        benchmarks("prepare_network_base_s_{clusters}_elec_{opts}"),
+        benchmarks("prepare_network_base_s_{clusters}_elec_{opts}")
     threads: 1
     resources:
         mem_mb=4000,
