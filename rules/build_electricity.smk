@@ -803,8 +803,6 @@ rule prepare_network:
         "../scripts/prepare_network.py"
 
 
-
-
 if config["electricity"]["base_network"] == "osm-raw":
 
     rule clean_osm_data:
