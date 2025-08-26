@@ -15,13 +15,11 @@ scenario:
   planning_horizons:
   - 2023
 
-
 snapshots:
   start: "2023-01-01"
   end:   "2024-01-01"
 
 countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
-
 
 atlite:
   cutout_directory: cutouts
@@ -40,13 +38,11 @@ atlite:
       dy: 0.3
       time: ['2023', '2023']
 
-
 renewable:
   onwind:
     correction_factor: 0.93
   solar:
     correction_factor: 0.854337
-
 
 lines:
   under_construction: remove
@@ -77,11 +73,7 @@ electricity:
     year: 2023
   co2limit_enable: true
   co2limit: 1.1e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
-  powerplants_filter: DateOut >= 2024 and not Fueltype.isin(['Nuclear', 'Hard Coal', 'Lignite'])
 
-  extendable_carriers:      # forbid n
-  
-  
   extendable_carriers:      # forbid new generation & storage
     Generator: []
     StorageUnit: []
@@ -89,12 +81,10 @@ electricity:
   transmission_limit: v1.0  # keep today’s NTCs (default)
 
   custom_powerplants: true
-  powerplants_filter: "" 
-
+  powerplants_filter: DateOut >= 2025 and not Fueltype.isin(['Nuclear', 'Hard Coal', 'Lignite'])
 
   estimate_renewable_capacities:
     enable: true
-
     from_gem: false
     year: 2023
     expansion_limit: false
@@ -102,7 +92,7 @@ electricity:
       Offshore: offwind-ac
       Onshore: onwind
       PV: solar
-       
+
 load:
   fill_gaps:
     enable: true
@@ -138,7 +128,7 @@ costs:
 
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
-
+#  focus_weights: {'DE': 0.15, 'CZ': 0.15, 'PL': 0.15, 'NL': 0.15, 'IT': 0.15, 'GR': 0.15}
 
 simplify_network:
   remove_stubs_across_borders: true
