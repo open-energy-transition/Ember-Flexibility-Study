@@ -163,31 +163,31 @@ if __name__ == "__main__":
     n = pypsa.Network(snakemake.input.network)
     countries = snakemake.params.countries
 
+    ppl = (
+        pm.powerplants(from_url=True)
+        .powerplant.fill_missing_decommissioning_years()
+        .powerplant.convert_country_to_alpha2()
+        .query('Fueltype not in ["Solar", "Wind"] and Country in @countries')
+        .assign(Technology=replace_natural_gas_technology)
+        .assign(Fueltype=replace_natural_gas_fueltype)
+        .replace({"Solid Biomass": "Bioenergy", "Biogas": "Bioenergy"})
+    )
+
+    # Correct bioenergy for countries where possible
+    opsd = pm.data.OPSD_VRE().powerplant.convert_country_to_alpha2()
+    opsd = opsd.replace({"Solid Biomass": "Bioenergy", "Biogas": "Bioenergy"}).query(
+        'Country in @countries and Fueltype == "Bioenergy"'
+    )
+    opsd["Name"] = "Biomass"
+    available_countries = opsd.Country.unique()
+    ppl = ppl.query('not (Country in @available_countries and Fueltype == "Bioenergy")')
+    ppl = pd.concat([ppl, opsd])
+
     ppl_query = snakemake.params.powerplants_filter
-    use_ppm = ppl_query not in (False, "")
-    if use_ppm:
-        ppl = (
-            pm.powerplants(from_url=True)
-            .powerplant.fill_missing_decommissioning_years()
-            .powerplant.convert_country_to_alpha2()
-            .query('Fueltype not in ["Solar", "Wind"] and Country in @countries')
-            .assign(Technology=replace_natural_gas_technology)
-            .assign(Fueltype=replace_natural_gas_fueltype)
-            .replace({"Solid Biomass": "Bioenergy", "Biogas": "Bioenergy"})
-        )
-        opsd = pm.data.OPSD_VRE().powerplant.convert_country_to_alpha2()
-        opsd = opsd.replace({"Solid Biomass": "Bioenergy", "Biogas": "Bioenergy"}).query(
-            'Country in @countries and Fueltype == "Bioenergy"'
-        )
-        opsd["Name"] = "Biomass"
-        available_countries = opsd.Country.unique()
-        ppl = ppl.query('not (Country in @available_countries and Fueltype == "Bioenergy")')
-        ppl = pd.concat([ppl, opsd])
-        if isinstance(ppl_query, str) and ppl_query:
-            ppl.query(ppl_query, inplace=True)
-    else:
-        ppl_columns = ['Name', 'Fueltype', 'Technology', 'Set', 'Country', 'Capacity', 'Efficiency', 'DateIn', 'DateRetrofit', 'DateOut', 'lat', 'lon', 'EIC', 'projectID']
-        ppl = pd.DataFrame(columns=ppl_columns)
+    if isinstance(ppl_query, str):
+        ppl.query(ppl_query, inplace=True)
+
+    # add carriers from own powerplant files:
     custom_ppl_query = snakemake.params.custom_powerplants
     ppl = add_custom_powerplants(
         ppl, snakemake.input.custom_powerplants, custom_ppl_query
