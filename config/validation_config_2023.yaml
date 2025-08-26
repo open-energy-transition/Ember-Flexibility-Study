@@ -13,7 +13,7 @@ scenario:
   sector_opts:
   - ''
   planning_horizons:
-  - 2023
+  - 2025
 
 snapshots:
   start: "2023-01-01"
@@ -114,6 +114,7 @@ sector:
   shipping: false
   aviation: false
   agriculture: false
+  gas_network: false
   conventional_generation:
     OCGT: gas
     CCGT: gas
