@@ -7,21 +7,19 @@ run:
 
 scenario:
   clusters:
-  - 90
+  - 128
   opts:
   - ''
   sector_opts:
   - ''
   planning_horizons:
-  - 2023
-
+  - 2025
 
 snapshots:
   start: "2023-01-01"
   end:   "2024-01-01"
 
 countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
-
 
 atlite:
   cutout_directory: cutouts
@@ -39,7 +37,12 @@ atlite:
       dx: 0.3
       dy: 0.3
       time: ['2023', '2023']
-      
+
+renewable:
+  onwind:
+    correction_factor: 0.93
+  solar:
+    correction_factor: 0.854337
 
 lines:
   under_construction: remove
@@ -71,22 +74,17 @@ electricity:
   co2limit_enable: true
   co2limit: 1.1e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
 
-  extendable_carriers:      # forbid n
-  
-  
   extendable_carriers:      # forbid new generation & storage
     Generator: []
     StorageUnit: []
     Store: []
   transmission_limit: v1.0  # keep today’s NTCs (default)
 
-  custom_powerplants: true
-  powerplants_filter: "" 
-
+  custom_powerplants: DateOut >= 2023
+  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite'] and DateOut >= 2023)
 
   estimate_renewable_capacities:
     enable: true
-
     from_gem: false
     year: 2023
     expansion_limit: false
@@ -94,7 +92,7 @@ electricity:
       Offshore: offwind-ac
       Onshore: onwind
       PV: solar
-       
+
 load:
   fill_gaps:
     enable: true
@@ -116,6 +114,7 @@ sector:
   shipping: false
   aviation: false
   agriculture: false
+  gas_network: false
   conventional_generation:
     OCGT: gas
     CCGT: gas
@@ -130,12 +129,12 @@ costs:
 
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
-
+#  focus_weights: {'DE': 0.15, 'CZ': 0.15, 'PL': 0.15, 'NL': 0.15, 'IT': 0.15, 'GR': 0.15}
 
 simplify_network:
   remove_stubs_across_borders: true
 
 ember_settings:
-  ntc: true
+  ntc: false
   ntc_cross_country_pf_restriction: false
   ramping: true

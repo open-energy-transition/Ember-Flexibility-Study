@@ -55,36 +55,21 @@ rule build_powerplants:
 
 
 def input_base_network(w):
-    # Retrieve configuration values
     base_network = config_provider("electricity", "base_network")(w)
     osm_prebuilt_version = config_provider("electricity", "osm-prebuilt-version")(w)
-
-    # Components common to all base networks
     components = {"buses", "lines", "links", "converters", "transformers"}
-
-    # Determine input file paths based on the base network type
     if base_network == "osm-raw":
         inputs = {c: resources(f"osm-raw/build/{c}.csv") for c in components}
-
+    elif base_network == "tyndp":
+        inputs = {c: resources(f"tyndp/build/{c}.csv") for c in components}
     elif base_network == "osm-prebuilt":
         inputs = {
-            c: f"data/{base_network}/{osm_prebuilt_version}/{c}.csv"
-            for c in components
+            c: f"data/{base_network}/{osm_prebuilt_version}/{c}.csv" for c in components
         }
-
     elif base_network == "entsoegridkit":
         inputs = {c: f"data/{base_network}/{c}.csv" for c in components}
         inputs["parameter_corrections"] = "data/parameter_corrections.yaml"
         inputs["links_p_nom"] = "data/links_p_nom.csv"
-
-    elif base_network == "tyndp":
-        inputs = {c: f"data/{base_network}/{c}.csv" for c in components}
-        inputs["parameter_corrections"] = "data/parameter_corrections.yaml"
-        inputs["links_p_nom"] = "data/links_p_nom.csv"
-
-    else:
-        raise ValueError(f"Unknown base network type: {base_network}")
-
     return inputs
 
 
@@ -725,7 +710,8 @@ def input_conventional(w):
         for attr, fn in d.items()
         if str(fn).startswith("data/")
     }
-   
+
+
 rule add_electricity:
     params:
         line_length_factor=config_provider("lines", "length_factor"),
@@ -797,15 +783,17 @@ rule prepare_network:
         drop_leap_day=config_provider("enable", "drop_leap_day"),
         transmission_limit=config_provider("electricity", "transmission_limit"),
     input:
-        network=lambda w: resources("networks/base_s_{clusters}_elec.nc"),
-        tech_costs=lambda w: resources(f"costs_{config_provider('costs', 'year')(w)}.csv"),
+        resources("networks/base_s_{clusters}_elec.nc"),
+        tech_costs=lambda w: resources(
+            f"costs_{config_provider('costs', 'year')(w)}.csv"
+        ),
         co2_price=lambda w: resources("co2_price.csv") if "Ept" in w.opts else [],
     output:
         resources("networks/base_s_{clusters}_elec_{opts}.nc"),
     log:
         logs("prepare_network_base_s_{clusters}_elec_{opts}.log"),
     benchmark:
-        benchmarks("prepare_network_base_s_{clusters}_elec_{opts}"),
+        benchmarks("prepare_network_base_s_{clusters}_elec_{opts}")
     threads: 1
     resources:
         mem_mb=4000,
@@ -813,8 +801,6 @@ rule prepare_network:
         "../envs/environment.yaml"
     script:
         "../scripts/prepare_network.py"
-
-
 
 
 if config["electricity"]["base_network"] == "osm-raw":
@@ -900,6 +886,7 @@ if config["electricity"]["base_network"] == "osm-raw":
             "../envs/environment.yaml"
         script:
             "../scripts/build_osm_network.py"
+
 
 if config["electricity"]["base_network"] == "tyndp":
 
