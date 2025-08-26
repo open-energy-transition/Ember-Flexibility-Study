@@ -80,8 +80,8 @@ electricity:
     Store: []
   transmission_limit: v1.0  # keep today’s NTCs (default)
 
-  custom_powerplants: true
-  powerplants_filter: DateOut >= 2025 and not Fueltype.isin(['Nuclear', 'Hard Coal', 'Lignite'])
+  custom_powerplants: DateOut >= 2023
+  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite'] and DateOut >= 2023)
 
   estimate_renewable_capacities:
     enable: true
