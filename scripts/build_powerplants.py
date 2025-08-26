@@ -155,8 +155,8 @@ def replace_natural_gas_fueltype(df):
 if __name__ == "__main__":
     if "snakemake" not in globals():
         from scripts._helpers import mock_snakemake
-        snakemake = mock_snakemake("build_powerplants")
 
+        snakemake = mock_snakemake("build_powerplants")
     configure_logging(snakemake)
     set_scenario_config(snakemake)
 
