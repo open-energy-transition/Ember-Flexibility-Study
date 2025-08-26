@@ -55,36 +55,22 @@ rule build_powerplants:
 
 
 def input_base_network(w):
-    # Retrieve configuration values
     base_network = config_provider("electricity", "base_network")(w)
     osm_prebuilt_version = config_provider("electricity", "osm-prebuilt-version")(w)
-
-    # Components common to all base networks
     components = {"buses", "lines", "links", "converters", "transformers"}
-
-    # Determine input file paths based on the base network type
     if base_network == "osm-raw":
         inputs = {c: resources(f"osm-raw/build/{c}.csv") for c in components}
-
+    elif base_network == "tyndp":
+        inputs = {c: resources(f"tyndp/build/{c}.csv") for c in components}
     elif base_network == "osm-prebuilt":
         inputs = {
             c: f"data/{base_network}/{osm_prebuilt_version}/{c}.csv"
             for c in components
         }
-
     elif base_network == "entsoegridkit":
         inputs = {c: f"data/{base_network}/{c}.csv" for c in components}
         inputs["parameter_corrections"] = "data/parameter_corrections.yaml"
         inputs["links_p_nom"] = "data/links_p_nom.csv"
-
-    elif base_network == "tyndp":
-        inputs = {c: f"data/{base_network}/{c}.csv" for c in components}
-        inputs["parameter_corrections"] = "data/parameter_corrections.yaml"
-        inputs["links_p_nom"] = "data/links_p_nom.csv"
-
-    else:
-        raise ValueError(f"Unknown base network type: {base_network}")
-
     return inputs
 
 
@@ -725,7 +711,8 @@ def input_conventional(w):
         for attr, fn in d.items()
         if str(fn).startswith("data/")
     }
-   
+
+
 rule add_electricity:
     params:
         line_length_factor=config_provider("lines", "length_factor"),
