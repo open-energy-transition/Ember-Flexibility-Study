@@ -57,7 +57,12 @@ from scripts.ember_customization import (
 )
 
 logger = logging.getLogger(__name__)
-pypsa.network.power_flow.logger.setLevel(logging.WARNING)
+
+# Allow for PyPSA versions <0.35
+if PYPSA_V1:
+    pypsa.network.power_flow.logger.setLevel(logging.WARNING)
+else:
+    pypsa.pf.logger.setLevel(logging.WARNING)
 
 
 class ObjectiveValueError(Exception):
