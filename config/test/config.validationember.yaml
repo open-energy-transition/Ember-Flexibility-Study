@@ -107,3 +107,8 @@ solving:
 
 costs:
   year: 2025
+
+ember_settings:
+   ntc: false
+   ntc_cross_country_pf_restriction: false
+   ramping: false
