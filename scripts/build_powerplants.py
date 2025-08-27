@@ -120,17 +120,7 @@ def add_everywhere_powerplants(ppl, substations, everywhere_powerplants):
     everywhere_ppl["DateOut"] = ppl["DateOut"].max()
 
     # NaN values for efficiency will be replaced by the generic efficiency by attach_conventional_generators(...) in add_electricity.py later
-    if ppl.empty or "DateIn" not in ppl.columns or ppl["DateIn"].isna().all():
-        everywhere_ppl["DateIn"] = pd.to_datetime("1900-01-01")
-    else:
-        everywhere_ppl["DateIn"] = ppl["DateIn"].min()
-    if ppl.empty or "DateOut" not in ppl.columns or ppl["DateOut"].isna().all():
-        everywhere_ppl["DateOut"] = pd.to_datetime("2100-01-01")
-    else:
-        everywhere_ppl["DateOut"] = ppl["DateOut"].max()
-
     everywhere_ppl["Efficiency"] = np.nan
-
     return pd.concat(
         [ppl, everywhere_ppl], sort=False, ignore_index=True, verify_integrity=True
     )
