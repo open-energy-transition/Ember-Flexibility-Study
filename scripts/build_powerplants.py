@@ -121,6 +121,7 @@ def add_everywhere_powerplants(ppl, substations, everywhere_powerplants):
 
     # NaN values for efficiency will be replaced by the generic efficiency by attach_conventional_generators(...) in add_electricity.py later
     everywhere_ppl["Efficiency"] = np.nan
+
     return pd.concat(
         [ppl, everywhere_ppl], sort=False, ignore_index=True, verify_integrity=True
     )
