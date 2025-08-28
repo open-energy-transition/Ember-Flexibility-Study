@@ -112,3 +112,4 @@ ember_settings:
    ntc: false
    ntc_cross_country_pf_restriction: false
    ramping: false
+   nuclear_decommissioning: true
