@@ -235,7 +235,7 @@ def load_costs(
         DataFrame containing the processed cost data
     """
     # Copy marginal_cost and capital_cost for backward compatibility
-    for key in ("marginal_cost", "capital_cost"):
+    for key in ("marginal_cost", "capital_cost", "fuel", "VOM"):
         if key in config:
             config["overwrites"][key] = config[key]
 

@@ -43,7 +43,7 @@ from scripts.build_energy_totals import (
 from scripts.build_transport_demand import transport_degree_factor
 from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
-from scripts.prepare_network import maybe_adjust_costs_and_potentials
+from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
     apply_custom_ramping, apply_2023_nuclear_decommissioning
@@ -572,6 +572,7 @@ def add_carrier_buses(
         nodes = pd.Index(nodes)
 
     n.add("Carrier", carrier)
+    n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
     unit = "MWh_LHV" if carrier == "gas" else "MWh_th"
 
@@ -1392,6 +1393,10 @@ def add_generation(
             lifetime=costs.at[generator, "lifetime"],
         )
 
+    # Apply emission prices
+    emission_prices = snakemake.config["costs"]["emission_prices"]
+    if emission_prices["enable"]:
+        add_emission_prices(n, emission_prices=emission_prices)
 
 def add_ammonia(
     n: pypsa.Network,
