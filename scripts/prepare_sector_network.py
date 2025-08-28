@@ -45,7 +45,9 @@ from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials
 
-from scripts.ember_customization import apply_custom_ramping
+from scripts.ember_customization import (
+    apply_custom_ramping, apply_2023_nuclear_decommissioning
+)
 
 spatial = SimpleNamespace()
 logger = logging.getLogger(__name__)
@@ -6539,5 +6541,8 @@ if __name__ == "__main__":
     if snakemake.config["ember_settings"].get("ramping", False):
         apply_custom_ramping(n)
         logger.info("Ramping constraints applied to relevant units.")
+    if snakemake.config["ember_settings"].get("nuclear_decommissioning", False):
+        apply_2023_nuclear_decommissioning(n)
+        logger.info("Decommissioning relevant nuclear units mid-year.")
 
     n.export_to_netcdf(snakemake.output[0])

@@ -7,7 +7,7 @@ run:
 
 scenario:
   clusters:
-  - 128
+  - 39
   opts:
   - ''
   sector_opts:
@@ -129,7 +129,7 @@ costs:
 
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
-#  focus_weights: {'DE': 0.15, 'CZ': 0.15, 'PL': 0.15, 'NL': 0.15, 'IT': 0.15, 'GR': 0.15}
+#  focus_weights: {'DE': 0.2, 'CZ': 0.06, 'PL': 0.1, 'NL': 0.05, 'IT': 0.15, 'GR': 0.05}
 
 simplify_network:
   remove_stubs_across_borders: true
@@ -137,4 +137,5 @@ simplify_network:
 ember_settings:
   ntc: false
   ntc_cross_country_pf_restriction: false
-  ramping: true
+  ramping: false
+  nuclear_decommissioning: true
