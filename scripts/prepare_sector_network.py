@@ -6547,6 +6547,6 @@ if __name__ == "__main__":
             "if they are represented at a unit granularity."
         )
         logger.info("Decommissioning relevant nuclear units mid-year.")
-        apply_2023_nuclear_decommissioning(n)
+        apply_2023_nuclear_decommissioning(n, year=n.snapshots.year.unique()[0])
 
     n.export_to_netcdf(snakemake.output[0])
