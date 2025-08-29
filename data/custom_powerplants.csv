@@ -739,7 +739,7 @@
 735,BA Hydro Run-of-river and poundage,Hydro,Run-of-river,PP,BA,0.0,,,0.0,0.0,0.0,1980.0,,,,43.85,18.36,,
 736,BA Hydro Water Reservoir,Hydro,Reservoir,PP,BA,1456.0,,,0.0,0.0,0.0,1980.0,,,,43.85,18.36,,
 737,BA Wind Onshore,Wind,Onshore,PP,BA,134.6,,,0,0,0,0,,,,43.85,18.36,,{'ENTSOE': ['B19']}
-738,BE Biomass,Bioenergy,,PP,BE,453 MW,,,0,0,0,0,,,,50.85,4.35,,{'ENTSOE': ['B01']}
+738,BE Biomass,Bioenergy,,PP,BE,453,,,0,0,0,0,,,,50.85,4.35,,{'ENTSOE': ['B01']}
 739,BE Fossil Oil,Oil,Steam Turbine,PP,BE,449.87,,,0,0,0,0,,,,50.85,4.35,,{'ENTSOE': ['B06']}
 740,BE Hydro Pumped Storage,Hydro,Pumped Storage,Store,BE,1308.0,,,0.0,0.0,0.0,1970.0,2050.0,,,50.85,4.35,,
 741,BE Hydro Run-of-river and poundage,Hydro,Run-of-river,PP,BE,731.0,,,0.0,0.0,0.0,1980.0,,,,50.85,4.35,,
