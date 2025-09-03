@@ -83,7 +83,6 @@ electricity:
   custom_powerplants: (DateIn <= 2023 and DateOut >= 2023)
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2023 and DateOut >= 2023)
 
-
   estimate_renewable_capacities:
     enable: true
     from_gem: false
