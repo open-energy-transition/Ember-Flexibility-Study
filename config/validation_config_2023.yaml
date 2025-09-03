@@ -11,7 +11,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - '100seg'
+  - '2190seg'
   planning_horizons:
   - 2025
 
@@ -71,7 +71,7 @@ electricity:
   conventional_generation:
     from_entsoe: false
     year: 2023
-  co2limit_enable: true
+  co2limit_enable: false
   co2limit: 1.35e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
 
   extendable_carriers:      # forbid new generation & storage
@@ -81,7 +81,8 @@ electricity:
   transmission_limit: v1.0  # keep today’s NTCs (default)
 
   custom_powerplants: (DateIn <= 2023 and DateOut >= 2023)
-  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite'] and DateIn <= 2023 and DateOut >= 2023)
+  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2023 and DateOut >= 2023)
+
 
   estimate_renewable_capacities:
     enable: true
