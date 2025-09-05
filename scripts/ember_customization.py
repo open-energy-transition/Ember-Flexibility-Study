@@ -8,6 +8,7 @@ import pandas as pd
 import pandas as pd
 import logging
 import os
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -66,20 +67,11 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         )
 
         seen_plants.append(nearest_gen)
-# Additions to ember_customization.py
 
 
-def apply_hourly_gas_prices(n, config):
-    """
-    Apply hourly gas prices to gas-fired generators (OCGT and CCGT).
-    Sets time-varying marginal costs based on hourly gas spot prices.
-    Adjusts static marginal cost to VOM only.
-    """
-    
-    repo_root = os.path.dirname(os.path.abspath(__file__)) 
-    csv_path = os.path.join(repo_root, "validation", "ember_data", "hourly_fuel_costs.csv")
-    
-    df = pd.read_csv(csv_path)
+
+def apply_hourly_gas_prices(n, config, fn_hourly_prices):
+    df = pd.read_csv(fn_hourly_prices)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
     
@@ -105,6 +97,7 @@ def apply_hourly_gas_prices(n, config):
             mc_static = n.generators.at[gen, 'marginal_cost']
             vom = mc_static - avg_fuel / eff
             n.generators.at[gen, 'marginal_cost'] = vom
+            vom = 0 
             mc_t = (prices / eff) + vom
             n.generators_t['marginal_cost'][gen] = mc_t
 
