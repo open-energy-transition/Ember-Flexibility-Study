@@ -5,6 +5,12 @@
 import numpy as np
 import xarray as xr
 import pandas as pd
+import pandas as pd
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+
 
 def apply_custom_ramping(n):
 
@@ -60,6 +66,47 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         )
 
         seen_plants.append(nearest_gen)
+# Additions to ember_customization.py
+
+
+def apply_hourly_gas_prices(n, config):
+    """
+    Apply hourly gas prices to gas-fired generators (OCGT and CCGT).
+    Sets time-varying marginal costs based on hourly gas spot prices.
+    Adjusts static marginal cost to VOM only.
+    """
+    
+    repo_root = os.path.dirname(os.path.abspath(__file__)) 
+    csv_path = os.path.join(repo_root, "validation", "ember_data", "hourly_fuel_costs.csv")
+    
+    df = pd.read_csv(csv_path)
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df.set_index('timestamp', inplace=True)
+    
+    if not (df.index.equals(n.snapshots)):
+        logger.warning("Snapshot indices do not match exactly. Ensure timestamps align with network snapshots.")
+       
+    
+    avg_fuel = config['costs']['fuel']['gas']
+    price_col = 'GAS_SPOT_PRICE_EUR_PER_MWH'
+    prices = df[price_col]
+    
+    carriers = ['gas']
+    
+    if 'marginal_cost' not in n.generators_t:
+        n.generators_t['marginal_cost'] = pd.DataFrame(index=n.snapshots, columns=[])
+    
+    for carrier in carriers:
+        idx = n.generators.index[n.generators.carrier == carrier]
+        if len(idx) == 0:
+            continue
+        for gen in idx:
+            eff = n.generators.at[gen, 'efficiency'] 
+            mc_static = n.generators.at[gen, 'marginal_cost']
+            vom = mc_static - avg_fuel / eff
+            n.generators.at[gen, 'marginal_cost'] = vom
+            mc_t = (prices / eff) + vom
+            n.generators_t['marginal_cost'][gen] = mc_t
 
 
 def apply_custom_pf_constraint(n,

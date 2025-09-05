@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices
 )
 
 spatial = SimpleNamespace()
@@ -5698,6 +5698,8 @@ def cluster_heat_buses(n):
         # add clustered assets
         to_add = df.index.difference(c.df.index)
         n.add(c.name, df.loc[to_add].index, **df.loc[to_add])
+        
+
 
 
 def set_temporal_aggregation(n, resolution, snapshot_weightings):
@@ -6445,6 +6447,10 @@ if __name__ == "__main__":
 
     if options["allam_cycle_gas"]:
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
+        
+    if snakemake.config["ember_settings"].get("ember_gas_price", False):
+        apply_hourly_gas_prices(n, snakemake.config)
+        logger.info("Applied hourly gas prices ")
 
     n = set_temporal_aggregation(
         n, snakemake.params.time_resolution, snakemake.input.snapshot_weightings
