@@ -5698,8 +5698,6 @@ def cluster_heat_buses(n):
         # add clustered assets
         to_add = df.index.difference(c.df.index)
         n.add(c.name, df.loc[to_add].index, **df.loc[to_add])
-        
-
 
 
 def set_temporal_aggregation(n, resolution, snapshot_weightings):
