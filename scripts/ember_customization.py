@@ -8,7 +8,6 @@ import pandas as pd
 import pandas as pd
 import logging
 import os
-import subprocess
 
 logger = logging.getLogger(__name__)
 
