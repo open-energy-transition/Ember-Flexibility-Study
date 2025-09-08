@@ -97,7 +97,7 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
             n.generators.at[gen, 'marginal_cost'] = vom
             vom = 0 
             mc_t = (prices / eff) + vom
-            n.generators_t['marginal_cost'][gen] = mc_t
+            n.generators_t['marginal_cost'][gen] = prices
 
 
 def apply_custom_pf_constraint(n,
