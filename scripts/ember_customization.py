@@ -77,7 +77,6 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
         logger.warning("Snapshot indices do not match exactly. Ensure timestamps align with network snapshots.")
        
     
-    avg_fuel = config['costs']['fuel']['gas']
     price_col = 'GAS_SPOT_PRICE_EUR_PER_MWH'
     prices = df[price_col]
     
