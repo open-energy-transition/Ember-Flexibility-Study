@@ -8,7 +8,6 @@ import pandas as pd
 import pandas as pd
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -68,17 +67,14 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         seen_plants.append(nearest_gen)
 
 
-
-def apply_hourly_gas_prices(n, config, fn_hourly_prices):
+def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
     df = pd.read_csv(fn_hourly_prices)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
-    
-    if not (df.index.equals(n.snapshots)):
-        logger.warning("Snapshot indices do not match exactly. Ensure timestamps align with network snapshots.")
        
-    
-    carriers = ['gas', 'coal', 'lignite']
+    if not df.index.equals(n.snapshots):
+        logger.warning("Snapshot indices do not match exactly. Overwriting prices index with network snapshots.")
+        df.index = n.snapshots
     
     if 'marginal_cost' not in n.generators_t:
         n.generators_t['marginal_cost'] = pd.DataFrame(index=n.snapshots, columns=[])
@@ -93,16 +89,11 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
             price_col = 'COAL_SPOT_PRICE_EUR_PER_MWH'
         else:
             price_col = 'LIGNITE_PRICE_EUR_PER_MWH'
-        avg_fuel = config['costs']['fuel'][carrier]
         prices = df[price_col]
-        for gen in idx:
-            eff = n.generators.at[gen, 'efficiency'] 
-            mc_static = n.generators.at[gen, 'marginal_cost']
-            vom = mc_static - avg_fuel / eff
-            n.generators.at[gen, 'marginal_cost'] = vom
-            vom = 0 
-            mc_t = (prices / eff) + vom
-            n.generators_t['marginal_cost'][gen] = mc_t
+        
+        mc_t_array = prices.to_numpy()[:, np.newaxis]
+        mc_t_df = pd.DataFrame(mc_t_array, index=prices.index, columns=idx)
+        n.generators_t['marginal_cost'][idx] = mc_t_df
 
 
 def apply_custom_pf_constraint(n,
