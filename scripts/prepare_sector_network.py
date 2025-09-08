@@ -6447,7 +6447,9 @@ if __name__ == "__main__":
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
         
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
-        apply_hourly_gas_prices(n, snakemake.config, snakemake.input.hourly_fuel_costs)
+        apply_hourly_gas_prices(
+            n, carriers=["gas", "coal"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
+        )
         logger.info("Applied hourly gas prices.")
 
     n = set_temporal_aggregation(
