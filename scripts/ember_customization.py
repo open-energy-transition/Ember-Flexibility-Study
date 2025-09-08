@@ -7,8 +7,7 @@ import xarray as xr
 import pandas as pd
 import pandas as pd
 import logging
-import os
-import subprocess
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,11 +78,7 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
         logger.warning("Snapshot indices do not match exactly. Ensure timestamps align with network snapshots.")
        
     
-    avg_fuel = config['costs']['fuel']['gas']
-    price_col = 'GAS_SPOT_PRICE_EUR_PER_MWH'
-    prices = df[price_col]
-    
-    carriers = ['gas']
+    carriers = ['gas', 'coal', 'lignite']
     
     if 'marginal_cost' not in n.generators_t:
         n.generators_t['marginal_cost'] = pd.DataFrame(index=n.snapshots, columns=[])
@@ -92,6 +87,14 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
         idx = n.generators.index[n.generators.carrier == carrier]
         if len(idx) == 0:
             continue
+        if carrier == 'gas':
+            price_col = 'GAS_SPOT_PRICE_EUR_PER_MWH'
+        elif carrier == 'coal':
+            price_col = 'COAL_SPOT_PRICE_EUR_PER_MWH'
+        else:
+            price_col = 'LIGNITE_PRICE_EUR_PER_MWH'
+        avg_fuel = config['costs']['fuel'][carrier]
+        prices = df[price_col]
         for gen in idx:
             eff = n.generators.at[gen, 'efficiency'] 
             mc_static = n.generators.at[gen, 'marginal_cost']
@@ -167,3 +170,20 @@ def apply_custom_pf_constraint(n,
     # 7) enforce band/cap
     m.add_constraints(energy >= E_min, name=f"{link_name}_annual_min")
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
+    
+def apply_italy_offshore_capacities(n, year, ppl_path=r"C:\Users\user\Documents\oet-ember\resources\validation_2023\powerplants_s_39.csv", car="offwind-ac"):
+    ppl = pd.read_csv(ppl_path, index_col=0, encoding='latin1')
+    ppl.columns = [col.lower() for col in ppl.columns]
+    it_wind_data = ppl[(ppl["country"] == 'IT') & (ppl["fueltype"] == 'Wind')]
+    italy_offshore_cap = ppl[(ppl["country"] == 'IT') & (ppl["fueltype"] == 'Wind') & (ppl["technology"] == 'Offshore') & (ppl["set"] == 'PP') & (ppl["dateout"].isna() | (ppl["dateout"] > year))].capacity.sum()
+    if italy_offshore_cap > 0:
+        gens = n.generators[n.generators.carrier == car].index
+        gen_buses = n.generators.loc[gens, "bus"]
+        italian_gens = gens[n.buses.loc[gen_buses, "country"].values == "IT"]
+        if not italian_gens.empty:
+            potential = n.generators.loc[italian_gens, "p_nom_max"]
+            total_potential = potential.sum()
+            if total_potential > 0:
+                distributed = (potential / total_potential) * italy_offshore_cap
+                n.generators.loc[italian_gens, "p_nom"] = distributed
+                n.generators.loc[italian_gens, "p_nom_min"] = distributed

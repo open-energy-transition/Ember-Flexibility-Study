@@ -11,7 +11,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - '2190seg'
+  - '3H'
   planning_horizons:
   - 2025
 
@@ -129,7 +129,7 @@ costs:
   fuel:
     gas: 40.45 # (Avg TTF DA 2023 contracts)
     coal: 16.71 # (from Avg M1 API2 2023 contracts)
-    lignite: 7.7 #  (from IEEFA paper)
+    lignite: 3 #  (from IEEFA paper)
     oil: 46.8 # (Brent Crude CAL 2023)
   VOM:
     OCGT: 2

@@ -61,6 +61,7 @@ import xarray as xr
 from pypsa.clustering.spatial import DEFAULT_ONE_PORT_STRATEGIES, normed_or_uniform
 
 from scripts.apply_ntcs import apply_ntc
+from ember_customization import apply_italy_offshore_capacities
 
 from scripts._helpers import (
     PYPSA_V1,
@@ -240,7 +241,7 @@ def load_costs(
             config["overwrites"][key] = config[key]
 
     # set all asset costs and other parameters
-    costs = pd.read_csv(cost_file, index_col=[0, 1]).sort_index()
+    costs = pd.read_csv(cost_file, index_col=[0, 1], encoding='cp1252').sort_index()
 
     # correct units to MW and EUR
     costs.loc[costs.unit.str.contains("/kW"), "value"] *= 1e3
@@ -340,11 +341,11 @@ def load_and_aggregate_powerplants(
         "Pumped Storage": "PHS",
     }
     ppl = (
-        pd.read_csv(ppl_fn, index_col=0, dtype={"bus": "str"})
-        .powerplant.to_pypsa_names()
-        .rename(columns=str.lower)
-        .replace({"carrier": carrier_dict, "technology": tech_dict})
-    )
+    pd.read_csv(ppl_fn, index_col=0, dtype={"bus": "str"}, encoding='latin1')
+    .powerplant.to_pypsa_names()
+    .rename(columns=str.lower)
+    .replace({"carrier": carrier_dict, "technology": tech_dict})
+)
 
     # Replace carriers "natural gas" and "hydro" with the respective technology;
     # OCGT or CCGT and hydro, PHS, or ror)
@@ -535,26 +536,19 @@ def attach_wind_and_solar(
         Dictionary containing the landfall lengths for offshore wind, by default None.
     """
     add_missing_carriers(n, carriers)
-
     if landfall_lengths is None:
         landfall_lengths = {}
-
     for car in carriers:
         if car == "hydro":
             continue
-
         landfall_length = landfall_lengths.get(car, 0.0)
-
         with xr.open_dataset(profile_filenames["profile_" + car]) as ds:
             if ds.indexes["bus"].empty:
                 continue
-
             # if-statement for compatibility with old profiles
             if "year" in ds.indexes:
                 ds = ds.sel(year=ds.year.min(), drop=True)
-
             ds = ds.stack(bus_bin=["bus", "bin"])
-
             supcar = car.split("-", 2)[0]
             if supcar == "offwind":
                 distance = ds["average_distance"].to_pandas()
@@ -566,7 +560,6 @@ def attach_wind_and_solar(
                 connection_cost = line_length_factor * (
                     distance * submarine_cost + landfall_length * underground_cost
                 )
-
                 # Take 'offwind-float' capital cost for 'float', and 'offwind' capital cost for the rest ('ac' and 'dc')
                 midcar = car.split("-", 2)[1]
                 if midcar == "float":
@@ -586,23 +579,18 @@ def attach_wind_and_solar(
                 )
             else:
                 capital_cost = costs.at[car, "capital_cost"]
-
             buses = ds.indexes["bus_bin"].get_level_values("bus")
             bus_bins = ds.indexes["bus_bin"].map(flatten)
-
             p_nom_max = ds["p_nom_max"].to_pandas()
             p_nom_max.index = p_nom_max.index.map(flatten)
-
             p_max_pu = ds["profile"].to_pandas()
             p_max_pu.columns = p_max_pu.columns.map(flatten)
-
             if not ppl.query("carrier == @car").empty:
                 caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
                 caps = pd.Series(data=caps, index=ds.indexes["bus"]).fillna(0)
             else:
                 caps = pd.Series(index=ds.indexes["bus"]).fillna(0)
             caps.index = caps.index.map(flatten)
-
             n.add(
                 "Generator",
                 bus_bins,
@@ -619,6 +607,9 @@ def attach_wind_and_solar(
                 p_max_pu=p_max_pu,
                 lifetime=costs.at[supcar, "lifetime"],
             )
+        if car == "offwind-ac":
+                year = int(snakemake.wildcards.get("planning_horizons", snakemake.config['scenario']['planning_horizons'][0]))
+                apply_italy_offshore_capacities(n, year, ppl_path=snakemake.input.powerplants, car=car)
 
 
 def attach_conventional_generators(

@@ -6450,7 +6450,7 @@ if __name__ == "__main__":
         
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
         apply_hourly_gas_prices(n, snakemake.config, snakemake.input.hourly_fuel_costs)
-        logger.info("Applied hourly gas prices.")
+        logger.info("Applied hourly gas prices to OCGT and CCGT generators.")
 
     n = set_temporal_aggregation(
         n, snakemake.params.time_resolution, snakemake.input.snapshot_weightings
