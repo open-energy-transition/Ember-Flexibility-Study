@@ -76,11 +76,17 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
     
+    if not (df.index.equals(n.snapshots)):
+        logger.warning("Snapshot indices do not match exactly. Ensure timestamps align with network snapshots.")
+       
+    
+    price_col = 'GAS_SPOT_PRICE_EUR_PER_MWH'
+    prices = df[price_col]
     if not df.index.equals(n.snapshots):
         logger.warning("Snapshot indices do not match exactly. Overwriting prices index with network snapshots.")
         df.index = n.snapshots
     
-    carriers = ['gas', 'coal', 'lignite']
+    carriers = ['gas']
     
     if 'marginal_cost' not in n.generators_t:
         n.generators_t['marginal_cost'] = pd.DataFrame(index=n.snapshots, columns=[])
