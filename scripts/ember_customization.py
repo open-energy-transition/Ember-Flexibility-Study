@@ -67,25 +67,14 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         seen_plants.append(nearest_gen)
 
 
-
-
-
-def apply_hourly_gas_prices(n, config, fn_hourly_prices):
+def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
     df = pd.read_csv(fn_hourly_prices)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
-    
-    if not (df.index.equals(n.snapshots)):
-        logger.warning("Snapshot indices do not match exactly. Ensure timestamps align with network snapshots.")
        
-    
-    price_col = 'GAS_SPOT_PRICE_EUR_PER_MWH'
-    prices = df[price_col]
     if not df.index.equals(n.snapshots):
         logger.warning("Snapshot indices do not match exactly. Overwriting prices index with network snapshots.")
         df.index = n.snapshots
-    
-    carriers = ['gas']
     
     if 'marginal_cost' not in n.generators_t:
         n.generators_t['marginal_cost'] = pd.DataFrame(index=n.snapshots, columns=[])
@@ -102,10 +91,7 @@ def apply_hourly_gas_prices(n, config, fn_hourly_prices):
             price_col = 'LIGNITE_PRICE_EUR_PER_MWH'
         prices = df[price_col]
         
-        
-        effs = n.generators.loc[idx, 'efficiency']
-        effs_np = effs.to_numpy()
-        mc_t_array = prices.to_numpy()[:, np.newaxis] / effs_np
+        mc_t_array = prices.to_numpy()[:, np.newaxis]
         mc_t_df = pd.DataFrame(mc_t_array, index=prices.index, columns=idx)
         n.generators_t['marginal_cost'][idx] = mc_t_df
 
