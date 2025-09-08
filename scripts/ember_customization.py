@@ -68,8 +68,7 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
 
 
 
-import numpy as np
-import pandas as pd
+
 
 def apply_hourly_gas_prices(n, config, fn_hourly_prices):
     df = pd.read_csv(fn_hourly_prices)
