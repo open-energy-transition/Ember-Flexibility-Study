@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices, apply_hourly_co2_prices
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices
 )
 
 spatial = SimpleNamespace()
