@@ -6488,6 +6488,7 @@ if __name__ == "__main__":
     maxext = snakemake.params["lines"]["max_extension"]
     if maxext is not None:
         limit_individual_line_extension(n, maxext)
+
     if options["electricity_distribution_grid"]:
         extendable_carriers_list = snakemake.params.electricity.get("extendable_carriers", [])
         insert_electricity_distribution_grid(
