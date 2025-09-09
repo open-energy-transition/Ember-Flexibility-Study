@@ -8,7 +8,6 @@ import pandas as pd
 import pandas as pd
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -68,7 +67,6 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         seen_plants.append(nearest_gen)
 
 
-
 def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
     df = pd.read_csv(fn_hourly_prices)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -96,6 +94,8 @@ def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
         mc_t_array = prices.to_numpy()[:, np.newaxis]
         mc_t_df = pd.DataFrame(mc_t_array, index=prices.index, columns=idx)
         n.generators_t['marginal_cost'][idx] = mc_t_df
+
+
 def apply_custom_pf_constraint(n,
                                link_name="AL -> GR NTC 2025",
                                E_min=153 * 0.95, # MWh; use 153e3 if you meant 153 GWh

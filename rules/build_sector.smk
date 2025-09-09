@@ -1427,7 +1427,7 @@ rule prepare_sector_network:
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
-        ), 
+        ),
     threads: 1
     resources:
         mem_mb=2000,
