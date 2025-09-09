@@ -6561,5 +6561,8 @@ if __name__ == "__main__":
         for carrier in n.carriers.index.intersection(costs.index):
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
-        add_emission_prices(n, emission_prices=emission_prices)
+        add_emission_prices(
+            n, emission_prices=emission_prices, hourly_emission_prices_fn=snakemake.input.hourly_co2_prices
+        )
+
     n.export_to_netcdf(snakemake.output[0])
