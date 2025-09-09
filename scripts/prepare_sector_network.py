@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices, apply_hourly_co2_prices
 )
 
 spatial = SimpleNamespace()
@@ -5698,6 +5698,8 @@ def cluster_heat_buses(n):
         # add clustered assets
         to_add = df.index.difference(c.df.index)
         n.add(c.name, df.loc[to_add].index, **df.loc[to_add])
+        
+
 
 
 def set_temporal_aggregation(n, resolution, snapshot_weightings):
@@ -6447,48 +6449,15 @@ if __name__ == "__main__":
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
         
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
-        apply_hourly_gas_prices(
-            n, carriers=["gas", "coal"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
-        )
-        logger.info("Applied hourly gas prices.")
-
+        apply_hourly_gas_prices(n, snakemake.config, snakemake.input.hourly_fuel_costs)
+        logger.info("Applied hourly gas prices to OCGT and CCGT generators.")
     n = set_temporal_aggregation(
         n, snakemake.params.time_resolution, snakemake.input.snapshot_weightings
     )
-
-    co2_budget = snakemake.params.co2_budget
-    if isinstance(co2_budget, str) and co2_budget.startswith("cb"):
-        fn = "results/" + snakemake.params.RDIR + "/csvs/carbon_budget_distribution.csv"
-        if not os.path.exists(fn):
-            emissions_scope = snakemake.params.emissions_scope
-            input_co2 = snakemake.input.co2
-            build_carbon_budget(
-                co2_budget,
-                snakemake.input.eurostat,
-                fn,
-                emissions_scope,
-                input_co2,
-                options,
-                snakemake.params.countries,
-                snakemake.params.planning_horizons,
-            )
-        co2_cap = pd.read_csv(fn, index_col=0).squeeze()
-        limit = co2_cap.loc[investment_year]
-    else:
-        limit = get(co2_budget, investment_year)
-    add_co2limit(
-        n,
-        options,
-        snakemake.input.co2_totals_name,
-        snakemake.params.countries,
-        nyears,
-        limit,
-    )
-
+    logger.info("Applied hourly fuel prices to conventional links.")
     maxext = snakemake.params["lines"]["max_extension"]
     if maxext is not None:
         limit_individual_line_extension(n, maxext)
-
     if options["electricity_distribution_grid"]:
         extendable_carriers_list = snakemake.params.electricity.get("extendable_carriers", [])
         insert_electricity_distribution_grid(
@@ -6555,12 +6524,26 @@ if __name__ == "__main__":
         logger.info("Decommissioning relevant nuclear units mid-year.")
         apply_2023_nuclear_decommissioning(n, year=n.snapshots.year.unique()[0])
 
+           # Apply emission prices
     # Apply emission prices
     emission_prices = snakemake.config["costs"]["emission_prices"]
     if emission_prices["enable"]:
         n.carriers.loc["oil primary", "co2_emissions"] = 0.2571
         for carrier in n.carriers.index.intersection(costs.index):
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
-
-        add_emission_prices(n, emission_prices=emission_prices)
+    # Handle non-CO2 emissions with static prices
+        non_co2_emissions = pd.Series(emission_prices).drop(['co2', 'enable'], errors='ignore')
+        ep_static = (pd.DataFrame(non_co2_emissions, index=n.carriers.index) * n.carriers.co2_emissions).sum(axis=1).fillna(0)
+        n.generators["marginal_cost"] += n.generators.carrier.map(ep_static).fillna(0)
+        n.links["marginal_cost"] += n.links.carrier.map(ep_static).fillna(0)
+        n.stores["marginal_cost"] += n.stores.carrier.map(ep_static).fillna(0)
+        if snakemake.config["ember_settings"].get("hourly_carbon_prices", False):
+             apply_hourly_co2_prices(n, snakemake.config, snakemake.input.hourly_co2_prices)
+        else:
+           # Default static CO2 price (blocked if flag is true)
+             co2_price = emission_prices.get('co2', 0)
+             ep_co2 = co2_price * n.carriers.co2_emissions
+             n.generators["marginal_cost"] += n.generators.carrier.map(ep_co2).fillna(0)
+             n.links["marginal_cost"] += n.links.carrier.map(ep_co2).fillna(0)
+             n.stores["marginal_cost"] += n.stores.carrier.map(ep_co2).fillna(0)
     n.export_to_netcdf(snakemake.output[0])

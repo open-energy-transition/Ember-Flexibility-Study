@@ -8,6 +8,7 @@ import pandas as pd
 import pandas as pd
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,6 +68,7 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         seen_plants.append(nearest_gen)
 
 
+
 def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
     df = pd.read_csv(fn_hourly_prices)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -94,8 +96,6 @@ def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
         mc_t_array = prices.to_numpy()[:, np.newaxis]
         mc_t_df = pd.DataFrame(mc_t_array, index=prices.index, columns=idx)
         n.generators_t['marginal_cost'][idx] = mc_t_df
-
-
 def apply_custom_pf_constraint(n,
                                link_name="AL -> GR NTC 2025",
                                E_min=153 * 0.95, # MWh; use 153e3 if you meant 153 GWh
@@ -161,3 +161,45 @@ def apply_custom_pf_constraint(n,
     # 7) enforce band/cap
     m.add_constraints(energy >= E_min, name=f"{link_name}_annual_min")
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
+    
+def apply_italy_offshore_capacities(n, year, ppl_path=r"C:\Users\user\Documents\oet-ember\resources\validation_2023\powerplants_s_39.csv", car="offwind-ac"):
+    ppl = pd.read_csv(ppl_path, index_col=0, encoding='latin1')
+    ppl.columns = [col.lower() for col in ppl.columns]
+    it_wind_data = ppl[(ppl["country"] == 'IT') & (ppl["fueltype"] == 'Wind')]
+    italy_offshore_cap = ppl[(ppl["country"] == 'IT') & (ppl["fueltype"] == 'Wind') & (ppl["technology"] == 'Offshore') & (ppl["set"] == 'PP') & (ppl["dateout"].isna() | (ppl["dateout"] > year))].capacity.sum()
+    if italy_offshore_cap > 0:
+        gens = n.generators[n.generators.carrier == car].index
+        gen_buses = n.generators.loc[gens, "bus"]
+        italian_gens = gens[n.buses.loc[gen_buses, "country"].values == "IT"]
+        if not italian_gens.empty:
+            potential = n.generators.loc[italian_gens, "p_nom_max"]
+            total_potential = potential.sum()
+            if total_potential > 0:
+                distributed = (potential / total_potential) * italy_offshore_cap
+                n.generators.loc[italian_gens, "p_nom"] = distributed
+                n.generators.loc[italian_gens, "p_nom_min"] = distributed
+
+
+def apply_hourly_co2_prices(n, config, fn_hourly_prices):
+    df = pd.read_csv(fn_hourly_prices, index_col=0, parse_dates=True)
+    df = df.reindex(n.snapshots, method='ffill')  # Reindex to match network 
+    if not (df.index.equals(n.snapshots)):
+        logger.warning("Snapshot indices do not match exactly. Prices reindexed with forward-fill.")
+    co2_price = df['price_eur_per_t']  
+    # Identifying emitting carriers for CO2
+    carriers_em = n.carriers[n.carriers.co2_emissions > 0]['co2_emissions']
+    components = ['generators', 'links', 'stores']
+    for component in components:
+        df_comp = getattr(n, component)
+        t_comp = component + '_t'
+        # Initialize marginal_cost time series 
+        if t_comp not in vars(n):
+            setattr(n, t_comp, {})
+        if 'marginal_cost' not in getattr(n, t_comp):
+            getattr(n, t_comp)['marginal_cost'] = pd.DataFrame(0.0, index=n.snapshots, columns=df_comp.index)
+        for carrier, em in carriers_em.items():
+            idx = df_comp[df_comp.carrier == carrier].index
+            if idx.empty:
+                continue
+            getattr(n, t_comp)['marginal_cost'].loc[:, idx] += (co2_price.values[:, np.newaxis] * em)
+    logger.info("Applied hourly CO2 prices to emitting components.")
