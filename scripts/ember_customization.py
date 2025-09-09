@@ -178,28 +178,3 @@ def apply_italy_offshore_capacities(n, year, ppl_path=r"C:\Users\user\Documents\
                 distributed = (potential / total_potential) * italy_offshore_cap
                 n.generators.loc[italian_gens, "p_nom"] = distributed
                 n.generators.loc[italian_gens, "p_nom_min"] = distributed
-
-
-def apply_hourly_co2_prices(n, config, fn_hourly_prices):
-    df = pd.read_csv(fn_hourly_prices, index_col=0, parse_dates=True)
-    df = df.reindex(n.snapshots, method='ffill')  # Reindex to match network 
-    if not (df.index.equals(n.snapshots)):
-        logger.warning("Snapshot indices do not match exactly. Prices reindexed with forward-fill.")
-    co2_price = df['price_eur_per_t']  
-    # Identifying emitting carriers for CO2
-    carriers_em = n.carriers[n.carriers.co2_emissions > 0]['co2_emissions']
-    components = ['generators', 'links', 'stores']
-    for component in components:
-        df_comp = getattr(n, component)
-        t_comp = component + '_t'
-        # Initialize marginal_cost time series 
-        if t_comp not in vars(n):
-            setattr(n, t_comp, {})
-        if 'marginal_cost' not in getattr(n, t_comp):
-            getattr(n, t_comp)['marginal_cost'] = pd.DataFrame(0.0, index=n.snapshots, columns=df_comp.index)
-        for carrier, em in carriers_em.items():
-            idx = df_comp[df_comp.carrier == carrier].index
-            if idx.empty:
-                continue
-            getattr(n, t_comp)['marginal_cost'].loc[:, idx] += (co2_price.values[:, np.newaxis] * em)
-    logger.info("Applied hourly CO2 prices to emitting components.")
