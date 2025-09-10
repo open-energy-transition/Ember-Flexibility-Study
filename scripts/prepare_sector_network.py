@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices
 )
 
 spatial = SimpleNamespace()
@@ -6447,10 +6447,10 @@ if __name__ == "__main__":
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
         
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
-        apply_hourly_gas_prices(
-            n, carriers=["gas", "coal"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
+        apply_hourly_fuel_prices(
+            n, carriers=["gas", "coal", "lignite"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
         )
-        logger.info("Applied hourly gas prices.")
+        logger.info("Applied hourly prices for gas, coal and lignite.")
 
     n = set_temporal_aggregation(
         n, snakemake.params.time_resolution, snakemake.input.snapshot_weightings
