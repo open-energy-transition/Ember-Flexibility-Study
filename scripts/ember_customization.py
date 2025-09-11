@@ -161,3 +161,55 @@ def apply_custom_pf_constraint(n,
     # 7) enforce band/cap
     m.add_constraints(energy >= E_min, name=f"{link_name}_annual_min")
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
+    
+    
+    
+    
+def include_coal_chps_for_selected_countries(n, costs):
+    countries = ['PL', 'CZ', 'GR', 'DE']
+    country_efficiency={'PL':[0.35, 0.4, 0.45], 'CZ':[0.35, 0.4, 0.45], 'GR':[0.35, 0.4, 0.45], 'DE':[0.35, 0.4, 0.45]}
+    country_heat_efficiency={'PL':[0.5, 0.5, 0.5], 'CZ':[0.5, 0.5, 0.5], 'GR':[0.5, 0.5, 0.5], 'DE':[0.5, 0.5, 0.5]}  
+    p_nom_dict = {
+        'PL': [1000, 2000, 3000],
+        'CZ': [500, 1000, 1500],
+        'GR': [800, 1600, 2400],
+        'DE': [2000, 4000, 6000]
+    }
+    coal_bus = 'EU coal'
+    n.add("Carrier", "urban central coal CHP")
+    for country in countries:
+        power_buses = [bus for bus in n.buses.index if n.buses.at[bus, 'carrier'] == 'AC' and bus[:2] == country]
+        for node in power_buses:
+            heat_bus = f"{node} urban central heat"
+            if heat_bus not in n.buses.index:
+               continue
+            efficiencies=country_efficiency[country]
+            heat_efficiencies=country_heat_efficiency[country]
+            for eff_level in range(3):
+                link_name = f"{node}_coal_chp_{eff_level+1}"
+                eff = efficiencies[eff_level]
+                efficiency2 = heat_efficiencies[eff_level]
+                p_nom = p_nom_dict[country][eff_level]/ len(power_buses) if power_buses else 0 
+                
+                n.add(
+                    "Link",
+                    link_name,
+                    bus0=coal_bus,
+                    bus1=node,
+                    bus2=heat_bus,
+                    bus3="co2 atmosphere",
+                    carrier="urban central coal CHP",
+                    p_nom_extendable=False,
+                    p_nom=p_nom,
+                    capital_cost=0,
+                    marginal_cost=costs.at['coal', 'VOM'],
+                    efficiency=eff,
+                    efficiency2=efficiency2,
+                    efficiency3=costs.at['coal', 'CO2 intensity'],
+                    lifetime=25,
+                    reversed=False
+                )
+            print(f"Added {link_name} CHP power plant with p_nom {p_nom} and eff {eff}")
+                
+                
+           

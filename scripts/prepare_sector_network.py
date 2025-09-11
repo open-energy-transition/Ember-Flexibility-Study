@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices, include_coal_chps_for_selected_countries
 )
 
 spatial = SimpleNamespace()
@@ -6563,4 +6563,6 @@ if __name__ == "__main__":
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
         add_emission_prices(n, emission_prices=emission_prices)
+        
+    include_coal_chps_for_selected_countries(n, costs)
     n.export_to_netcdf(snakemake.output[0])
