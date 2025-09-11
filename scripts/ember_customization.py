@@ -163,53 +163,103 @@ def apply_custom_pf_constraint(n,
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
     
     
-    
-    
 def include_coal_chps_for_selected_countries(n, costs):
     countries = ['PL', 'CZ', 'GR', 'DE']
-    country_efficiency={'PL':[0.35, 0.4, 0.45], 'CZ':[0.35, 0.4, 0.45], 'GR':[0.35, 0.4, 0.45], 'DE':[0.35, 0.4, 0.45]}
-    country_heat_efficiency={'PL':[0.5, 0.5, 0.5], 'CZ':[0.5, 0.5, 0.5], 'GR':[0.5, 0.5, 0.5], 'DE':[0.5, 0.5, 0.5]}  
-    p_nom_dict = {
-        'PL': [1000, 2000, 3000],
-        'CZ': [500, 1000, 1500],
-        'GR': [800, 1600, 2400],
-        'DE': [2000, 4000, 6000]
-    }
-    coal_bus = 'EU coal'
-    n.add("Carrier", "urban central coal CHP")
-    for country in countries:
-        power_buses = [bus for bus in n.buses.index if n.buses.at[bus, 'carrier'] == 'AC' and bus[:2] == country]
-        for node in power_buses:
-            heat_bus = f"{node} urban central heat"
+    
+    focus_full = ['Poland', 'Czechia', 'Greece', 'Germany']
+    df = pd.read_excel("C:\\Users\\user\\Downloads\\coal data for OET.xlsx", sheet_name="coal_chp")
+    df = df[df['bus'].isin(focus_full)]  
+    
+    df = df[df['type'] == 'chp']
+    
+    
+    country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE'}
+    
+    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite'}
+    
+    
+    for orig_carrier in df['carrier'].unique():
+        if orig_carrier not in carrier_mapping:
+            continue
+        map_carrier = carrier_mapping[orig_carrier]
+        sub_df = df[df['carrier'] == orig_carrier]
+        
+        n.add("Carrier", f"urban central {map_carrier} CHP")
+        
+        
+        link_names = []
+        bus0s = []
+        bus1s = []
+        bus2s = []
+        bus3s = []
+        carriers_list = []
+        p_noms = []
+        efficiencies = []
+        efficiency2s = []
+        efficiency3s = []
+        marginal_costs = []
+        capital_costs = []
+        lifetimes = []
+        p_nom_extendables = []
+        reverseds = []
+        
+        for _, row in sub_df.iterrows():
+            plant = row['name']
+            country_name = row['bus']
+            country = country_code_map[country_name]
+            
+            power_buses = [bus for bus in n.buses.index if n.buses.at[bus, 'carrier'] == 'AC' and n.buses.at[bus, 'country'] == country]
+            if not power_buses:
+                continue
+            
+            network_coords = n.buses.loc[power_buses, ['x', 'y']]
+            
+            px, py = row['x'], row['y']  
+            dx = network_coords['x'] - px
+            dy = network_coords['y'] - py
+            dist = (dx**2 + dy**2)**0.5
+            nearest_bus = network_coords.index[dist.argmin()]
+            
+            heat_bus = f"{nearest_bus} urban central heat"
             if heat_bus not in n.buses.index:
-               continue
-            efficiencies=country_efficiency[country]
-            heat_efficiencies=country_heat_efficiency[country]
-            for eff_level in range(3):
-                link_name = f"{node}_coal_chp_{eff_level+1}"
-                eff = efficiencies[eff_level]
-                efficiency2 = heat_efficiencies[eff_level]
-                p_nom = p_nom_dict[country][eff_level]/ len(power_buses) if power_buses else 0 
-                
-                n.add(
-                    "Link",
-                    link_name,
-                    bus0=coal_bus,
-                    bus1=node,
-                    bus2=heat_bus,
-                    bus3="co2 atmosphere",
-                    carrier="urban central coal CHP",
-                    p_nom_extendable=False,
-                    p_nom=p_nom,
-                    capital_cost=0,
-                    marginal_cost=costs.at['coal', 'VOM'],
-                    efficiency=eff,
-                    efficiency2=efficiency2,
-                    efficiency3=costs.at['coal', 'CO2 intensity'],
-                    lifetime=25,
-                    reversed=False
-                )
-            print(f"Added {link_name} CHP power plant with p_nom {p_nom} and eff {eff}")
-                
-                
+                continue
+            
+            link_name = f"{nearest_bus}_{map_carrier}_chp_{plant.replace(' ', '_')}"
+            link_names.append(link_name)
+            bus0s.append(f"EU {map_carrier}")
+            bus1s.append(nearest_bus)
+            bus2s.append(heat_bus)
+            bus3s.append("co2 atmosphere")
+            carriers_list.append(f"urban central {map_carrier} CHP")
+            p_noms.append(row['p_nom'])
+            efficiencies.append(row['efficiency'] if pd.notna(row['efficiency']) else 0.45)
+            efficiency2s.append(0.40)  
+            efficiency3s.append(costs.at[map_carrier, 'CO2 intensity'])
+            marginal_costs.append(costs.at[map_carrier, 'VOM'])
+            capital_costs.append(0)
+            lifetimes.append(25)
+            p_nom_extendables.append(False)
+            reverseds.append(False)
+        
+    
+        if link_names:
+            n.add(
+                "Link",
+                link_names,
+                bus0=bus0s,
+                bus1=bus1s,
+                bus2=bus2s,
+                bus3=bus3s,
+                carrier=carriers_list,
+                p_nom_extendable=p_nom_extendables,
+                p_nom=p_noms,
+                capital_cost=capital_costs,
+                marginal_cost=marginal_costs,
+                efficiency=efficiencies,
+                efficiency2=efficiency2s,
+                efficiency3=efficiency3s,
+                lifetime=lifetimes,
+                reversed=reverseds
+            )
+            print(f"Added {len(link_names)} {map_carrier} CHPs")               
            
