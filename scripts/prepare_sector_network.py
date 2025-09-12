@@ -6490,14 +6490,15 @@ if __name__ == "__main__":
         limit = co2_cap.loc[investment_year]
     else:
         limit = get(co2_budget, investment_year)
-    add_co2limit(
-        n,
-        options,
-        snakemake.input.co2_totals_name,
-        snakemake.params.countries,
-        nyears,
-        limit,
-    )
+    if snakemake.config["electricity"].get("co2limit_enable", True):
+        add_co2limit(
+            n,
+            options,
+            snakemake.input.co2_totals_name,
+            snakemake.params.countries,
+            nyears,
+            limit,
+        )
 
     maxext = snakemake.params["lines"]["max_extension"]
     if maxext is not None:
@@ -6576,7 +6577,15 @@ if __name__ == "__main__":
         for carrier in n.carriers.index.intersection(costs.index):
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
-        add_emission_prices(n, emission_prices=emission_prices)
+        if snakemake.config["ember_settings"].get("hourly_carbon_prices", False):
+            hourly_emission_prices_fn = snakemake.input.hourly_co2_prices
+        else:
+            hourly_emission_prices_fn = None
+
+        add_emission_prices(
+            n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
+        )
         
     include_coal_chps_for_selected_countries(n, costs)
+
     n.export_to_netcdf(snakemake.output[0])

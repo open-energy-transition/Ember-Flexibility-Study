@@ -1423,6 +1423,7 @@ rule prepare_sector_network:
             else []
         ),
         hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
+        hourly_co2_prices="validation/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
