@@ -161,20 +161,3 @@ def apply_custom_pf_constraint(n,
     # 7) enforce band/cap
     m.add_constraints(energy >= E_min, name=f"{link_name}_annual_min")
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
-    
-def apply_italy_offshore_capacities(n, year, ppl_path=r"C:\Users\user\Documents\oet-ember\resources\validation_2023\powerplants_s_39.csv", car="offwind-ac"):
-    ppl = pd.read_csv(ppl_path, index_col=0, encoding='latin1')
-    ppl.columns = [col.lower() for col in ppl.columns]
-    it_wind_data = ppl[(ppl["country"] == 'IT') & (ppl["fueltype"] == 'Wind')]
-    italy_offshore_cap = ppl[(ppl["country"] == 'IT') & (ppl["fueltype"] == 'Wind') & (ppl["technology"] == 'Offshore') & (ppl["set"] == 'PP') & (ppl["dateout"].isna() | (ppl["dateout"] > year))].capacity.sum()
-    if italy_offshore_cap > 0:
-        gens = n.generators[n.generators.carrier == car].index
-        gen_buses = n.generators.loc[gens, "bus"]
-        italian_gens = gens[n.buses.loc[gen_buses, "country"].values == "IT"]
-        if not italian_gens.empty:
-            potential = n.generators.loc[italian_gens, "p_nom_max"]
-            total_potential = potential.sum()
-            if total_potential > 0:
-                distributed = (potential / total_potential) * italy_offshore_cap
-                n.generators.loc[italian_gens, "p_nom"] = distributed
-                n.generators.loc[italian_gens, "p_nom_min"] = distributed
