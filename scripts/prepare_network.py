@@ -113,7 +113,24 @@ def add_gaslimit(n, gaslimit, Nyears=1.0):
     )
 
 
-def add_emission_prices(n, emission_prices={"co2": 0.0}, exclude_co2=False):
+def add_emission_prices(n, emission_prices={"co2": 0.0}, exclude_co2=False, hourly_emission_prices_fn=None):
+
+    if hourly_emission_prices_fn is not None:
+        hourly_emission_prices = pd.read_csv(hourly_emission_prices_fn, index_col=0, parse_dates=True)
+        emission_prices["co2"] = hourly_emission_prices["price_eur_per_t"].mean()
+
+        ep2 = (
+            hourly_emission_prices["price_eur_per_t"].to_frame('x')
+            .dot(n.carriers["co2_emissions"].to_frame('x').T)
+        )
+        # hard-code gas & coal
+        gen_ep2 = ep2[["gas", "coal", "lignite"]].rename(
+            columns={"gas": "EU gas", "coal": "EU coal", "lignite": "EU lignite"}
+        ) # fuels have efficiency 1 - no need to divide
+        print(n.generators_t["marginal_cost"])
+        print(gen_ep2[n.generators_t["marginal_cost"].columns])
+        n.generators_t["marginal_cost"] += gen_ep2[n.generators_t["marginal_cost"].columns]
+
     if exclude_co2:
         emission_prices.pop("co2")
     ep = (
@@ -122,7 +139,8 @@ def add_emission_prices(n, emission_prices={"co2": 0.0}, exclude_co2=False):
     ).sum(axis=1)
     gen_ep = n.generators.carrier.map(ep) / n.generators.efficiency
     n.generators["marginal_cost"] += gen_ep
-    n.generators_t["marginal_cost"] += gen_ep[n.generators_t["marginal_cost"].columns]
+    if hourly_emission_prices_fn is None:
+        n.generators_t["marginal_cost"] += gen_ep[n.generators_t["marginal_cost"].columns]
     su_ep = n.storage_units.carrier.map(ep) / n.storage_units.efficiency_dispatch
     n.storage_units["marginal_cost"] += su_ep
 

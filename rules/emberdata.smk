@@ -84,6 +84,14 @@ rule download_hotmaps:
         curl -L "https://gitlab.com/hotmaps/industrial_sites/industrial_sites_Industrial_Database/-/raw/master/data/Industrial_Database.csv" -o {output}
         """
 
+rule hourly_lignite_prices:
+    input:
+        "validation/ember_data/hourly_fuel_costs.csv"
+    output:
+        resources("hourly_fuel_costs_with_lignite.csv")
+    script:
+        "../scripts/hourly_lignite.py"
+
 rule extract_jrc_idees:
     input:
         "validation/eurostatdata/JRC-IDEES-2021_EU27.zip"

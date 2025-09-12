@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_gas_prices, include_coal_chps_for_selected_countries
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices, include_coal_chps_for_selected_countries
 )
 
 spatial = SimpleNamespace()
@@ -818,7 +818,13 @@ def add_co2_tracking(n, costs, options, sequestration_potential_file=None):
             options["regional_co2_sequestration_potential"]["max_size"] * 1e3
         )  # Mt
         annualiser = options["regional_co2_sequestration_potential"]["years_of_storage"]
-        e_nom_max = pd.read_csv(sequestration_potential_file, index_col=0).squeeze()
+        df = pd.read_csv(sequestration_potential_file, index_col=0)
+        if df.shape == (1, 1):
+            # if only one value, manually convert to a Series
+            e_nom_max = pd.Series(df.iloc[0, 0], index=df.index)
+        else:
+            e_nom_max = df.squeeze()
+
         e_nom_max = (
             e_nom_max.reindex(spatial.co2.locations)
             .fillna(0.0)
@@ -2003,35 +2009,40 @@ def add_storage_and_grids(
 
         # find all complement edges
         complement_edges = pd.DataFrame(complement(G).edges, columns=["bus0", "bus1"])
-        complement_edges["length"] = complement_edges.apply(
-            haversine, axis=1, args=(n,)
-        )
 
-        # apply k_edge_augmentation weighted by length of complement edges
-        k_edge = options["gas_network_connectivity_upgrade"]
-        if augmentation := list(
-            k_edge_augmentation(G, k_edge, avail=complement_edges.values)
-        ):
-            new_gas_pipes = pd.DataFrame(augmentation, columns=["bus0", "bus1"])
-            new_gas_pipes["length"] = new_gas_pipes.apply(haversine, axis=1, args=(n,))
-
-            new_gas_pipes.index = new_gas_pipes.apply(
-                lambda x: f"gas pipeline new {x.bus0} <-> {x.bus1}", axis=1
+        # check if network is already fully connected and only add new pipelines if not
+        if len(complement_edges) > 0:
+            complement_edges["length"] = complement_edges.apply(
+                haversine, axis=1, args=(n,)
             )
 
-            n.add(
-                "Link",
-                new_gas_pipes.index,
-                bus0=new_gas_pipes.bus0 + " gas",
-                bus1=new_gas_pipes.bus1 + " gas",
-                p_min_pu=-1,  # new gas pipes are bidirectional
-                p_nom_extendable=True,
-                length=new_gas_pipes.length,
-                capital_cost=new_gas_pipes.length
-                * costs.at["CH4 (g) pipeline", "capital_cost"],
-                carrier="gas pipeline new",
-                lifetime=costs.at["CH4 (g) pipeline", "lifetime"],
-            )
+            # apply k_edge_augmentation weighted by length of complement edges
+            k_edge = options["gas_network_connectivity_upgrade"]
+            if augmentation := list(
+                k_edge_augmentation(G, k_edge, avail=complement_edges.values)
+            ):
+                new_gas_pipes = pd.DataFrame(augmentation, columns=["bus0", "bus1"])
+                new_gas_pipes["length"] = new_gas_pipes.apply(
+                    haversine, axis=1, args=(n,)
+                )
+
+                new_gas_pipes.index = new_gas_pipes.apply(
+                    lambda x: f"gas pipeline new {x.bus0} <-> {x.bus1}", axis=1
+                )
+
+                n.add(
+                    "Link",
+                    new_gas_pipes.index,
+                    bus0=new_gas_pipes.bus0 + " gas",
+                    bus1=new_gas_pipes.bus1 + " gas",
+                    p_min_pu=-1,  # new gas pipes are bidirectional
+                    p_nom_extendable=True,
+                    length=new_gas_pipes.length,
+                    capital_cost=new_gas_pipes.length
+                    * costs.at["CH4 (g) pipeline", "capital_cost"],
+                    carrier="gas pipeline new",
+                    lifetime=costs.at["CH4 (g) pipeline", "lifetime"],
+                )
 
     if options["H2_retrofit"]:
         logger.info("Add retrofitting options of existing CH4 pipes to H2 pipes.")
@@ -3023,10 +3034,6 @@ def add_heat(
                 nodes + f" {heat_system} water tanks charger", "energy to power ratio"
             ] = energy_to_power_ratio_water_tanks
 
-            tes_time_constant_days = options["tes_tau"][
-                heat_system.central_or_decentral
-            ]
-
             n.add(
                 "Store",
                 nodes,
@@ -3035,7 +3042,11 @@ def add_heat(
                 e_cyclic=True,
                 e_nom_extendable=True,
                 carrier=f"{heat_system} water tanks",
-                standing_loss=1 - np.exp(-1 / 24 / tes_time_constant_days),
+                standing_loss=costs.at[
+                    heat_system.central_or_decentral + " water tank storage",
+                    "standing_losses",
+                ]
+                / 100,  # convert %/hour into unit/hour
                 capital_cost=costs.at[
                     heat_system.central_or_decentral + " water tank storage",
                     "capital_cost",
@@ -3130,7 +3141,10 @@ def add_heat(
                     e_nom_extendable=True,
                     e_max_pu=e_max_pu,
                     carrier=f"{heat_system} water pits",
-                    standing_loss=1 - np.exp(-1 / 24 / tes_time_constant_days),
+                    standing_loss=costs.at[
+                        "central water pit storage", "standing_losses"
+                    ]
+                    / 100,  # convert %/hour into unit/hour
                     capital_cost=costs.at["central water pit storage", "capital_cost"],
                     lifetime=costs.at["central water pit storage", "lifetime"],
                 )
@@ -6447,10 +6461,10 @@ if __name__ == "__main__":
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
         
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
-        apply_hourly_gas_prices(
-            n, carriers=["gas", "coal"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
+        apply_hourly_fuel_prices(
+            n, carriers=["gas", "coal", "lignite"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
         )
-        logger.info("Applied hourly gas prices.")
+        logger.info("Applied hourly prices for gas, coal and lignite.")
 
     n = set_temporal_aggregation(
         n, snakemake.params.time_resolution, snakemake.input.snapshot_weightings
@@ -6476,14 +6490,15 @@ if __name__ == "__main__":
         limit = co2_cap.loc[investment_year]
     else:
         limit = get(co2_budget, investment_year)
-    add_co2limit(
-        n,
-        options,
-        snakemake.input.co2_totals_name,
-        snakemake.params.countries,
-        nyears,
-        limit,
-    )
+    if snakemake.config["electricity"].get("co2limit_enable", True):
+        add_co2limit(
+            n,
+            options,
+            snakemake.input.co2_totals_name,
+            snakemake.params.countries,
+            nyears,
+            limit,
+        )
 
     maxext = snakemake.params["lines"]["max_extension"]
     if maxext is not None:
@@ -6562,7 +6577,15 @@ if __name__ == "__main__":
         for carrier in n.carriers.index.intersection(costs.index):
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
-        add_emission_prices(n, emission_prices=emission_prices)
+        if snakemake.config["ember_settings"].get("hourly_carbon_prices", False):
+            hourly_emission_prices_fn = snakemake.input.hourly_co2_prices
+        else:
+            hourly_emission_prices_fn = None
+
+        add_emission_prices(
+            n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
+        )
         
     include_coal_chps_for_selected_countries(n, costs)
+
     n.export_to_netcdf(snakemake.output[0])
