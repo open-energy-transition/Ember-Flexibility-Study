@@ -153,4 +153,4 @@ ember_settings:
   ramping: false
   nuclear_decommissioning: true
   ember_gas_price: true
-  hourly_carbon_prices: true
+  hourly_carbon_prices: false

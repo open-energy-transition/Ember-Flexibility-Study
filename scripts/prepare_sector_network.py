@@ -6577,6 +6577,11 @@ if __name__ == "__main__":
         for carrier in n.carriers.index.intersection(costs.index):
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
+        if snakemake.config["ember_settings"].get("hourly_carbon_prices", False):
+            hourly_emission_prices_fn = snakemake.input.hourly_co2_prices
+        else:
+            hourly_emission_prices_fn = None
+
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=snakemake.input.hourly_co2_prices
         )
