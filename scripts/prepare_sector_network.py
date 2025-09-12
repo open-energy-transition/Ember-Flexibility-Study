@@ -6583,7 +6583,7 @@ if __name__ == "__main__":
             hourly_emission_prices_fn = None
 
         add_emission_prices(
-            n, emission_prices=emission_prices, hourly_emission_prices_fn=snakemake.input.hourly_co2_prices
+            n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
 
     n.export_to_netcdf(snakemake.output[0])

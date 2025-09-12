@@ -124,9 +124,11 @@ def add_emission_prices(n, emission_prices={"co2": 0.0}, exclude_co2=False, hour
             .dot(n.carriers["co2_emissions"].to_frame('x').T)
         )
         # hard-code gas & coal
-        gen_ep2 = ep2[["gas", "coal"]].rename(
-            columns={"gas": "EU gas", "coal": "EU coal"}
+        gen_ep2 = ep2[["gas", "coal", "lignite"]].rename(
+            columns={"gas": "EU gas", "coal": "EU coal", "lignite": "EU lignite"}
         ) # fuels have efficiency 1 - no need to divide
+        print(n.generators_t["marginal_cost"])
+        print(gen_ep2[n.generators_t["marginal_cost"].columns])
         n.generators_t["marginal_cost"] += gen_ep2[n.generators_t["marginal_cost"].columns]
 
     if exclude_co2:
