@@ -1422,7 +1422,7 @@ rule prepare_sector_network:
             if config_provider("sector", "district_heating", "ates", "enable")(w)
             else []
         ),
-        hourly_fuel_costs="validation/ember_data/hourly_fuel_costs.csv",
+        hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"

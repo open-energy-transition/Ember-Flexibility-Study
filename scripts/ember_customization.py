@@ -67,7 +67,7 @@ def apply_2023_nuclear_decommissioning(n, year=2023):
         seen_plants.append(nearest_gen)
 
 
-def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
+def apply_hourly_fuel_prices(n, carriers, fn_hourly_prices):
     df = pd.read_csv(fn_hourly_prices)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df.set_index('timestamp', inplace=True)
@@ -88,7 +88,7 @@ def apply_hourly_gas_prices(n, carriers, fn_hourly_prices):
         elif carrier == 'coal':
             price_col = 'COAL_SPOT_PRICE_EUR_PER_MWH'
         else:
-            price_col = 'LIGNITE_PRICE_EUR_PER_MWH'
+            price_col = 'LIGNITE_SPOT_PRICE_EUR_PER_MWH'
         prices = df[price_col]
         
         mc_t_array = prices.to_numpy()[:, np.newaxis]
