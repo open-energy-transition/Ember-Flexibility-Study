@@ -170,7 +170,7 @@ def include_coal_chps_for_selected_countries(n, costs):
     df = pd.read_csv(CHP_ppl_fn)
     df = df.query("bus in @focus_full")
     
-    df = df[df['type'] == 'chp']
+    df = df.query("type == 'chp'")
     
     
     country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE'}
