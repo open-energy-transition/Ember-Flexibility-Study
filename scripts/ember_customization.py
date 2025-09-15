@@ -168,7 +168,7 @@ def include_coal_chps_for_selected_countries(n, costs):
     
     focus_full = ['Poland', 'Czechia', 'Greece', 'Germany']
     df = pd.read_csv(CHP_ppl_fn)
-    df = df[df['bus'].isin(focus_full)]  
+    df = df.query("bus in @focus_full")
     
     df = df[df['type'] == 'chp']
     
