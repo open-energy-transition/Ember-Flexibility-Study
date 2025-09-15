@@ -167,7 +167,7 @@ def include_coal_chps_for_selected_countries(n, costs):
     countries = ['PL', 'CZ', 'GR', 'DE']
     
     focus_full = ['Poland', 'Czechia', 'Greece', 'Germany']
-    df = pd.read_excel("C:\\Users\\user\\Downloads\\coal data for OET.xlsx", sheet_name="coal_chp")
+    df = pd.read_csv(CHP_ppl_fn)
     df = df[df['bus'].isin(focus_full)]  
     
     df = df[df['type'] == 'chp']
