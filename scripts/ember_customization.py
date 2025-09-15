@@ -208,7 +208,7 @@ def include_coal_chps_for_selected_countries(n, costs):
             country_name = row['bus']
             country = country_code_map[country_name]
             
-            power_buses = [bus for bus in n.buses.index if n.buses.at[bus, 'carrier'] == 'AC' and n.buses.at[bus, 'country'] == country]
+            power_buses = n.buses.query("carrier == 'AC' and country == @country").index
             if not power_buses:
                 continue
             
