@@ -182,7 +182,7 @@ def include_coal_chps_for_selected_countries(n, costs):
         if orig_carrier not in carrier_mapping:
             continue
         map_carrier = carrier_mapping[orig_carrier]
-        sub_df = df[df['carrier'] == orig_carrier]
+        sub_df = df.query("carrier == @orig_carrier")
         
         n.add("Carrier", f"urban central {map_carrier} CHP")
         
