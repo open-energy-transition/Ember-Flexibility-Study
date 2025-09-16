@@ -224,19 +224,19 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
             n.add(
                 "Link",
                 link_names,
-                bus0=bus0s,
-                bus1=bus1s,
-                bus2=bus2s,
-                bus3=bus3s,
-                carrier=carriers_list,
-                p_nom_extendable=p_nom_extendables,
-                p_nom=p_noms,
-                capital_cost=capital_costs,
-                marginal_cost=marginal_costs,
-                efficiency=efficiencies,
-                efficiency2=efficiency2s,
-                efficiency3=efficiency3s,
-                lifetime=lifetimes,
-                reversed=reverseds
+                bus0=f"EU {map_carrier}",
+                bus1=nearest_pairs['nearest_bus'].tolist(),
+                bus2=nearest_pairs['heat_bus'].tolist(),
+                bus3="co2 atmosphere",
+                carrier=f"urban central {map_carrier} CHP",
+                p_nom_extendable=False,
+                p_nom=(nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist(),
+                capital_cost=0,
+                marginal_cost=costs.at[map_carrier, 'VOM'],
+                efficiency=nearest_pairs['eff'].tolist(),
+                efficiency2=0.4,
+                efficiency3=costs.at[map_carrier, 'CO2 intensity'],
+                lifetime=25,
+                reversed=False
             )
             print(f"Added {len(link_names)} {map_carrier} CHPs")    
