@@ -163,85 +163,63 @@ def apply_custom_pf_constraint(n,
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
     
     
-def include_coal_chps_for_selected_countries(n, costs):
-    countries = ['PL', 'CZ', 'GR', 'DE']
-    
-    focus_full = ['Poland', 'Czechia', 'Greece', 'Germany']
-    df = pd.read_excel("C:\\Users\\user\\Downloads\\coal data for OET.xlsx", sheet_name="coal_chp")
-    df = df[df['bus'].isin(focus_full)]  
-    
-    df = df[df['type'] == 'chp']
-    
-    
+def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
     country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE'}
-    
+    focus_full= country_code_map.keys()
+    df = pd.read_excel(CHP_ppl_fn, sheet_name='coal_chp')
+    df = df.query("bus in @focus_full")
     carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite'}
-    
     
     for orig_carrier in df['carrier'].unique():
         if orig_carrier not in carrier_mapping:
             continue
         map_carrier = carrier_mapping[orig_carrier]
-        sub_df = df[df['carrier'] == orig_carrier]
-        
+        sub_df = df.query('carrier == @orig_carrier')
         n.add("Carrier", f"urban central {map_carrier} CHP")
+        sub_df['country'] = sub_df['bus'].map(country_code_map)
+        unique_countries = sub_df['country'].unique()
+        power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
+        power_buses = power_buses.reset_index().rename(
+                  columns={
+                              'Bus': 'bus_id', 
+                              'x': 'bus_x',    
+                              'y': 'bus_y'      
+                          }
+                                                       )
+        if power_buses.empty:
+            continue
+        sub_df = sub_df.reset_index(drop=True)
+        sub_df['plant_id'] = sub_df.index
+        pairs = pd.merge(sub_df, power_buses, on='country')
+        pairs['dx'] = pairs['x'] - pairs['bus_x']
+        pairs['dy'] = pairs['y'] - pairs['bus_y']
+        pairs['dist'] = (pairs['dx']**2 + pairs['dy']**2)**0.5
+        min_dist_idx = pairs.groupby('plant_id')['dist'].idxmin()
+        nearest_pairs = pairs.loc[min_dist_idx]
+        nearest_pairs['nearest_bus'] = nearest_pairs['bus_id']
+        nearest_pairs['heat_bus'] = nearest_pairs['nearest_bus'] + ' urban central heat'
+        valid_buses = n.buses.index.tolist()
+        nearest_pairs = nearest_pairs.query('heat_bus in @valid_buses')
         
+        if nearest_pairs.empty:
+            continue
+        nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.45)
+        link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['name'].str.replace(' ', '_')).tolist()
+        bus0s = [f"EU {map_carrier}"] * len(nearest_pairs)
+        bus1s = nearest_pairs['nearest_bus'].tolist()
+        bus2s = nearest_pairs['heat_bus'].tolist()
+        bus3s = ["co2 atmosphere"] * len(nearest_pairs)
+        carriers_list = [f"urban central {map_carrier} CHP"] * len(nearest_pairs)
+        p_noms = (nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist()
+        efficiencies = nearest_pairs['eff'].tolist()
+        efficiency2s = [0.40] * len(nearest_pairs)
+        efficiency3s = [costs.at[map_carrier, 'CO2 intensity']] * len(nearest_pairs)
+        marginal_costs = [costs.at[map_carrier, 'VOM']] * len(nearest_pairs)
+        capital_costs = [0] * len(nearest_pairs)
+        lifetimes = [25] * len(nearest_pairs)
+        p_nom_extendables = [False] * len(nearest_pairs)
+        reverseds = [False] * len(nearest_pairs)
         
-        link_names = []
-        bus0s = []
-        bus1s = []
-        bus2s = []
-        bus3s = []
-        carriers_list = []
-        p_noms = []
-        efficiencies = []
-        efficiency2s = []
-        efficiency3s = []
-        marginal_costs = []
-        capital_costs = []
-        lifetimes = []
-        p_nom_extendables = []
-        reverseds = []
-        
-        for _, row in sub_df.iterrows():
-            plant = row['name']
-            country_name = row['bus']
-            country = country_code_map[country_name]
-            
-            power_buses = [bus for bus in n.buses.index if n.buses.at[bus, 'carrier'] == 'AC' and n.buses.at[bus, 'country'] == country]
-            if not power_buses:
-                continue
-            
-            network_coords = n.buses.loc[power_buses, ['x', 'y']]
-            
-            px, py = row['x'], row['y']  
-            dx = network_coords['x'] - px
-            dy = network_coords['y'] - py
-            dist = (dx**2 + dy**2)**0.5
-            nearest_bus = network_coords.index[dist.argmin()]
-            
-            heat_bus = f"{nearest_bus} urban central heat"
-            if heat_bus not in n.buses.index:
-                continue
-            
-            link_name = f"{nearest_bus}_{map_carrier}_chp_{plant.replace(' ', '_')}"
-            link_names.append(link_name)
-            bus0s.append(f"EU {map_carrier}")
-            bus1s.append(nearest_bus)
-            bus2s.append(heat_bus)
-            bus3s.append("co2 atmosphere")
-            carriers_list.append(f"urban central {map_carrier} CHP")
-            p_noms.append(row['p_nom'])
-            efficiencies.append(row['efficiency'] if pd.notna(row['efficiency']) else 0.45)
-            efficiency2s.append(0.40)  
-            efficiency3s.append(costs.at[map_carrier, 'CO2 intensity'])
-            marginal_costs.append(costs.at[map_carrier, 'VOM'])
-            capital_costs.append(0)
-            lifetimes.append(25)
-            p_nom_extendables.append(False)
-            reverseds.append(False)
-        
-    
         if link_names:
             n.add(
                 "Link",
@@ -261,5 +239,4 @@ def include_coal_chps_for_selected_countries(n, costs):
                 lifetime=lifetimes,
                 reversed=reverseds
             )
-            print(f"Added {len(link_names)} {map_carrier} CHPs")               
-           
+            print(f"Added {len(link_names)} {map_carrier} CHPs")    

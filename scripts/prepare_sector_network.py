@@ -6586,6 +6586,6 @@ if __name__ == "__main__":
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
         
-    include_coal_chps_for_selected_countries(n, costs)
+    include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.coal_data )
 
     n.export_to_netcdf(snakemake.output[0])
