@@ -180,12 +180,12 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
         unique_countries = sub_df['country'].unique()
         power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
         power_buses = power_buses.reset_index().rename(
-                  columns={
-                              'Bus': 'bus_id', 
-                              'x': 'bus_x',    
-                              'y': 'bus_y'      
-                          }
-                                                       )
+            columns={
+                'Bus': 'bus_id', 
+                'x': 'bus_x',    
+                'y': 'bus_y'      
+            }
+        )
         if power_buses.empty:
             continue
         sub_df = sub_df.reset_index(drop=True)
