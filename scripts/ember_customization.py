@@ -166,9 +166,11 @@ def apply_custom_pf_constraint(n,
 def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
     country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE'}
     focus_full= country_code_map.keys()
-    df = pd.read_excel(CHP_ppl_fn, sheet_name='coal_chp')
+    df = pd.read_csv(CHP_ppl_fn)
+    df = df.rename(columns={'lon': 'x', 'lat': 'y'})
     df = df.query("bus in @focus_full")
-    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite'}
+    df = df[df['type'] == 'chp']
+    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas': 'gas'}
     
     for orig_carrier in df['carrier'].unique():
         if orig_carrier not in carrier_mapping:
@@ -180,12 +182,12 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
         unique_countries = sub_df['country'].unique()
         power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
         power_buses = power_buses.reset_index().rename(
-            columns={
-                'Bus': 'bus_id', 
-                'x': 'bus_x',    
-                'y': 'bus_y'      
-            }
-        )
+                  columns={
+                              'Bus': 'bus_id', 
+                              'x': 'bus_x',    
+                              'y': 'bus_y'      
+                          }
+                                                       )
         if power_buses.empty:
             continue
         sub_df = sub_df.reset_index(drop=True)
@@ -198,8 +200,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
         nearest_pairs = pairs.loc[min_dist_idx]
         nearest_pairs['nearest_bus'] = nearest_pairs['bus_id']
         nearest_pairs['heat_bus'] = nearest_pairs['nearest_bus'] + ' urban central heat'
-        valid_buses = n.buses.index.tolist()
-        nearest_pairs = nearest_pairs.query('heat_bus in @valid_buses')
+        nearest_pairs = nearest_pairs.query('heat_bus in @n.buses.index')
         
         if nearest_pairs.empty:
             continue
@@ -224,19 +225,19 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
             n.add(
                 "Link",
                 link_names,
-                bus0=f"EU {map_carrier}",
-                bus1=nearest_pairs['nearest_bus'].tolist(),
-                bus2=nearest_pairs['heat_bus'].tolist(),
-                bus3="co2 atmosphere",
-                carrier=f"urban central {map_carrier} CHP",
-                p_nom_extendable=False,
-                p_nom=(nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist(),
-                capital_cost=0,
-                marginal_cost=costs.at[map_carrier, 'VOM'],
-                efficiency=nearest_pairs['eff'].tolist(),
-                efficiency2=0.4,
-                efficiency3=costs.at[map_carrier, 'CO2 intensity'],
-                lifetime=25,
-                reversed=False
+                bus0=bus0s,
+                bus1=bus1s,
+                bus2=bus2s,
+                bus3=bus3s,
+                carrier=carriers_list,
+                p_nom_extendable=p_nom_extendables,
+                p_nom=p_noms,
+                capital_cost=capital_costs,
+                marginal_cost=marginal_costs,
+                efficiency=efficiencies,
+                efficiency2=efficiency2s,
+                efficiency3=efficiency3s,
+                lifetime=lifetimes,
+                reversed=reverseds
             )
-            print(f"Added {len(link_names)} {map_carrier} CHPs")    
+            print(f"Added {len(link_names)} {map_carrier} CHPs")
