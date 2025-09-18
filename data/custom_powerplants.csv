@@ -796,4 +796,4 @@
 794,Termini Imerese power station,Natural Gas,OCGT,PP,IT,118,0.35,0,0,0,0,2023,2023,,2040,37.96801,13.75079,,
 795,Termini Imerese power station,Natural Gas,OCGT,PP,IT,118,0.35,0,0,0,0,2023,2023,,2040,37.96801,13.75079,,
 796,Hammerfest Snohvit Terminal power station,Natural Gas,CCGT,PP,NO,229,0.55,0,0,0,0,2007,2007,,2040,70.6854,23.59,,
-797,Beleolico,Wind,Offshore ,PP,IT,30,,0,0,0,0,2022,2022,,2050,40.4667,17.1833,,
+797,Beleolico,offwind-ac,Offshore ,PP,IT,30,,0,0,0,0,2022,2022,,2050,40.4667,17.1833,,
