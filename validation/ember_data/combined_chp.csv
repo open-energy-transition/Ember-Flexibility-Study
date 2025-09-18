@@ -606,7 +606,7 @@ ElblagCC1_GAS_CHP,Elblag power station,Poland,Gas,115,0.55,0.35,19.38575,54.1803
 GorzowEC I_GAS_CHP,Gorzow power station,Poland,Gas,66,0.5,0.35,15.2712,52.7504,1999,,chp,operating
 GorzowEC III_GAS_CHP,Gorzow power station,Poland,Gas,138,0.55,0.35,15.2712,52.7504,2017,,chp,operating
 Nowa1_GAS_CHP,Nowa Sarzyna power station,Poland,Gas,129,0.55,0.35,22.3237,50.3172,2000,,chp,operating
-PlockB1_GAS_CHP,Plock power station,Poland,Gas,630,0.55,0.35,19.678,52.588,2018,,chp,operating
+PlockB1_GAS_CHP,Plock power station,Poland,Gas,630,0.55,0.35,19.678,52.588,2018,,industrial,operating
 Rzeszow1_GAS_CHP,Rzeszow power station,Poland,Gas,101,0.55,0.35,22.0294,50.0646,2003,,chp,operating
 SiechniceCC4_GAS_CHP,Siechnice power station,Poland,Gas,179,0.55,0.35,17.15095,51.03794,2023,,chp,construction
 Siedlce2_GAS_CHP,Siedlce power station,Poland,Gas,36,0.55,0.35,22.3061,52.1572,2002,,chp,operating
