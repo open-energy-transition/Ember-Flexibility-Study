@@ -164,14 +164,14 @@ def apply_custom_pf_constraint(n,
     
     
 def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
-    country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE'}
+    country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE', 'Italy': 'IT', 'Netherlands': 'NL'}
     focus_full= country_code_map.keys()
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1')
     df = df.rename(columns={'lon': 'x', 'lat': 'y'})
+    df = df[df['type'] == 'chp']
     df = df[df['status'] == 'operating']
     df = df.query("bus in @focus_full")
-    df = df[df['type'] == 'chp']
-    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite'}
+    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas'}
     
     for orig_carrier in df['carrier'].unique():
         if orig_carrier not in carrier_mapping:
@@ -210,6 +210,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
         if nearest_pairs.empty:
             continue
         nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.45)
+        nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
         link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
         bus0s = [f"EU {map_carrier}"] * len(nearest_pairs)
         bus1s = nearest_pairs['nearest_bus'].tolist()
@@ -218,7 +219,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
         carriers_list = [f"urban central {map_carrier} CHP"] * len(nearest_pairs)
         p_noms = (nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist()
         efficiencies = nearest_pairs['eff'].tolist()
-        efficiency2s = [0.40] * len(nearest_pairs)
+        efficiency2s = nearest_pairs['heat_eff'].tolist()
         efficiency3s = [costs.at[map_carrier, 'CO2 intensity']] * len(nearest_pairs)
         marginal_costs = [costs.at[map_carrier, 'VOM']] * len(nearest_pairs)
         capital_costs = [0] * len(nearest_pairs)
