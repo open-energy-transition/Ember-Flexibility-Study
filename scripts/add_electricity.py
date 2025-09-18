@@ -572,7 +572,7 @@ def attach_wind_and_solar(
             supcar = car.split("-", 2)[0]
             if supcar == "offwind":
                 distance = ds["average_distance"].to_pandas()
-                distance.index = distance.index.get_level_values("bus")
+                distance.index = distance.index.map(flatten)
                 submarine_cost = costs.at[car + "-connection-submarine", "capital_cost"]
                 underground_cost = costs.at[
                     car + "-connection-underground", "capital_cost"
@@ -602,24 +602,24 @@ def attach_wind_and_solar(
                 capital_cost = costs.at[car, "capital_cost"]
 
             buses = ds.indexes["bus_bin"].get_level_values("bus")
+            bus_bins = ds.indexes["bus_bin"].map(flatten)
 
             p_nom_max = ds["p_nom_max"].to_pandas()
-            p_nom_max.index = p_nom_max.index.get_level_values("bus")
+            p_nom_max.index = p_nom_max.index.map(flatten)
 
             p_max_pu = ds["profile"].to_pandas()
-            p_max_pu.columns = p_max_pu.columns.get_level_values("bus")
+            p_max_pu.columns = p_max_pu.columns.map(flatten)
 
             if not ppl.query("carrier == @car").empty:
                 caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
-                caps = pd.Series(
-                    data=caps, index=ds.indexes["bus"].get_level_values("bus")
-                ).fillna(0)
+                caps = pd.Series(data=caps, index=ds.indexes["bus"]).fillna(0)
             else:
-                caps = pd.Series(index=ds.indexes["bus"].get_level_values("bus")).fillna(0)
+                caps = pd.Series(index=ds.indexes["bus"]).fillna(0)
+            caps.index = caps.index.map(flatten)
 
             n.add(
                 "Generator",
-                buses,
+                bus_bins,
                 suffix=" " + car,
                 bus=buses,
                 carrier=car,
