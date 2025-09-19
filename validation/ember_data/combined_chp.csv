@@ -37,7 +37,7 @@ CZ-24-5,Komorany III 8,Czechia,Lignite,32,0.32,0.63,13.6,50.5,1964,,industrial,o
 CZ-29-1,Trebovice TG 33,Czechia,Hard coal,33,0.32,0.63,18.2,49.8,1964,,chp,operating
 CZ-40-2,Chomutov K3,Czechia,Lignite,20,0.32,0.63,13.4,50.5,1966,,chp,operating
 CZ-42-2,Prerov K1-3,Czechia,Hard coal,41,0.32,0.63,17.4,49.4,1966,,chp,operating
-CZ-2-4,Ledvice 1,Czechia,Lignite,110,0.32,0.63,13.8,50.6,1969,,chp,operating
+CZ-2-4,Ledvice 1,Czechia,Lignite,110,0.425,0.63,13.8,50.6,1969,,chp,operating,https://www.cez.cz/nextcez/en/energy-generation?
 CZ-41-3,Malesice III,Czechia,Hard coal,55,0.32,0.63,14.5,50.1,1969,,chp,operating
 CZ-41-4,Malesice II,Czechia,Hard coal,110,0.32,0.63,14.5,50.1,1969,,chp,operating
 CZ-17-1,Karvina 1,Czechia,Hard coal,55,0.32,0.63,18.5,49.8,1970,,chp,operating
@@ -53,10 +53,10 @@ CZ-32-2,Otrokovice K2,Czechia,Lignite,25,0.32,0.63,17.5,49.2,1970,,chp,operating
 CZ-65-1,Koprivnice TG3,Czechia,Hard coal,9,0.32,0.63,18.1,49.6,1970,,chp,operating
 CZ-65-2,Koprivnice TG4,Czechia,Hard coal,9,0.32,0.63,18.1,49.6,1970,,chp,operating
 CZ-10-4,Melnik II/III II 2,Czechia,Lignite,110,0.32,0.63,14.4,50.4,1971,,chp,operating
-CZ-15-1,Tusimice 1,Czechia,Lignite,200,0.32,0.63,13.3,50.4,1974,,chp,operating
-CZ-15-2,Tusimice 2,Czechia,Lignite,200,0.32,0.63,13.3,50.4,1974,,chp,operating
-CZ-15-3,Tusimice 3,Czechia,Lignite,200,0.32,0.63,13.3,50.4,1974,,chp,operating
-CZ-15-4,Tusimice 4,Czechia,Lignite,200,0.32,0.63,13.3,50.4,1974,,chp,operating
+CZ-15-1,Tusimice 1,Czechia,Lignite,200,0.39,0.63,13.3,50.4,1974,,chp,operating,https://www.cez.cz/nextcez/en/energy-generation/coal-fired-power-plants/modernization-of-cez-coal-portfolio?
+CZ-15-2,Tusimice 2,Czechia,Lignite,200,0.39,0.63,13.3,50.4,1974,,chp,operating,
+CZ-15-3,Tusimice 3,Czechia,Lignite,200,0.39,0.63,13.3,50.4,1974,,chp,operating,
+CZ-15-4,Tusimice 4,Czechia,Lignite,200,0.39,0.63,13.3,50.4,1974,,chp,operating,
 CZ-76-1,Trmice 1,Czechia,Lignite,1,0.32,0.63,14,50.6,1974,,heat,operating
 CZ-76-2,Trmice 2,Czechia,Lignite,16,0.32,0.63,14,50.6,1974,,heat,operating
 CZ-76-3,Trmice 3,Czechia,Lignite,20,0.32,0.63,14,50.6,1974,,heat,operating
@@ -70,12 +70,12 @@ CZ-7-4,Detmarovice 4,Czechia,Hard coal,200,0.32,0.63,18.5,49.9,1976,,chp,operati
 CZ-40-1,Chomutov K4,Czechia,Lignite,6,0.32,0.63,13.4,50.5,1979,,chp,operating
 CZ-6-1,Chvaletice 1,Czechia,Lignite,205,0.32,0.63,15.5,50,1979,,chp,operating
 CZ-6-2,Chvaletice 2,Czechia,Lignite,205,0.32,0.63,15.5,50,1979,,chp,operating
-CZ-12-10,Prunerov II 24,Czechia,Lignite,250,0.32,0.63,13.3,50.4,1982,,chp,operating
-CZ-12-11,Prunerov II 25,Czechia,Lignite,250,0.32,0.63,13.3,50.4,1982,,chp,operating
-CZ-12-9,Prunerov II 23,Czechia,Lignite,250,0.32,0.63,13.3,50.4,1982,,chp,operating
-CZ-37-1,Plzen 1,Czechia,Lignite,70,0.32,0.63,13.4,49.8,1982,,chp,operating
-CZ-19-2,Kolin K6,Czechia,Lignite,12,0.32,0.63,15.2,50,1984,,chp,operating
-CZ-61-2,Plzenska energetika ELU III K3,Czechia,Lignite,32,0.32,0.63,13.3,49.7,1984,,chp,operating
+CZ-12-10,Prunerov II 24,Czechia,Lignite,250,0.36,0.63,13.3,50.4,1982,,chp,operating,https://www.cez.cz/nextcez/en/energy-generation/coal-fired-power-plants/modernization-of-cez-coal-portfolio?
+CZ-12-11,Prunerov II 25,Czechia,Lignite,250,0.36,0.63,13.3,50.4,1982,,chp,operating,
+CZ-12-9,Prunerov II 23,Czechia,Lignite,250,0.36,0.63,13.3,50.4,1982,,chp,operating,
+CZ-37-1,Plzen 1,Czechia,Lignite,70,0.36,0.63,13.4,49.8,1982,,chp,operating,
+CZ-19-2,Kolin K6,Czechia,Lignite,12,0.36,0.63,15.2,50,1984,,chp,operating,
+CZ-61-2,Plzenska energetika ELU III K3,Czechia,Lignite,32,0.36,0.63,13.3,49.7,1984,,chp,operating,
 CZ-43-1,Pribram 1,Czechia,Lignite,4,0.36,0.63,14,49.7,1995,,heat,operating
 CZ-43-2,Pribram 2,Czechia,Lignite,38,0.36,0.63,14,49.7,1996,,heat,operating
 CZ-53-1,Porici II 1,Czechia,Lignite,55,0.36,0.63,16,50.6,1996,,heat,operating
