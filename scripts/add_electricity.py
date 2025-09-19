@@ -612,7 +612,10 @@ def attach_wind_and_solar(
 
             if not ppl.query("carrier == @car").empty:
                 caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
-                caps = pd.Series(data=caps, index=ds.indexes["bus"]).fillna(0)
+                caps = pd.Series(
+                    data=ds.indexes["bus"].get_level_values("bus").map(caps),
+                    index=ds.indexes["bus"]
+                ).fillna(0)
             else:
                 caps = pd.Series(index=ds.indexes["bus"]).fillna(0)
             caps.index = caps.index.map(flatten)
