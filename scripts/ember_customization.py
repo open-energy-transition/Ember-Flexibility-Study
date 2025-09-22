@@ -168,7 +168,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
     focus_full= country_code_map.keys()
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1')
     df = df.rename(columns={'lon': 'x', 'lat': 'y'})
-    df = df[df['type'] == 'chp']
+    df = df.query("type == 'chp'")
     df = df[df['status'] == 'operating']
     df = df.query("bus in @focus_full")
     carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas'}
