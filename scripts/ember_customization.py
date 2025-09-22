@@ -246,4 +246,4 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
                 lifetime=lifetimes,
                 reversed=reverseds
             )
-            print(f"Added {len(link_names)} {map_carrier} CHPs")
+            logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
