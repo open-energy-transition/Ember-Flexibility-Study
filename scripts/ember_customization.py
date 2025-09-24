@@ -165,11 +165,8 @@ def apply_custom_pf_constraint(n,
     
 def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map):
     focus_full= country_code_map.keys()
-    df = pd.read_csv(CHP_ppl_fn, encoding='latin-1')
-    df = df.rename(columns={'lon': 'x', 'lat': 'y'})
-    df = df.query("type == 'chp'")
-    df = df.query("status == 'operating'")
-    df = df.query("bus in @focus_full")
+    df = pd.read_csv(CHP_ppl_fn, encoding='latin-1').rename(columns={'lon': 'x', 'lat': 'y'})
+    df = df.query("type == 'chp' and status == 'operating' and bus in @focus_full")
     carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas'}
     
     for orig_carrier in df['carrier'].unique():
