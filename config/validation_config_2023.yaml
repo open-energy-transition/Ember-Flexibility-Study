@@ -154,3 +154,10 @@ ember_settings:
   nuclear_decommissioning: true
   ember_gas_price: true
   hourly_carbon_prices: false
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL

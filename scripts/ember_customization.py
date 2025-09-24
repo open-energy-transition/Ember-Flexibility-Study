@@ -163,8 +163,7 @@ def apply_custom_pf_constraint(n,
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
     
     
-def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
-    country_code_map = {'Poland': 'PL', 'Czechia': 'CZ', 'Greece': 'GR', 'Germany': 'DE', 'Italy': 'IT', 'Netherlands': 'NL'}
+def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map):
     focus_full= country_code_map.keys()
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1')
     df = df.rename(columns={'lon': 'x', 'lat': 'y'})
@@ -209,7 +208,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn):
         
         if nearest_pairs.empty:
             continue
-        nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.45)
+        nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.32)
         nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
         link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
         bus0s = [f"EU {map_carrier}"] * len(nearest_pairs)
