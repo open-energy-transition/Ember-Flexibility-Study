@@ -1,6 +1,7 @@
 
 ..
-  SPDX-FileCopyrightText: Open Energy Transition gGmbH and contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+  SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+  SPDX-FileCopyrightText: Open Energy Transition gGmbH
 
   SPDX-License-Identifier: CC-BY-4.0
 
@@ -48,6 +49,8 @@ Upcoming Release
 
 * Fix `retrieve_eurostat_data` and `retrieve_eurostat_household_data` on Windows by avoiding a double access to a temporary file.
   (https://github.com/PyPSA/pypsa-eur/pull/1825)
+
+* Remove pinned environment files mention in the pre-commit-config-yaml (https://github.com/PyPSA/pypsa-eur/pull/1837)
 
 
 PyPSA-Eur v2025.07.0 (11th July 2025)
