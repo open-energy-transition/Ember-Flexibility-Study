@@ -6585,7 +6585,7 @@ if __name__ == "__main__":
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
-    country_code_map = snakemake.config['ember_settings']['chp_countries']   
+    country_code_map = snakemake.config['ember_settings'].get('chp_countries', {})
     include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
 
     n.export_to_netcdf(snakemake.output[0])
