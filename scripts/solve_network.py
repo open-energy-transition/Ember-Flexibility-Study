@@ -1421,6 +1421,7 @@ if __name__ == "__main__":
     update_config_from_wildcards(snakemake.config, snakemake.wildcards)
 
     solve_opts = snakemake.params.solving["options"]
+    ember_hotfix= snakemake.params.ember_hotfix
 
     np.random.seed(solve_opts.get("seed", 123))
 
@@ -1435,6 +1436,16 @@ if __name__ == "__main__":
         co2_sequestration_potential=snakemake.params["co2_sequestration_potential"],
         limit_max_growth=snakemake.params.get("sector", {}).get("limit_max_growth"),
     )
+
+    if ember_hotfix:
+        n.remove("Store", "EU gas Store")
+        n.remove("Store", "EU coal Store")
+        n.remove("Store", "EU lignite Store")
+        
+        n.links.loc[['IT0 0 CCGT', 'IT4 0 CCGT'], 'efficiency'] = 0.475
+        
+        n.links.loc[['DE0 0 CCGT', 'DE0 1 CCGT'], 'p_nom'] *= 0.69  
+
 
     logging_frequency = snakemake.config.get("solving", {}).get(
         "mem_logging_frequency", 30

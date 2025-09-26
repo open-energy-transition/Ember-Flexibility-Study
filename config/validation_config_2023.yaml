@@ -67,6 +67,8 @@ pypsa_eur:
   - solar
   - ror
 
+ember_hotfix: true
+
 electricity:
   conventional_generation:
     from_entsoe: false
@@ -138,7 +140,7 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 85.59
+    co2: 80
 
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
