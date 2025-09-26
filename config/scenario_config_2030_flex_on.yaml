@@ -1,12 +1,12 @@
 run:
-  name: scenario_2030
+  name: scenario_2030_flex_on
 scenario:
   clusters:
   - 39
   opts:
   - ''
   sector_opts:
-  - 61seg
+  - 60seg
   planning_horizons:
   - 2030
 snapshots:
@@ -29,7 +29,6 @@ atlite:
       dx: 0.3
       dy: 0.3
       time: ['2023', '2023']
-
 renewable:
   onwind:
     correction_factor: 0.93
@@ -65,7 +64,7 @@ electricity:
   custom_powerplants: (DateIn <= 2030 and DateOut >= 2030)
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2030 and DateOut >= 2030)
   estimate_renewable_capacities:
-    enable: true
+    enable: false
     from_gem: false
     year: 2030
     expansion_limit: false
@@ -89,11 +88,41 @@ sector:
   transport: true
   heating: true
   biomass: true
-  industry: false
+  industry: true
   shipping: false
   aviation: false
   agriculture: false
   gas_network: false
+  transport:
+    bev_dsm: true
+    v2g: true
+    land_transport_electric_share: 0.45
+    bev_dsm_availability: 0.5
+    bev_energy: 0.05
+    bev_charge_efficiency: 0.9
+    bev_charge_rate: 0.011
+    bev_avail_max: 0.95
+    bev_avail_mean: 0.8
+    bev_dsm_restriction_value: 0.75
+    bev_dsm_restriction_time: 7
+    transport_electric_efficiency: 53.19
+    transport_heating_deadband_upper: 20
+    transport_heating_deadband_lower: 15
+    EV_lower_degree_factor: 0.98
+    EV_upper_degree_factor: 0.8
+  heating:
+    time_dep_hp_cop: true
+    tes: true
+    tes_tau:
+      decentral: 3
+      central: 180
+    marginal_cost_heat_vent: 0.02
+    heat_pump_sink_T: 55
+    heat_source_cooling: 6
+    heat_pump_cop_approximation:
+      refrigerant: ammonia
+    home_battery_storage: true
+  
   conventional_generation:
     OCGT: gas
     CCGT: gas
@@ -117,6 +146,7 @@ costs:
   emission_prices:
     enable: true
     co2: 85.59
+  
 clustering:
   exclude_carriers:
   - coal
@@ -131,3 +161,10 @@ ember_settings:
   nuclear_decommissioning: false
   ember_gas_price: true
   hourly_carbon_prices: false
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL

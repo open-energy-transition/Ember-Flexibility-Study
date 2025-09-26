@@ -1,5 +1,5 @@
 run:
-  name: scenario_2035
+  name: scenario_2035_flex_on
 scenario:
   clusters:
   - 39
@@ -29,7 +29,6 @@ atlite:
       dx: 0.3
       dy: 0.3
       time: ['2023', '2023']
-
 renewable:
   onwind:
     correction_factor: 0.93
@@ -56,7 +55,7 @@ electricity:
     from_entsoe: false
     year: 2035
   co2limit_enable: false
-  co2limit:  1.35e+9 
+  co2limit: 1.35e+9
   extendable_carriers:
     Generator: []
     StorageUnit: []
@@ -65,9 +64,9 @@ electricity:
   custom_powerplants: (DateIn <= 2035 and DateOut >= 2035)
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2035 and DateOut >= 2035)
   estimate_renewable_capacities:
-    enable: true
+    enable: false
     from_gem: false
-    year: 2023
+    year: 2035
     expansion_limit: false
     technology_mapping:
       Offshore: offwind-ac
@@ -94,6 +93,35 @@ sector:
   aviation: false
   agriculture: false
   gas_network: false
+  bev_dsm: true
+  v2g: true
+  land_transport_electric_share: 0.45
+  bev_dsm_availability: 0.5
+  bev_energy: 0.05
+  bev_charge_efficiency: 0.9
+  bev_charge_rate: 0.011
+  bev_avail_max: 0.95
+  bev_avail_mean: 0.8
+  bev_dsm_restriction_value: 0.75
+  bev_dsm_restriction_time: 7
+  transport_electric_efficiency: 53.19
+  transport_heating_deadband_upper: 20
+  transport_heating_deadband_lower: 15
+  EV_lower_degree_factor: 0.98
+  EV_upper_degree_factor: 0.8
+  time_dep_hp_cop: true
+  tes: true
+  tes_tau:
+    decentral: 3
+    central: 180
+  marginal_cost_heat_vent: 0.02
+  heat_pump_sink_T: 55
+  heat_source_cooling: 6
+  heat_pump_cop_approximation:
+    refrigerant: ammonia
+
+
+    
   conventional_generation:
     OCGT: gas
     CCGT: gas
@@ -128,6 +156,13 @@ ember_settings:
   ntc: false
   ntc_cross_country_pf_restriction: false
   ramping: false
-  nuclear_decommissioning: true
+  nuclear_decommissioning: false
   ember_gas_price: true
   hourly_carbon_prices: false
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL

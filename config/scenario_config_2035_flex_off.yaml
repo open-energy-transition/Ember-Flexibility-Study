@@ -1,0 +1,191 @@
+run:
+  name: scenario_2035_flex_off
+scenario:
+  clusters:
+  - 39
+  opts:
+  - ''
+  sector_opts:
+  - 60seg
+  planning_horizons:
+  - 2035
+snapshots:
+  start: '2023-01-01'
+  end: '2024-01-01'
+countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
+atlite:
+  cutout_directory: cutouts
+  default_cutout: europe-2023-sarah3-era5
+  nprocesses: 4
+  show_progress: true
+  cutouts:
+    # use 'base' to determine geographical bounds and time span from config
+    # base:
+      # module: era5
+    europe-2023-sarah3-era5:
+      module: [sarah, era5] # in priority order
+      x: [-12., 42.]
+      y: [33., 72.]
+      dx: 0.3
+      dy: 0.3
+      time: ['2023', '2023']
+renewable:
+  onwind:
+    correction_factor: 0.93
+  solar:
+    correction_factor: 0.854337
+lines:
+  s_max_pu: 0.5
+links:
+  under_construction: remove
+  max_extension: 0
+transmission_projects:
+  enable: false
+pypsa_eur:
+  Generator:
+  - onwind
+  - offwind-ac
+  - offwind-dc
+  - offwind-float
+  - solar-hsat
+  - solar
+  - ror
+electricity:
+  conventional_generation:
+    from_entsoe: false
+    year: 2035
+  co2limit_enable: false
+  co2limit: 1.35e+9
+  extendable_carriers:
+    Generator: []
+    StorageUnit: []
+    Store: []
+  transmission_limit: v1.0
+  custom_powerplants: (DateIn <= 2035 and DateOut >= 2035)
+  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2035 and DateOut >= 2035)
+  estimate_renewable_capacities:
+    enable: true
+    from_gem: false
+    year: 2035
+    expansion_limit: false
+    technology_mapping:
+      Offshore: offwind-ac
+      Onshore: onwind
+      PV: solar
+load:
+  fill_gaps:
+    enable: true
+    interpolate_limit: 3
+    time_shift_for_large_gaps: 1w
+  manual_adjustments: false
+  scaling_factor: 1.0
+  fixed_year: false
+  supplement_synthetic: true
+  distribution_key:
+    gdp: 0.6
+    population: 0.4
+sector:
+  transport: true
+  heating: true
+  biomass: true
+  industry: false
+  shipping: false
+  aviation: false
+  agriculture: false
+  gas_network: false
+  transport:
+    bev_dsm: false
+    v2g: false
+    land_transport_electric_share: 0.45
+    bev_dsm_availability: 0
+    bev_energy: 0.05
+    bev_charge_efficiency: 0.9
+    bev_charge_rate: 0.011
+    bev_avail_max: 0
+    bev_avail_mean: 0
+    bev_dsm_restriction_value: 0
+    bev_dsm_restriction_time: 0
+    transport_electric_efficiency: 53.19
+    transport_heating_deadband_upper: 20
+    transport_heating_deadband_lower: 15
+    EV_lower_degree_factor: 0.98
+    EV_upper_degree_factor: 0.8
+  heating:
+    time_dep_hp_cop: false
+    tes: false
+    tes_tau:
+      decentral: 0
+      central: 0
+    heat_vent: false
+    marginal_cost_heat_vent: 0
+    heat_pump_sink_T: 55
+    heat_source_cooling: 6
+    heat_pump_cop_approximation:
+      refrigerant: ammonia
+    home_battery_storage: false
+  industry:
+    Steel:
+      St_primary_fraction: 0
+      DRI_fraction: 0
+      H2_DRI: 0
+      elec_DRI: 0
+    Aluminium:
+      Al_primary_fraction: 0
+    Ammonia:
+      MWh_elec_per_tNH3_SMR: 0
+      MWh_H2_per_tNH3_electrolysis: 0
+      MWh_elec_per_tNH3_electrolysis: 0
+    HVC:
+      HVC_mechanical_recycling_fraction: 0
+      HVC_chemical_recycling_fraction: 0
+      MWh_elec_per_tHVC_mechanical_recycling: 0
+      MWh_elec_per_tHVC_chemical_recycling: 0
+    Chlorine:
+      MWh_elec_per_tCl: 0
+    Methanol:
+      MWh_elec_per_tMeOH: 0
+  conventional_generation:
+    OCGT: gas
+    CCGT: gas
+    coal: coal
+    lignite: lignite
+    nuclear: uranium
+    oil: oil
+  keep_existing_capacities: true
+costs:
+  year: 2035
+  fuel:
+    gas: 40.45
+    coal: 16.71
+    lignite: 7.7
+    oil: 46.8
+  VOM:
+    OCGT: 1
+    CCGT: 1
+    coal: 2.3
+    lignite: 2.3
+  emission_prices:
+    enable: true
+    co2: 85.59
+
+clustering:
+  exclude_carriers:
+  - coal
+  - nuclear
+  - lignite
+simplify_network:
+  remove_stubs_across_borders: true
+ember_settings:
+  ntc: false
+  ntc_cross_country_pf_restriction: false
+  ramping: false
+  nuclear_decommissioning: false
+  ember_gas_price: true
+  hourly_carbon_prices: false
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL
