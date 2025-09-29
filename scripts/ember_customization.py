@@ -237,7 +237,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
                 capital_cost=0,
                 marginal_cost=costs.at[map_carrier, 'VOM'],
                 efficiency=nearest_pairs['eff'].tolist(),
-                efficiency2=0.4,
+                efficiency2=nearest_pairs['heat_eff'].tolist(),
                 efficiency3=costs.at[map_carrier, 'CO2 intensity'],
                 lifetime=25,
                 reversed=False
