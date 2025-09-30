@@ -1439,7 +1439,7 @@ if __name__ == "__main__":
 
     if snakemake.config["ember_settings"].get("ember_store_fix", False):
         apply_ember_store_fix(n)
-        logger.info("Applied Ember store fix adjustments.") 
+        logger.info("Removed gas, coal and lignite store components to accomodate for hourly price fix adjustments.") 
 
 
     logging_frequency = snakemake.config.get("solving", {}).get(
