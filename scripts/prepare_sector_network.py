@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
-# SPDX-FileCopyrightText: Open Energy Transition gGmbH
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH and contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
 #
 # SPDX-License-Identifier: MIT
 """
@@ -47,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices, include_coal_chps_for_selected_countries, set_line_s_nom_to_max_historical_flows
 )
 
 spatial = SimpleNamespace()
@@ -6586,5 +6585,9 @@ if __name__ == "__main__":
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
-
+    country_code_map = snakemake.config['ember_settings'].get('chp_countries', {})
+    include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
+    if snakemake.config['ember_settings'].get('historical_flows', False):
+       set_line_s_nom_to_max_historical_flows(n, snakemake.input.historical_flows_csv)
+       logger.info("Set line s_nom based on max historical flows.")
     n.export_to_netcdf(snakemake.output[0])

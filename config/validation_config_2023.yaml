@@ -11,7 +11,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - '2190seg'
+  - '3H'
   planning_horizons:
   - 2025
 
@@ -66,6 +66,8 @@ pypsa_eur:
   - solar-hsat
   - solar
   - ror
+
+ember_hotfix: true
 
 electricity:
   conventional_generation:
@@ -138,7 +140,7 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 85.59
+    co2: 80
 
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
@@ -154,3 +156,11 @@ ember_settings:
   nuclear_decommissioning: true
   ember_gas_price: true
   hourly_carbon_prices: false
+  historical_flows: true
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL
