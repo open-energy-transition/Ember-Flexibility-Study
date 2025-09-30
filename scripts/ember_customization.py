@@ -230,7 +230,9 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
                 reversed=False
             )
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
-def apply_ember_store_fix(n):
+
+
+def apply_hourly_price_fix(n):
     for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
         if store in n.stores.index:
             n.remove("Store", store)
