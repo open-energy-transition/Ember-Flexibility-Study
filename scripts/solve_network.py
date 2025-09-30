@@ -54,7 +54,7 @@ from scripts._helpers import (
 )
 
 from scripts.ember_customization import (
-    apply_custom_pf_constraint, apply_ember_store_fix,
+    apply_custom_pf_constraint, apply_hourly_price_fix,
 )
 
 logger = logging.getLogger(__name__)
