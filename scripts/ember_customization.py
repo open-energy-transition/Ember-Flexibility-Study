@@ -209,12 +209,6 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
         nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
         link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
         efficiency2s = nearest_pairs['heat_eff'].tolist()
-        efficiency3s = [costs.at[map_carrier, 'CO2 intensity']] * len(nearest_pairs)
-        marginal_costs = [costs.at[map_carrier, 'VOM']] * len(nearest_pairs)
-        capital_costs = [0] * len(nearest_pairs)
-        lifetimes = [25] * len(nearest_pairs)
-        p_nom_extendables = [False] * len(nearest_pairs)
-        reverseds = [False] * len(nearest_pairs)
         
         if link_names:
             n.add(
