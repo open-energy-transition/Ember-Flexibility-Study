@@ -1421,7 +1421,6 @@ if __name__ == "__main__":
     update_config_from_wildcards(snakemake.config, snakemake.wildcards)
 
     solve_opts = snakemake.params.solving["options"]
-    
 
     np.random.seed(solve_opts.get("seed", 123))
 
