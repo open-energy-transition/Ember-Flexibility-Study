@@ -67,8 +67,6 @@ pypsa_eur:
   - solar
   - ror
 
-ember_hotfix: true
-
 electricity:
   conventional_generation:
     from_entsoe: false
@@ -156,6 +154,7 @@ ember_settings:
   nuclear_decommissioning: true
   ember_gas_price: true
   hourly_carbon_prices: false
+  ember_store_fix: true
   chp_countries:
     Poland: PL
     Czechia: CZ

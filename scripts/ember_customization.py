@@ -243,3 +243,10 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
                 reversed=False
             )
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
+def apply_ember_store_fix(n):
+    for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
+        if store in n.stores.index:
+            n.remove("Store", store)
+    n.links.loc[['IT0 0 CCGT', 'IT4 0 CCGT'], 'efficiency'] = 0.475
+    n.links.loc[['DE0 0 CCGT', 'DE0 1 CCGT'], 'p_nom'] *= 0.69
+            

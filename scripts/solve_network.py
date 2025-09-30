@@ -54,7 +54,7 @@ from scripts._helpers import (
 )
 
 from scripts.ember_customization import (
-    apply_custom_pf_constraint,
+    apply_custom_pf_constraint, apply_ember_store_fix,
 )
 
 logger = logging.getLogger(__name__)
@@ -1437,14 +1437,9 @@ if __name__ == "__main__":
         limit_max_growth=snakemake.params.get("sector", {}).get("limit_max_growth"),
     )
 
-    if ember_hotfix:
-        n.remove("Store", "EU gas Store")
-        n.remove("Store", "EU coal Store")
-        n.remove("Store", "EU lignite Store")
-        
-        n.links.loc[['IT0 0 CCGT', 'IT4 0 CCGT'], 'efficiency'] = 0.475
-        
-        n.links.loc[['DE0 0 CCGT', 'DE0 1 CCGT'], 'p_nom'] *= 0.69  
+    if snakemake.config["ember_settings"].get("ember_store_fix", False):
+        apply_ember_store_fix(n)
+        logger.info("Applied Ember store fix adjustments.") 
 
 
     logging_frequency = snakemake.config.get("solving", {}).get(
