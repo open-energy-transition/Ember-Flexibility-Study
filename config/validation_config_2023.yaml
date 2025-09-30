@@ -154,7 +154,7 @@ ember_settings:
   nuclear_decommissioning: true
   ember_gas_price: true
   hourly_carbon_prices: false
-  ember_store_fix: true
+  hourly_price_fix: true # True will remove gas, coal and lignite Stores
   chp_countries:
     Poland: PL
     Czechia: CZ
