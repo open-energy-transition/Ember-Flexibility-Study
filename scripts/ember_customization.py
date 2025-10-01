@@ -236,6 +236,5 @@ def apply_hourly_price_fix(n):
     for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
         if store in n.stores.index:
             n.remove("Store", store)
-    n.links.loc[['IT0 0 CCGT', 'IT4 0 CCGT'], 'efficiency'] = 0.475
-    n.links.loc[['DE0 0 CCGT', 'DE0 1 CCGT'], 'p_nom'] *= 0.69
+   
             
