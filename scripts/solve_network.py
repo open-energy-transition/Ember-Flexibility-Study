@@ -1437,7 +1437,7 @@ if __name__ == "__main__":
     )
 
     if snakemake.config["ember_settings"].get("hourly_price_fix", False):
-        apply_ember_store_fix(n)
+        apply_hourly_price_fix(n)
         logger.info("Removed gas, coal and lignite store components to accomodate for hourly price fix adjustments.") 
 
 

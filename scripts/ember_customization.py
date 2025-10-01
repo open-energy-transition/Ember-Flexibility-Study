@@ -208,7 +208,6 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
         nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.32)
         nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
         link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
-        efficiency2s = nearest_pairs['heat_eff'].tolist()
         
         if link_names:
             n.add(
