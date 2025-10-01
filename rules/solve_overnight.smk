@@ -11,7 +11,7 @@ rule solve_sector_network:
             "sector", "co2_sequestration_potential", default=200
         ),
         custom_extra_functionality=input_custom_extra_functionality,
-        ember_hotfix=config_provider("ember_settings", "hourly_price_fix")
+        hourly_price_fix=config_provider("ember_settings", "hourly_price_fix")
     input:
         network=resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
