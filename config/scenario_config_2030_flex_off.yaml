@@ -88,41 +88,38 @@ sector:
   transport: true
   heating: true
   biomass: true
-  industry: false
+  industry: true
   shipping: false
   aviation: false
   agriculture: false
   gas_network: false
-  transport:
-    bev_dsm: false
-    v2g: false
-    land_transport_electric_share: 0
-    bev_dsm_availability: 0
-    bev_energy: 0.05
-    bev_charge_efficiency: 0.9
-    bev_charge_rate: 0.011
-    bev_avail_max: 0
-    bev_avail_mean: 0
-    bev_dsm_restriction_value: 0
-    bev_dsm_restriction_time: 0
-    transport_electric_efficiency: 53.19
-    transport_heating_deadband_upper: 20
-    transport_heating_deadband_lower: 15
-    EV_lower_degree_factor: 0.98
-    EV_upper_degree_factor: 0.8
-  heating:
-    time_dep_hp_cop: false
-    tes: false
-    tes_tau:
-      decentral: 0
-      central: 0
-    marginal_cost_heat_vent: 0
-    heat_pump_sink_T: 55
-    heat_source_cooling: 6
-    heat_pump_cop_approximation:
-      refrigerant: ammonia
-    home_battery_storage: false
- 
+  bev_dsm: false
+  v2g: false
+  land_transport_electric_share: 0.3
+  bev_dsm_availability: 0
+  bev_energy: 0.05
+  bev_charge_efficiency: 0.9
+  bev_charge_rate: 0.011
+  bev_avail_max: 0.95
+  bev_avail_mean: 0.8
+  bev_dsm_restriction_value: 0.75
+  bev_dsm_restriction_time: 7
+  transport_electric_efficiency: 53.19
+  transport_heating_deadband_upper: 20
+  transport_heating_deadband_lower: 15
+  EV_lower_degree_factor: 0.98
+  EV_upper_degree_factor: 0.8
+  time_dep_hp_cop: true
+  tes: true
+  tes_tau:
+    decentral: 3
+    central: 180
+  marginal_cost_heat_vent: 0.02
+  heat_pump_sink_T: 55
+  heat_source_cooling: 6
+  heat_pump_cop_approximation:
+  refrigerant: ammonia
+  home_battery_storage: true
   conventional_generation:
     OCGT: gas
     CCGT: gas
