@@ -164,7 +164,7 @@ if config["enable"]["retrieve"] and config["enable"].get("retrieve_cutout", True
                 CDIR.joinpath("{cutout}.nc").as_posix(),
             shell:
                 """
-                gdown https://drive.google.com/file/d/16HrlB5FejyB4uE5hG04tAxWh6tFVM6xL/view?usp=drive_link -O {output}
+                gdown https://drive.google.com/file/d/16HrlB5FejyB4uE5hG04tAxWh6tFVM6xL -O {output}
                 """
 
     else:
