@@ -61,8 +61,6 @@ import pypsa
 import xarray as xr
 from pypsa.clustering.spatial import DEFAULT_ONE_PORT_STRATEGIES, normed_or_uniform
 
-from scripts.apply_ntcs import apply_ntc
-
 from scripts._helpers import (
     PYPSA_V1,
     configure_logging,
@@ -71,6 +69,7 @@ from scripts._helpers import (
     set_scenario_config,
     update_p_nom_max,
 )
+from scripts.apply_ntcs import apply_ntc
 
 if PYPSA_V1:
     pypsa.options.params.add.return_names = True
@@ -615,7 +614,7 @@ def attach_wind_and_solar(
                 caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
                 caps = pd.Series(
                     data=ds.indexes["bus"].get_level_values("bus").map(caps),
-                    index=ds.indexes["bus"]
+                    index=ds.indexes["bus"],
                 ).fillna(0)
             else:
                 caps = pd.Series(index=ds.indexes["bus"]).fillna(0)

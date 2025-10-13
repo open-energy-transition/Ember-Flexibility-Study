@@ -22,29 +22,27 @@ scenario:
 
 
 snapshots:
-  start: "2023-01-01"
-  end:   "2024-01-01"
+  start: "2013-01-01"
+  end: "2013-01-31"
 
 countries: ['IT', 'AT', 'CH', 'DE']
 
+enable:
+  validate_ember: true
 
 atlite:
   cutout_directory: cutouts
-  default_cutout: europe-2023-sarah3-era5
+  default_cutout: europe-jan-2023-sarah3-era5
   nprocesses: 4
   show_progress: true
   cutouts:
-    # use 'base' to determine geographical bounds and time span from config
-    # base:
-      # module: era5
-    europe-2023-sarah3-era5:
+    europe-jan-2023-sarah3-era5:
       module: [sarah, era5] # in priority order
       x: [-12., 42.]
       y: [33., 72.]
       dx: 0.3
       dy: 0.3
-      time: ['2023', '2023']
-      
+      time: ["2013-01-01", "2013-01-31"]
 
 lines:
   under_construction: remove
@@ -77,7 +75,7 @@ electricity:
       Offshore: offwind-ac
       Onshore: onwind
       PV: solar
-      
+
 load:
   fill_gaps:
     enable: true
@@ -109,7 +107,7 @@ costs:
   year: 2025
 
 ember_settings:
-   ntc: false
-   ntc_cross_country_pf_restriction: false
-   ramping: false
-   nuclear_decommissioning: false
+  ntc: false
+  ntc_cross_country_pf_restriction: false
+  ramping: false
+  nuclear_decommissioning: false

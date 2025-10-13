@@ -52,7 +52,6 @@ from scripts._helpers import (
     set_scenario_config,
     update_config_from_wildcards,
 )
-
 from scripts.ember_customization import (
     apply_custom_pf_constraint,
 )
