@@ -9,6 +9,8 @@ from shutil import move, unpack_archive
 from shutil import copy2 as shcopy2
 from zipfile import ZipFile
 
+from snakemake.io import temp
+
 if config["enable"].get("retrieve", "auto") == "auto":
     config["enable"]["retrieve"] = has_internet_access()
 
@@ -162,9 +164,11 @@ if config["enable"]["retrieve"] and config["enable"].get("retrieve_cutout", True
         rule retrieve_cutout_test:
             output:
                 CDIR.joinpath("{cutout}.nc").as_posix(),
+                temp(CDIR.joinpath("{cutout}.nc.status").as_posix())
             shell:
                 """
-                gdown https://drive.google.com/file/d/16HrlB5FejyB4uE5hG04tAxWh6tFVM6xL -O {output}
+                gdown --id 16HrlB5FejyB4uE5hG04tAxWh6tFVM6xL -O {output[0]}
+                echo $? > {output[1]}
                 """
 
     else:
