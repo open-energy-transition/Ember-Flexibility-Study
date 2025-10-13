@@ -1426,6 +1426,7 @@ rule prepare_sector_network:
         hourly_co2_prices="validation/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
         chp_data="validation/ember_data/combined_chp.csv",
         historical_flows_csv="validation/ember_data/comparison_results.csv",
+
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"

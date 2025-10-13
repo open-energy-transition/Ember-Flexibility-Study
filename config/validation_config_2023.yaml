@@ -157,6 +157,7 @@ ember_settings:
   ember_gas_price: true
   hourly_carbon_prices: false
   historical_flows: true
+  hourly_price_fix: true # True will remove gas, coal and lignite Stores
   chp_countries:
     Poland: PL
     Czechia: CZ

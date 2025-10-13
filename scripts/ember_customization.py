@@ -208,20 +208,6 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
         nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.32)
         nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
         link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
-        bus0s = [f"EU {map_carrier}"] * len(nearest_pairs)
-        bus1s = nearest_pairs['nearest_bus'].tolist()
-        bus2s = nearest_pairs['heat_bus'].tolist()
-        bus3s = ["co2 atmosphere"] * len(nearest_pairs)
-        carriers_list = [f"urban central {map_carrier} CHP"] * len(nearest_pairs)
-        p_noms = (nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist()
-        efficiencies = nearest_pairs['eff'].tolist()
-        efficiency2s = nearest_pairs['heat_eff'].tolist()
-        efficiency3s = [costs.at[map_carrier, 'CO2 intensity']] * len(nearest_pairs)
-        marginal_costs = [costs.at[map_carrier, 'VOM']] * len(nearest_pairs)
-        capital_costs = [0] * len(nearest_pairs)
-        lifetimes = [25] * len(nearest_pairs)
-        p_nom_extendables = [False] * len(nearest_pairs)
-        reverseds = [False] * len(nearest_pairs)
         
         if link_names:
             n.add(
@@ -237,12 +223,13 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
                 capital_cost=0,
                 marginal_cost=costs.at[map_carrier, 'VOM'],
                 efficiency=nearest_pairs['eff'].tolist(),
-                efficiency2=0.4,
+                efficiency2=nearest_pairs['heat_eff'].tolist(),
                 efficiency3=costs.at[map_carrier, 'CO2 intensity'],
                 lifetime=25,
                 reversed=False
             )
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
+
 def set_line_s_nom_to_max_historical_flows(n, csv_fn):
     df = pd.read_csv(csv_fn)
     df = df.query("`Max Historical Flow [MW]`.notna()")
@@ -265,3 +252,10 @@ def set_line_s_nom_to_max_historical_flows(n, csv_fn):
             logger.info(f"Set nominal capacity to {max_flow} MW for interconnections between {country1} and {country2}")
         else:
             logger.warning(f"No interconnections found between {country1} and {country2}")
+
+
+def apply_hourly_price_fix(n):
+    for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
+        if store in n.stores.index:
+            n.remove("Store", store)
+

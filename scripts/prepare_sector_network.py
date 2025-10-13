@@ -6590,4 +6590,5 @@ if __name__ == "__main__":
     if snakemake.config['ember_settings'].get('historical_flows', False):
        set_line_s_nom_to_max_historical_flows(n, snakemake.input.historical_flows_csv)
        logger.info("Set line s_nom based on max historical flows.")
+
     n.export_to_netcdf(snakemake.output[0])
