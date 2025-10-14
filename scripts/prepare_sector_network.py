@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_coal_chps_for_selected_countries, set_line_s_nom_to_max_historical_flows
 )
 
 spatial = SimpleNamespace()
@@ -2252,7 +2252,7 @@ def add_EVs(
     number_cars: pd.Series,
     temperature: pd.DataFrame,
     spatial: SimpleNamespace,
-    cf_transport: dict,
+    options: dict,
 ) -> None:
     """
     Add electric vehicle (EV) infrastructure to the network.
@@ -2280,8 +2280,8 @@ def add_EVs(
     spatial : SimpleNamespace
         Spatial configuration containing at least:
         - nodes: list or Index of node names
-    cf_transport : dict
-        Transport configuration containing at least:
+    options : dict
+        Configuration options containing at least:
         - transport_electric_efficiency: float
         - transport_heating_deadband_lower: float
         - transport_heating_deadband_upper: float
@@ -2324,17 +2324,17 @@ def add_EVs(
     )
 
     # Calculate temperature-corrected efficiency
-    car_efficiency = cf_transport["transport_electric_efficiency"]
+    car_efficiency = options["transport_electric_efficiency"]
     efficiency = get_temp_efficency(
         car_efficiency,
         temperature,
-        cf_transport["transport_heating_deadband_lower"],
-        cf_transport["transport_heating_deadband_upper"],
-        cf_transport["EV_lower_degree_factor"],
-        cf_transport["EV_upper_degree_factor"],
+        options["transport_heating_deadband_lower"],
+        options["transport_heating_deadband_upper"],
+        options["EV_lower_degree_factor"],
+        options["EV_upper_degree_factor"],
     )
 
-    # Apply rolling average smoothing for power profile
+    # Apply rolling average smoothing to power profile
     p_shifted = (p_set + cycling_shift(p_set, 1) + cycling_shift(p_set, 2)) / 3
     cyclic_eff = p_set.div(p_shifted)
     efficiency *= cyclic_eff
@@ -2353,7 +2353,7 @@ def add_EVs(
     )
 
     # Add BEV chargers
-    p_nom = number_cars * cf_transport["bev_charge_rate"] * electric_share
+    p_nom = number_cars * options["bev_charge_rate"] * electric_share
     n.add(
         "Link",
         spatial.nodes,
@@ -2364,15 +2364,15 @@ def add_EVs(
         carrier="BEV charger",
         p_max_pu=avail_profile.loc[n.snapshots, spatial.nodes],
         lifetime=1,
-        efficiency=cf_transport["bev_charge_efficiency"],
+        efficiency=options["bev_charge_efficiency"],
     )
 
     # Add demand-side management components if enabled
-    if cf_transport["bev_dsm"]:
+    if options["bev_dsm"]:
         e_nom = (
             number_cars
-            * cf_transport["bev_energy"]
-            * cf_transport["bev_dsm_availability"]
+            * options["bev_energy"]
+            * options["bev_dsm_availability"]
             * electric_share
         )
 
@@ -2389,19 +2389,20 @@ def add_EVs(
         )
 
         # Add vehicle-to-grid if enabled
-        if cf_transport["v2g"]:
+        if options["v2g"]:
             n.add(
                 "Link",
                 spatial.nodes,
                 suffix=" V2G",
                 bus1=spatial.nodes,
                 bus0=spatial.nodes + " EV battery",
-                p_nom=p_nom * cf_transport["bev_dsm_availability"],
+                p_nom=p_nom * options["bev_dsm_availability"],
                 carrier="V2G",
                 p_max_pu=avail_profile.loc[n.snapshots, spatial.nodes],
                 lifetime=1,
-                efficiency=cf_transport["bev_charge_efficiency"],
+                efficiency=options["bev_charge_efficiency"],
             )
+
 
 def add_fuel_cell_cars(
     n: pypsa.Network,
@@ -2610,7 +2611,6 @@ def add_land_transport(
     dsm_profile_file,
     temp_air_total_file,
     cf_industry,
-    cf_transport,
     options,
     investment_year,
     nodes,
@@ -2681,18 +2681,18 @@ def add_land_transport(
     # temperature for correction factor for heating/cooling
     temperature = xr.open_dataarray(temp_air_total_file).to_pandas()
 
-    add_EVs(
-        n,
-        avail_profile,
-        dsm_profile,
-        p_set,
-        shares["electric"],
-        number_cars,
-        temperature,
-        spatial,
-        cf_transport,
-    )
-
+    if shares["electric"] > 0:
+        add_EVs(
+            n,
+            avail_profile,
+            dsm_profile,
+            p_set,
+            shares["electric"],
+            number_cars,
+            temperature,
+            spatial,
+            options,
+        )
 
     if shares["fuel_cell"] > 0:
         add_fuel_cell_cars(
@@ -2700,7 +2700,6 @@ def add_land_transport(
             p_set=p_set,
             fuel_cell_share=shares["fuel_cell"],
             temperature=temperature,
-            cf_transport=cf_transport,
             options=options,
             spatial=spatial,
         )
@@ -2712,10 +2711,10 @@ def add_land_transport(
             shares["ice"],
             temperature,
             cf_industry,
-            cf_transport=cf_transport,
-            spatial=spatial,
-            options=options,
+            spatial,
+            options,
         )
+
 
 def build_heat_demand(
     n, hourly_heat_demand_file, pop_weighted_energy_totals, heating_efficiencies
@@ -6318,7 +6317,7 @@ if __name__ == "__main__":
         spatial=spatial,
         options=options,
     )
-    cf_transport = snakemake.params.transport
+
     if options["transport"]:
         add_land_transport(
             n=n,
@@ -6329,7 +6328,6 @@ if __name__ == "__main__":
             dsm_profile_file=snakemake.input.dsm_profile,
             temp_air_total_file=snakemake.input.temp_air_total,
             cf_industry=cf_industry,
-            cf_transport=cf_transport,
             options=options,
             investment_year=investment_year,
             nodes=spatial.nodes,
@@ -6587,5 +6585,11 @@ if __name__ == "__main__":
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
+    country_code_map = snakemake.config['ember_settings']['chp_countries']
+    filter_chps = snakemake.config['ember_settings']['filter_chps']
+    include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map, filter_chps=filter_chps)
+    if snakemake.config['ember_settings'].get('historical_flows', False):
+       set_line_s_nom_to_max_historical_flows(n, snakemake.input.historical_flows_csv)
+       logger.info("Set line s_nom based on max historical flows.")
 
     n.export_to_netcdf(snakemake.output[0])
