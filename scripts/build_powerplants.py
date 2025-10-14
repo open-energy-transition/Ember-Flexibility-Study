@@ -80,7 +80,7 @@ logger = logging.getLogger(__name__)
 def add_custom_powerplants(ppl, custom_powerplants, custom_ppl_query=False):
     if not custom_ppl_query:
         return ppl
-    add_ppls = pd.read_csv(custom_powerplants, dtype={"bus": "str"})
+    add_ppls = pd.read_csv(custom_powerplants, dtype={"bus": "str"}, encoding='latin1')
     add_ppls["DateOut"] = add_ppls["DateOut"].fillna(add_ppls.DateOut.max())
     add_ppls.loc[add_ppls["DateIn"] == 0, "DateIn"] = add_ppls.DateIn.min()
     if isinstance(custom_ppl_query, str):
@@ -180,11 +180,12 @@ if __name__ == "__main__":
     if isinstance(ppl_query, str):
         ppl.query(ppl_query, inplace=True)
 
-    # add carriers from own powerplant files:
+    ppl = pd.DataFrame(columns=['Name', 'Fueltype', 'Technology', 'Set', 'Country', 'Capacity', 'Efficiency', 'DateIn', 'DateRetrofit', 'DateOut', 'lat', 'lon', 'EIC', 'projectID', 'DateMothball', 'Unnamed: 19', 'Unnamed: 20', 'Unnamed: 21', 'Unnamed: 22', 'Unnamed: 23', 'Unnamed: 24', 'Unnamed: 25'])
     custom_ppl_query = snakemake.params.custom_powerplants
+    custom_powerplants_file = snakemake.input.custom_powerplants 
     ppl = add_custom_powerplants(
-        ppl, snakemake.input.custom_powerplants, custom_ppl_query
-    )
+    ppl, custom_powerplants_file, custom_ppl_query
+                                )
 
     if countries_wo_ppl := set(countries) - set(ppl.Country.unique()):
         logger.warning(f"No powerplants known in: {', '.join(countries_wo_ppl)}")

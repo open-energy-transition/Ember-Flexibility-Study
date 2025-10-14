@@ -35,7 +35,7 @@ renewable:
   solar:
     correction_factor: 0.854337
 lines:
-  s_max_pu: 0.5
+  s_max_pu: 1
 links:
   under_construction: remove
   max_extension: 0
@@ -50,6 +50,13 @@ pypsa_eur:
   - solar-hsat
   - solar
   - ror
+  - solar-rooftop
+  StorageUnit:
+  - PHS
+  - hydro
+  - battery
+  - home_battery_storage
+  
 electricity:
   conventional_generation:
     from_entsoe: false
@@ -72,6 +79,7 @@ electricity:
       Offshore: offwind-ac
       Onshore: onwind
       PV: solar
+  
 load:
   fill_gaps:
     enable: true
@@ -132,10 +140,10 @@ sector:
 costs:
   year: 2030
   fuel:
-    gas: 40.45
-    coal: 16.71
-    lignite: 7.7
-    oil: 46.8
+    gas: 24.5
+    coal: 13.15
+    lignite: 10.44
+    oil: 34.67
   VOM:
     OCGT: 1
     CCGT: 1
@@ -159,6 +167,7 @@ ember_settings:
   nuclear_decommissioning: false
   ember_gas_price: true
   hourly_carbon_prices: false
+  historical_flows: True
   chp_countries:
     Poland: PL
     Czechia: CZ
@@ -166,3 +175,5 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
+  custom_powerplant_path: "data/custom_ppl_2030.csv"
