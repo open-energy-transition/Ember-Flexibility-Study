@@ -67,8 +67,6 @@ pypsa_eur:
   - solar
   - ror
 
-ember_hotfix: true
-
 electricity:
   conventional_generation:
     from_entsoe: false
@@ -86,7 +84,7 @@ electricity:
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2023 and DateOut >= 2023)
 
   estimate_renewable_capacities:
-    enable: false
+    enable: true
     from_gem: false
     year: 2023
     expansion_limit: false
@@ -156,6 +154,7 @@ ember_settings:
   nuclear_decommissioning: true
   ember_gas_price: true
   hourly_carbon_prices: false
+  hourly_price_fix: true # True will remove gas, coal and lignite Stores
   historical_ntc: true
   chp_countries:
     Poland: PL
