@@ -230,7 +230,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
             )
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
 
-def set_line_s_nom_to_max_historical_flows(n, csv_fn):
+def set_line_s_nom_to_ntc(n, ntc_fn):
     df = pd.read_csv(csv_fn)
     
     iso3_to_iso2 = {
