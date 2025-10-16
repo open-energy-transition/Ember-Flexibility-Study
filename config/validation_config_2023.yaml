@@ -67,8 +67,6 @@ pypsa_eur:
   - solar
   - ror
 
-ember_hotfix: true
-
 electricity:
   conventional_generation:
     from_entsoe: false
