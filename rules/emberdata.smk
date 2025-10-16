@@ -52,14 +52,6 @@ rule download_ember_data:
                 else:
                     logger.info(f"Already exists: {filepath}")
 
-rule download_ember_NTC_data:
-    output:
-        file="validation/ember_data/Reg_NTC"
-    shell:
-        """
-        gdown https://drive.google.com/uc?id=1GTo4UrI_X9ZCsgtM4KobO_pw-TTrEoDy -O {output.file}
-        """
-
 rule download_eurostat:
     output:
         "validation/eurostatdata/eurostat_nrg_bal_c_2023.csv"
