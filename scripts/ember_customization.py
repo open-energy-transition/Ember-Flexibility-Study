@@ -232,24 +232,57 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
 
 def set_line_s_nom_to_max_historical_flows(n, csv_fn):
     df = pd.read_csv(csv_fn)
-    df = df.query("`Max Historical Flow [MW]`.notna()")
-    for _, row in df.iterrows():
-        country1 = row['Focus Country']
-        country2 = row['Neighbor Country']
-        max_flow = row['Max Historical Flow [MW]']
+    
+    iso3_to_iso2 = {
+        'ALB': 'AL', 'ARM': 'AM', 'AUT': 'AT', 'AZE': 'AZ', 'BEL': 'BE', 'BGR': 'BG',
+        'BIH': 'BA', 'BLR': 'BY', 'CHE': 'CH', 'CZE': 'CZ', 'DEU': 'DE', 'DNK': 'DK',
+        'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB', 'GEO': 'GE',
+        'GRC': 'GR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE', 'ITA': 'IT', 'LTU': 'LT',
+        'LUX': 'LU', 'LVA': 'LV', 'MDA': 'MD', 'MKD': 'MK', 'MLT': 'MT', 'MNE': 'ME',
+        'NLD': 'NL', 'NOR': 'NO', 'POL': 'PL', 'PRT': 'PT', 'ROU': 'RO', 'RUS': 'RU',
+        'SRB': 'RS', 'SVK': 'SK', 'SVN': 'SI', 'SWE': 'SE', 'TUR': 'TR', 'UKR': 'UA',
+        'XKX': 'XK', 'CYP': 'CY', 'ISR': 'IL', 'DZA': 'DZ', 'MAR': 'MA', 'EGY': 'EG',
+        'SAU': 'SA', 'PSE': 'PS', 'LBY': 'LY', 'TUN': 'TN'
+    }
+    df['source_iso2'] = df['source_country_code'].map(iso3_to_iso2)
+    df['target_iso2'] = df['target_country_code'].map(iso3_to_iso2)
+    df = df.dropna(subset=['source_iso2', 'target_iso2'])
+    pairs = []
+    for index, row in df.iterrows():
+        pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
+        pairs.append(pair)
+    df['pair'] = pairs
+    pair_to_ntc = df.groupby('pair')['NTC_2030_MW'].mean()
+    focus_countries_3 = ['CZ', 'DE', 'GR', 'IT', 'NL', 'PL']
+    for pair, avg_flow in pair_to_ntc.items():
+        if avg_flow == 0:
+            continue
+        country1, country2 = pair
+        if country1 not in focus_countries_3 or country2 not in focus_countries_3:
+            continue
         buses1 = n.buses.query('country == @country1').index
         buses2 = n.buses.query('country == @country2').index
         lines_between = n.lines.query('(bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1)')
         links_between = n.links.query("carrier == 'DC' and ((bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1))")
         updated = False
         if not lines_between.empty:
-            n.lines.loc[lines_between.index, 's_nom'] = max_flow
+            current_total_s_nom = lines_between['s_nom'].sum()
+            if current_total_s_nom > 0:
+                scale_factor = avg_flow / current_total_s_nom
+                n.lines.loc[lines_between.index, 's_nom'] *= scale_factor
+            else:
+                n.lines.loc[lines_between.index, 's_nom'] = avg_flow / len(lines_between)
             updated = True
         if not links_between.empty:
-            n.links.loc[links_between.index, 'p_nom'] = max_flow
+            current_total_p_nom = links_between['p_nom'].sum()
+            if current_total_p_nom > 0:
+                scale_factor = avg_flow / current_total_p_nom
+                n.links.loc[links_between.index, 'p_nom'] *= scale_factor
+            else:
+                n.links.loc[links_between.index, 'p_nom'] = avg_flow / len(links_between)
             updated = True
         if updated:
-            logger.info(f"Set nominal capacity to {max_flow} MW for interconnections between {country1} and {country2}")
+            logger.info(f"Set nominal capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
         else:
             logger.warning(f"No interconnections found between {country1} and {country2}")
 
