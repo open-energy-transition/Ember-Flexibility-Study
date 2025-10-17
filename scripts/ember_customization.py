@@ -261,7 +261,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         if avg_flow == 0:
             continue
         country1, country2 = pair
-        if country1 not in focus_countries_3 or country2 not in focus_countries_3:
+        if country1 not in focus_countries_3 and country2 not in focus_countries_3:
             continue
         buses1 = n.buses.query('country == @country1').index
         buses2 = n.buses.query('country == @country2').index
