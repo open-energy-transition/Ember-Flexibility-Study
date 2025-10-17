@@ -231,7 +231,10 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
 
 def set_line_s_nom_to_ntc(n, ntc_fn):
-    df = pd.read_csv(csv_fn)
+    n_clusters = len(n.buses.query("carrier == 'AC'"))
+    if n_clusters > 39:
+         raise ValueError("This feature doesn't work for n_clusters > 39")
+    df = pd.read_csv(ntc_fn)
     
     iso3_to_iso2 = {
         'ALB': 'AL', 'ARM': 'AM', 'AUT': 'AT', 'AZE': 'AZ', 'BEL': 'BE', 'BGR': 'BG',
