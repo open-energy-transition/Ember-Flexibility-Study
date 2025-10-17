@@ -6588,7 +6588,7 @@ if __name__ == "__main__":
     country_code_map = snakemake.config['ember_settings'].get('chp_countries', {})
     include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
     if snakemake.config['ember_settings'].get('historical_ntc', False):
-       set_line_s_nom_to_max_historical_flows(n, snakemake.input.ember_ntc_csv)
+       set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
        logger.info("Restrict s_nom to NTC values")
 
     n.export_to_netcdf(snakemake.output[0])
