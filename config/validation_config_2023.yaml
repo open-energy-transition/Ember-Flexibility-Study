@@ -11,7 +11,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - '79seg'
+  - '3H'
   planning_horizons:
   - 2025
 
@@ -148,7 +148,6 @@ simplify_network:
   remove_stubs_across_borders: true
 
 ember_settings:
-  ntc: false
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: true
