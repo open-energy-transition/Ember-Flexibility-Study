@@ -285,7 +285,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
                 n.links.loc[links_between.index, 'p_nom'] = avg_flow / len(links_between)
             updated = True
         if updated:
-            logger.info(f"Set nominal capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
+            logger.info(f"Set capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
         else:
             logger.warning(f"No interconnections found between {country1} and {country2}")
 
