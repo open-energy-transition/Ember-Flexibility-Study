@@ -161,13 +161,16 @@ def apply_custom_pf_constraint(n,
     # 7) enforce band/cap
     m.add_constraints(energy >= E_min, name=f"{link_name}_annual_min")
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
-
+    
+    
 def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, filter_chps):
     focus_full = country_code_map.keys()
+    focus_full= country_code_map.keys()
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1').rename(columns={'lon': 'x', 'lat': 'y'})
     df = df.query(filter_chps)
     df = df.query("type == 'chp' and status == 'operating' and bus in @focus_full")
     carrier_mapping = {'hard coal': 'coal', 'lignite': 'lignite', 'gas': 'gas'}
+
     
     for orig_carrier in df['carrier'].unique():
         if orig_carrier not in carrier_mapping:
@@ -184,12 +187,13 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
         unique_countries = sub_df['country'].unique()
         power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
         power_buses = power_buses.reset_index().rename(
-            columns={
-                'Bus': 'bus_id', 
-                'x': 'bus_x',    
-                'y': 'bus_y'      
-            }
+                            columns={
+                                'Bus': 'bus_id', 
+                                'x': 'bus_x',    
+                                'y': 'bus_y'      
+                           }
         )
+                                                       
         if power_buses.empty:
             continue
         sub_df = sub_df.reset_index(drop=True)
@@ -209,7 +213,7 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
         
         if nearest_pairs.empty:
             continue
-        nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.45)
+        nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.32)
         nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
         link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
         
@@ -232,9 +236,13 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
                 lifetime=[25] * len(nearest_pairs),
                 reversed=[False] * len(nearest_pairs)
             )
-            
-def set_line_s_nom_to_max_historical_flows(n, csv_fn):
-    df = pd.read_csv(csv_fn)
+            logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
+
+def set_line_s_nom_to_ntc(n, ntc_fn):
+    n_clusters = len(n.buses.query("carrier == 'AC'"))
+    if n_clusters > 39:
+         raise ValueError("This feature doesn't work for n_clusters > 39")
+    df = pd.read_csv(ntc_fn)
     
     iso3_to_iso2 = {
         'ALB': 'AL', 'ARM': 'AM', 'AUT': 'AT', 'AZE': 'AZ', 'BEL': 'BE', 'BGR': 'BG',
@@ -249,13 +257,7 @@ def set_line_s_nom_to_max_historical_flows(n, csv_fn):
     }
     df['source_iso2'] = df['source_country_code'].map(iso3_to_iso2)
     df['target_iso2'] = df['target_country_code'].map(iso3_to_iso2)
-    missing_sources = df[df['source_iso2'].isna()]['source_country_code'].unique()
-    missing_targets = df[df['target_iso2'].isna()]['target_country_code'].unique()
-    all_missing = set(missing_sources) | set(missing_targets)
-    if all_missing:
-        logger.warning(f"Missing ISO2 for {', '.join(all_missing)}")
     df = df.dropna(subset=['source_iso2', 'target_iso2'])
-    
     pairs = []
     for index, row in df.iterrows():
         pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
@@ -291,6 +293,63 @@ def set_line_s_nom_to_max_historical_flows(n, csv_fn):
                 n.links.loc[links_between.index, 'p_nom'] = avg_flow / len(links_between)
             updated = True
         if updated:
-            logger.info(f"Set nominal capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
+            logger.info(f"Set capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
         else:
             logger.warning(f"No interconnections found between {country1} and {country2}")
+
+
+def apply_hourly_price_fix(n):
+    for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
+        if store in n.stores.index:
+            n.remove("Store", store)
+
+def fix_distribution_capacities(n, ppl_path): 
+    ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
+    # For rooftop solar
+    rooftop_df = ppl.query("Fueltype.str.strip().str.lower() == 'solar' and Technology.str.strip().str.lower() == 'solar-rooftop'")
+    agg_capacity_rooftop = rooftop_df.groupby('bus')['Capacity'].sum()
+
+    for bus, cap in agg_capacity_rooftop.items():
+        matching_gens = n.generators.query("bus == @bus + ' low voltage' and carrier == 'solar rooftop'")
+        if not matching_gens.empty:
+            num = len(matching_gens)
+            add_cap = cap / num 
+            n.generators.loc[matching_gens.index, 'p_nom'] = add_cap
+            n.generators.loc[matching_gens.index, 'p_nom_min'] = add_cap
+            n.generators.loc[matching_gens.index, 'p_nom_extendable'] = False
+            n.generators.loc[matching_gens.index, 'capital_cost'] = 0
+            logger.info(f"Fixed {add_cap:.2f} MW each to {num} solar-rooftop generators at bus {bus} low voltage.")
+        else:
+            logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
+
+    # Home batteries 
+    home_battery_df = ppl.query("Fueltype.str.strip().str.lower() == 'battery' and Technology.str.strip().str.lower() == 'home battery' and Duration == 2.5")
+    agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
+    duration = 2.5
+
+    for bus, cap in agg_capacity_home.items():
+        store_i = bus + " home battery"
+        if store_i in n.stores.index:
+            n.stores.loc[store_i, 'e_nom'] = cap * duration
+            n.stores.loc[store_i, 'e_nom_extendable'] = False
+            n.stores.loc[store_i, 'capital_cost'] = 0
+        else:
+            logger.warning(f"No home battery store at bus {bus}.")
+
+        charger_i = bus + " home battery charger"
+        if charger_i in n.links.index:
+            n.links.loc[charger_i, 'p_nom'] = cap
+            n.links.loc[charger_i, 'p_nom_extendable'] = False
+            n.links.loc[charger_i, 'capital_cost'] = 0
+        else:
+            logger.warning(f"No home battery charger at bus {bus}.")
+
+        discharger_i = bus + " home battery discharger"
+        if discharger_i in n.links.index:
+            n.links.loc[discharger_i, 'p_nom'] = cap
+            n.links.loc[discharger_i, 'p_nom_extendable'] = False
+            n.links.loc[discharger_i, 'capital_cost'] = 0
+        else:
+            logger.warning(f"No home battery discharger at bus {bus}.")
+
+        logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")

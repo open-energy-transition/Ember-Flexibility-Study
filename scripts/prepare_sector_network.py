@@ -46,7 +46,7 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_coal_chps_for_selected_countries, set_line_s_nom_to_max_historical_flows
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_coal_chps_for_selected_countries, set_line_s_nom_to_max_historical_flows, fix_distribution_capacities
 )
 
 spatial = SimpleNamespace()
@@ -6591,5 +6591,5 @@ if __name__ == "__main__":
     if snakemake.config['ember_settings'].get('historical_flows', False):
        set_line_s_nom_to_max_historical_flows(n, snakemake.input.historical_flows_csv)
        logger.info("Set line s_nom based on max historical flows.")
-
+    n= fix_distribution_capacities(n,snakemake.input.ppl_path)
     n.export_to_netcdf(snakemake.output[0])
