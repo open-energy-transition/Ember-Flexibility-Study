@@ -6,7 +6,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - 3H
+  - 23H
   planning_horizons:
   - 2030
 snapshots:
@@ -140,10 +140,10 @@ sector:
 costs:
   year: 2030
   fuel:
-    gas: 24.5
-    coal: 13.15
-    lignite: 10.44
-    oil: 34.67
+    gas: 19.9
+    coal: 10.7
+    lignite: 8.5
+    oil: 28.2
   VOM:
     OCGT: 1
     CCGT: 1
@@ -151,7 +151,7 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 85.59
+    co2: 69.6
   
 clustering:
   exclude_carriers:
