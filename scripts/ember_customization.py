@@ -306,11 +306,12 @@ def apply_hourly_price_fix(n):
 def fix_distribution_capacities(n, ppl_path): 
     ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
     # For rooftop solar
-    rooftop_df = ppl.query("Fueltype.str.strip().str.lower() == 'solar' and Technology.str.strip().str.lower() == 'solar-rooftop'")
+    rooftop_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'solar') & (ppl['Technology'].str.strip().str.lower() == 'solar-rooftop')]
     agg_capacity_rooftop = rooftop_df.groupby('bus')['Capacity'].sum()
 
     for bus, cap in agg_capacity_rooftop.items():
-        matching_gens = n.generators.query("bus == @bus + ' low voltage' and carrier == 'solar rooftop'")
+        rooftop_bus = bus + ' low voltage'
+        matching_gens = n.generators[(n.generators.bus == rooftop_bus) & (n.generators.carrier == 'solar rooftop')]
         if not matching_gens.empty:
             num = len(matching_gens)
             add_cap = cap / num 
@@ -323,7 +324,7 @@ def fix_distribution_capacities(n, ppl_path):
             logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
 
     # Home batteries 
-    home_battery_df = ppl.query("Fueltype.str.strip().str.lower() == 'battery' and Technology.str.strip().str.lower() == 'home battery' and Duration == 2.5")
+    home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'home battery') & (ppl['Duration'] == 2.5)]
     agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
     duration = 2.5
 
@@ -353,3 +354,59 @@ def fix_distribution_capacities(n, ppl_path):
             logger.warning(f"No home battery discharger at bus {bus}.")
 
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")
+    
+    return n
+        
+def fix_onwind_capacities(n,costs,ppl_path):
+    ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
+    onwind_df = ppl[ppl['Fueltype'].str.strip().str.lower() == 'onwind']
+    agg_capacity = onwind_df.groupby('bus')['Capacity'].sum()
+    for bus, cap in agg_capacity.items():
+        matching_gens = n.generators[(n.generators.bus == bus) & (n.generators.carrier == 'onwind')]
+        if not matching_gens.empty:
+            num = len(matching_gens)
+            add_cap = cap / num  
+            n.generators.loc[matching_gens.index, 'p_nom'] = add_cap
+            n.generators.loc[matching_gens.index, 'p_nom_min'] = add_cap 
+            n.generators.loc[matching_gens.index, 'p_nom_extendable'] = False 
+            n.generators.loc[matching_gens.index, 'capital_cost'] = 0 
+            logger.info(f"Fixed {add_cap:.2f} MW each to {num} onwind generators at bus {bus}.")
+        else:
+            logger.warning(f"No matching onwind generators at bus {bus}.")
+    
+    
+
+    grid_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'battery') & (ppl['Duration'] == 4)]
+    agg_capacity_grid = grid_battery_df.groupby('bus')['Capacity'].sum()
+
+    for bus, cap in agg_capacity_grid.items():
+        matching_stor = n.storage_units[(n.storage_units.bus == bus) & (n.storage_units.carrier == 'battery') & (n.storage_units.max_hours == 4)]
+        if not matching_stor.empty:
+            num = len(matching_stor)
+            add_cap = cap / num
+            n.storage_units.loc[matching_stor.index, 'p_nom'] = add_cap
+            n.storage_units.loc[matching_stor.index, 'p_nom_min'] = add_cap
+            n.storage_units.loc[matching_stor.index, 'p_nom_extendable'] = False
+            n.storage_units.loc[matching_stor.index, 'capital_cost'] = 0
+            logger.info(f"Fixed {add_cap:.2f} MW each to {num} grid-scale battery storage at bus {bus}.")
+        else:
+           
+            n.add(
+                "StorageUnit",
+                f"{bus} grid battery",
+                bus=bus,
+                carrier='battery',
+                p_nom=cap,
+                p_nom_extendable=False,
+                capital_cost=0,
+                marginal_cost=costs.at['battery', 'marginal_cost'],
+                max_hours=4,
+                efficiency_store=costs.at['battery inverter', 'efficiency'] ** 0.5,
+                efficiency_dispatch=costs.at['battery inverter', 'efficiency'] ** 0.5,
+                cyclic_state_of_charge=True,
+            )
+            logger.info(f"Added grid-scale battery storage at bus {bus} with p_nom {cap:.2f} MW.")
+
+    
+    
+    return n

@@ -1326,5 +1326,5 @@ if __name__ == "__main__":
         year = snakemake.params.costs["year"]
         apply_ntc(n, snakemake.input.ntc_file, year)
         logger.info(f"NTCs applied for year {year} (interpolated if needed).")
-    n = fix_onwind_capacities(n)
+    n = fix_onwind_capacities(n, costs, snakemake.input.ppl_path)
     n.export_to_netcdf(snakemake.output[0])

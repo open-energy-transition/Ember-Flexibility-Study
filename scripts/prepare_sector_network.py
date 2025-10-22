@@ -46,9 +46,10 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_coal_chps_for_selected_countries, set_line_s_nom_to_max_historical_flows, fix_distribution_capacities
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_coal_chps_for_selected_countries, set_line_s_nom_to_ntc, fix_distribution_capacities
 )
-
+import sys
+sys.setrecursionlimit(5000)
 spatial = SimpleNamespace()
 logger = logging.getLogger(__name__)
 
@@ -6589,7 +6590,8 @@ if __name__ == "__main__":
     filter_chps = snakemake.config['ember_settings']['filter_chps']
     include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map, filter_chps=filter_chps)
     if snakemake.config['ember_settings'].get('historical_flows', False):
-       set_line_s_nom_to_max_historical_flows(n, snakemake.input.historical_flows_csv)
-       logger.info("Set line s_nom based on max historical flows.")
-    n= fix_distribution_capacities(n,snakemake.input.ppl_path)
+        set_line_s_nom_to_ntc(n, snakemake.input.historical_flows_csv)
+        logger.info("Set line s_nom based on max historical flows.")
+    n=fix_distribution_capacities(n, snakemake.input.ppl_path)
+    
     n.export_to_netcdf(snakemake.output[0])
