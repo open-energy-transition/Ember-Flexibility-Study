@@ -133,6 +133,7 @@ electricity:
     Link: [] # H2 pipeline
 
   powerplants_filter: (DateOut >= 2024 or DateOut != DateOut) and not (Country == 'Germany' and Fueltype == 'Nuclear')
+  custom_powerplants_fn: "data/custom_powerplants.csv"
   custom_powerplants: false
   everywhere_powerplants: []
 
