@@ -40,9 +40,9 @@ rule build_powerplants:
         network = resources("networks/base_s_{clusters}.nc"),
         custom_powerplants = config_provider("electricity", "custom_powerplants_fn"),
     output:
-        resources("powerplants_s_{clusters}.csv")
+        resources("powerplants_s_{clusters}.csv"),
     log:
-        logs("build_powerplants_s_{clusters}.log")
+        logs("build_powerplants_s_{clusters}.log"),
     benchmark:
         benchmarks("build_powerplants_s_{clusters}")
     threads: 1

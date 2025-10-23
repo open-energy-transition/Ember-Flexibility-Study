@@ -1,6 +1,3 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
-# SPDX-FileCopyrightText: Open Energy Transition gGmbH
-#
 # SPDX-License-Identifier: MIT
 
 """
@@ -61,7 +58,7 @@ import pypsa
 import xarray as xr
 from pypsa.clustering.spatial import DEFAULT_ONE_PORT_STRATEGIES, normed_or_uniform
 
-from scripts.apply_ntcs import apply_ntc
+
 
 from scripts._helpers import (
     PYPSA_V1,
@@ -1059,7 +1056,7 @@ def attach_storageunits(
             " " + carrier,
             bus=buses_i,
             carrier=carrier,
-            p_nom_extendable=False,
+            p_nom_extendable=True,
             capital_cost=costs.at[carrier, "capital_cost"],
             marginal_cost=costs.at[carrier, "marginal_cost"],
             efficiency_store=costs.at[lookup_store[carrier], "efficiency"]
@@ -1102,7 +1099,7 @@ def attach_stores(
             h2_buses_i,
             bus=h2_buses_i,
             carrier="H2",
-            e_nom_extendable=False,
+            e_nom_extendable=True,
             e_cyclic=True,
             capital_cost=costs.at["hydrogen storage underground", "capital_cost"],
         )
@@ -1113,7 +1110,7 @@ def attach_stores(
             bus0=buses_i,
             bus1=h2_buses_i,
             carrier="H2 electrolysis",
-            p_nom_extendable=False,
+            p_nom_extendable=True,
             efficiency=costs.at["electrolysis", "efficiency"],
             capital_cost=costs.at["electrolysis", "capital_cost"],
             marginal_cost=costs.at["electrolysis", "marginal_cost"],
@@ -1125,7 +1122,7 @@ def attach_stores(
             bus0=h2_buses_i,
             bus1=buses_i,
             carrier="H2 fuel cell",
-            p_nom_extendable=False,
+            p_nom_extendable=True,
             efficiency=costs.at["fuel cell", "efficiency"],
             # NB: fixed cost is per MWel
             capital_cost=costs.at["fuel cell", "capital_cost"]
@@ -1144,7 +1141,7 @@ def attach_stores(
             bus=b_buses_i,
             carrier="battery",
             e_cyclic=True,
-            e_nom_extendable=False,
+            e_nom_extendable=True,
             capital_cost=costs.at["battery storage", "capital_cost"],
             marginal_cost=costs.at["battery", "marginal_cost"],
         )
@@ -1315,16 +1312,5 @@ if __name__ == "__main__":
         sanitize_locations(n)
 
     n.meta = dict(snakemake.config, **dict(wildcards=dict(snakemake.wildcards)))
-
-    if snakemake.params["apply_ntcs"]:
-        logger.warning(
-            "Applying NTCs is generally recommended **only** when the network is clustered "
-            "to 39 buses for the default country selection. "
-            "If you are using a different clustering level or country set, please verify "
-            "that this step is appropriate for your scenario."
-        )
-        year = snakemake.params.costs["year"]
-        apply_ntc(n, snakemake.input.ntc_file, year)
-        logger.info(f"NTCs applied for year {year} (interpolated if needed).")
-    n = fix_onwind_capacities(n, costs, snakemake.input.ppl_path)
+    n = fix_onwind_capacities(n, costs)
     n.export_to_netcdf(snakemake.output[0])
