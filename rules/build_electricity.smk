@@ -32,10 +32,10 @@ rule build_electricity_demand:
 
 rule build_powerplants:
     params:
-        powerplants_filter = config_provider("electricity", "powerplants_filter"),
-        custom_powerplants = config_provider("electricity", "custom_powerplants"),
-        everywhere_powerplants = config_provider("electricity", "everywhere_powerplants"),
-        countries = config_provider("countries"),
+        powerplants_filter=config_provider("electricity", "powerplants_filter"),
+        custom_powerplants=config_provider("electricity", "custom_powerplants"),
+        everywhere_powerplants=config_provider("electricity", "everywhere_powerplants"),
+        countries=config_provider("countries"),
     input:
         network = resources("networks/base_s_{clusters}.nc"),
         custom_powerplants = config_provider("electricity", "custom_powerplants_fn"),
@@ -47,11 +47,12 @@ rule build_powerplants:
         benchmarks("build_powerplants_s_{clusters}")
     threads: 1
     resources:
-        mem_mb = 7000
+        mem_mb=7000,
     conda:
         "../envs/environment.yaml"
     script:
         "../scripts/build_powerplants.py"
+
 
 
 def input_base_network(w):
