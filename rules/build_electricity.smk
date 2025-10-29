@@ -54,7 +54,6 @@ rule build_powerplants:
         "../scripts/build_powerplants.py"
 
 
-
 def input_base_network(w):
     base_network = config_provider("electricity", "base_network")(w)
     osm_prebuilt_version = config_provider("electricity", "osm-prebuilt-version")(w)
