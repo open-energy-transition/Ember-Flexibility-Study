@@ -637,7 +637,6 @@ def attach_wind_and_solar(
                 p_max_pu=p_max_pu,
                 lifetime=costs.at[supcar, "lifetime"],
             )
-            
 
 def attach_conventional_generators(
     n: pypsa.Network,
