@@ -1266,8 +1266,6 @@ if __name__ == "__main__":
         params.line_length_factor,
         landfall_lengths,
     )
-    
- 
 
     if "hydro" in renewable_carriers:
         p = params.renewable["hydro"]
