@@ -37,7 +37,7 @@ rule build_powerplants:
         everywhere_powerplants=config_provider("electricity", "everywhere_powerplants"),
         countries=config_provider("countries"),
     input:
-        network = resources("networks/base_s_{clusters}.nc"),
+        network=resources("networks/base_s_{clusters}.nc"),
         custom_powerplants = config_provider("electricity", "custom_powerplants_fn"),
     output:
         resources("powerplants_s_{clusters}.csv"),
