@@ -138,7 +138,10 @@ The list below provides an overview of the directory structure of the Ember Flex
 * `doc`: includes all files necessary to build the `readthedocs` documentation of PyPSA-Eur
 * `envs`: includes all the `mamba` environment specifications to run the workflow
 * `logs`: will store log files (does not exist initially)
-* `notebooks`: includes all the `notebooks` used for ad-hoc analysis
+* `validation/`: contains the `notebooks/` and `ember_data/` folders.  
+  - `notebooks/`: Jupyter notebooks used to visualize the validation results.  
+  - `ember_data/`: data from Ember used to compare against the workflow outputs.  
+
 * `report`: contains all files necessary to build the report; plots and result files are generated automatically
 * `rules`: includes all the `snakemake`rules loaded in the `Snakefile`
 * `resources`: will store intermediate results of the workflow which can be picked up again by subsequent rules (does not exist initially)
