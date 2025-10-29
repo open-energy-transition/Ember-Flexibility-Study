@@ -1427,7 +1427,6 @@ rule prepare_sector_network:
         chp_data="validation/ember_data/combined_chp_2030.csv",
         historical_flows_csv="validation/ember_data/ntc_2030.csv",
         ppl_path=resources("powerplants_s_39.csv"),
-       
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
