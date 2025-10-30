@@ -1309,5 +1309,4 @@ if __name__ == "__main__":
         sanitize_locations(n)
 
     n.meta = dict(snakemake.config, **dict(wildcards=dict(snakemake.wildcards)))
-    n = fix_onwind_capacities(n, costs)
     n.export_to_netcdf(snakemake.output[0])

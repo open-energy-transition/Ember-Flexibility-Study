@@ -356,25 +356,7 @@ def fix_distribution_capacities(n, ppl_path):
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")
     
     return n
-        
-def fix_onwind_capacities(n,costs,ppl_path):
-    ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
-    onwind_df = ppl[ppl['Fueltype'].str.strip().str.lower() == 'onwind']
-    agg_capacity = onwind_df.groupby('bus')['Capacity'].sum()
-    for bus, cap in agg_capacity.items():
-        matching_gens = n.generators[(n.generators.bus == bus) & (n.generators.carrier == 'onwind')]
-        if not matching_gens.empty:
-            num = len(matching_gens)
-            add_cap = cap / num  
-            n.generators.loc[matching_gens.index, 'p_nom'] = add_cap
-            n.generators.loc[matching_gens.index, 'p_nom_min'] = add_cap 
-            n.generators.loc[matching_gens.index, 'p_nom_extendable'] = False 
-            n.generators.loc[matching_gens.index, 'capital_cost'] = 0 
-            logger.info(f"Fixed {add_cap:.2f} MW each to {num} onwind generators at bus {bus}.")
-        else:
-            logger.warning(f"No matching onwind generators at bus {bus}.")
-    
-    
+
 
     grid_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'battery') & (ppl['Duration'] == 4)]
     agg_capacity_grid = grid_battery_df.groupby('bus')['Capacity'].sum()
