@@ -750,8 +750,7 @@ rule add_electricity:
         ),
         load=resources("electricity_demand_base_s.nc"),
         busmap=resources("busmap_base_s_{clusters}.csv"),
-        ntc_file="validation/ember_data/REF_NTC.csv",
-        custom_powerplants="data/custom_powerplants.csv"
+        
     output:
         resources("networks/base_s_{clusters}_elec.nc"),
     log:
