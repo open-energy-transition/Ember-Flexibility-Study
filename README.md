@@ -140,8 +140,6 @@ The list below provides an overview of the directory structure of the Ember Flex
 * `logs`: will store log files (does not exist initially)
 * `validation/`: contains the `notebooks/` and `ember_data/` folders.  
   - `notebooks/`: Jupyter notebooks used to visualize the validation results.  
-  - `ember_data/`: data from Ember used to compare against the workflow outputs.  
-
 * `report`: contains all files necessary to build the report; plots and result files are generated automatically
 * `rules`: includes all the `snakemake`rules loaded in the `Snakefile`
 * `resources`: will store intermediate results of the workflow which can be picked up again by subsequent rules (does not exist initially)
