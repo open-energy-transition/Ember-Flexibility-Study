@@ -750,7 +750,6 @@ rule add_electricity:
         ),
         load=resources("electricity_demand_base_s.nc"),
         busmap=resources("busmap_base_s_{clusters}.csv"),
-        
     output:
         resources("networks/base_s_{clusters}_elec.nc"),
     log:
