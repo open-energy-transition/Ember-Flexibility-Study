@@ -134,7 +134,7 @@ The list below provides an overview of the directory structure of the Ember Flex
 * `benchmarks`: will store `snakemake` benchmarks (does not exist initially)
 * `config`: configurations used in the study
 * `cutouts`: will store raw weather data cutouts from `atlite` (does not exist initially)
-* `data`: includes input data that is not produced by any `snakemake` rule
+* `data`: includes input data that is not produced by any `snakemake` rule. The Ember custom data used is in data/ember_data/.
 * `doc`: includes all files necessary to build the `readthedocs` documentation of PyPSA-Eur
 * `envs`: includes all the `mamba` environment specifications to run the workflow
 * `logs`: will store log files (does not exist initially)
