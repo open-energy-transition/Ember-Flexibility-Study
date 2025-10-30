@@ -68,9 +68,6 @@ from scripts._helpers import (
     set_scenario_config,
     update_p_nom_max,
 )
-from scripts.ember_customization import (
-    fix_onwind_capacities
-)
 
 if PYPSA_V1:
     pypsa.options.params.add.return_names = True
@@ -1020,6 +1017,7 @@ def estimate_renewable_capacities(
 def attach_storageunits(
     n: pypsa.Network,
     costs: pd.DataFrame,
+    ppl: pd.DataFrame,
     extendable_carriers: dict,
     max_hours: dict,
 ):
@@ -1032,12 +1030,14 @@ def attach_storageunits(
         The PyPSA network to attach the storage units to.
     costs : pd.DataFrame
         DataFrame containing the cost data.
+    ppl :  pd.DataFrame
+        DataFrame containing the storage_unit data.
     extendable_carriers : dict
         Dictionary of extendable energy carriers.
     max_hours : dict
         Dictionary of maximum hours for storage units.
     """
-    carriers = extendable_carriers["StorageUnit"]
+    carriers = list(set(ppl.carrier.unique()).intersection({"H2", "battery"}))
 
     n.add("Carrier", carriers)
 
@@ -1049,13 +1049,21 @@ def attach_storageunits(
     for carrier in carriers:
         roundtrip_correction = 0.5 if carrier == "battery" else 1
 
+        if not ppl.query("carrier == @carrier").empty:
+            caps = ppl.query("carrier == @carrier").groupby("bus").p_nom.sum()
+            caps = pd.Series(data=caps, index=buses_i).fillna(0)
+        else:
+            caps = pd.Series(index=buses_i).fillna(0)
+
         n.add(
             "StorageUnit",
             buses_i,
             " " + carrier,
             bus=buses_i,
             carrier=carrier,
-            p_nom_extendable=True,
+            p_nom=caps,
+            p_nom_min=caps,
+            p_nom_extendable=True if carrier in extendable_carriers["StorageUnit"] else False,
             capital_cost=costs.at[carrier, "capital_cost"],
             marginal_cost=costs.at[carrier, "marginal_cost"],
             efficiency_store=costs.at[lookup_store[carrier], "efficiency"]
@@ -1301,7 +1309,7 @@ if __name__ == "__main__":
 
     update_p_nom_max(n)
 
-    attach_storageunits(n, costs, extendable_carriers, max_hours)
+    attach_storageunits(n, costs, ppl, extendable_carriers, max_hours)
     attach_stores(n, costs, extendable_carriers)
 
     sanitize_carriers(n, snakemake.config)
