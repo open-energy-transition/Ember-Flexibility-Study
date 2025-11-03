@@ -59,7 +59,6 @@ import xarray as xr
 from pypsa.clustering.spatial import DEFAULT_ONE_PORT_STRATEGIES, normed_or_uniform
 
 
-
 from scripts._helpers import (
     PYPSA_V1,
     configure_logging,
