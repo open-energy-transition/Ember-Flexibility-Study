@@ -54,7 +54,7 @@ from scripts._helpers import (
 )
 
 from scripts.ember_customization import (
-    apply_custom_pf_constraint,
+    apply_custom_pf_constraint, apply_hourly_price_fix,
 )
 
 logger = logging.getLogger(__name__)
@@ -1435,6 +1435,11 @@ if __name__ == "__main__":
         co2_sequestration_potential=snakemake.params["co2_sequestration_potential"],
         limit_max_growth=snakemake.params.get("sector", {}).get("limit_max_growth"),
     )
+
+    if snakemake.config["ember_settings"].get("hourly_price_fix", False):
+        apply_hourly_price_fix(n)
+        logger.info("Removed gas, coal and lignite store components to accomodate for hourly price fix adjustments.") 
+
 
     logging_frequency = snakemake.config.get("solving", {}).get(
         "mem_logging_frequency", 30

@@ -11,7 +11,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - '2190seg'
+  - '3H'
   planning_horizons:
   - 2025
 
@@ -48,7 +48,7 @@ lines:
   under_construction: remove
   max_extension: 0
 lines:
-  s_max_pu: 0.5
+  s_max_pu: 1
 
 links:
   under_construction: remove
@@ -138,7 +138,7 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 85.59
+    co2: 80
 
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
@@ -148,9 +148,17 @@ simplify_network:
   remove_stubs_across_borders: true
 
 ember_settings:
-  ntc: false
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: true
   ember_gas_price: true
   hourly_carbon_prices: false
+  hourly_price_fix: true # True will remove gas, coal and lignite Stores
+  historical_ntc: true
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL
