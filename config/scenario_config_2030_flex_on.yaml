@@ -168,7 +168,7 @@ ember_settings:
   nuclear_decommissioning: false
   ember_gas_price: true
   hourly_carbon_prices: false
-  historical_flows: false
+  historical_ntc: false
   chp_countries:
     Poland: PL
     Czechia: CZ
