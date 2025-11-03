@@ -323,36 +323,4 @@ def add_LV_capacities(n, ppl_path):
         else:
             logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
 
-    # Home batteries 
-    home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'home battery') & (ppl['Duration'] == 2.5)]
-    agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
-    duration = 2.5
-
-    for bus, cap in agg_capacity_home.items():
-        store_i = bus + " home battery"
-        if store_i in n.stores.index:
-            n.stores.loc[store_i, 'e_nom'] = cap * duration
-            n.stores.loc[store_i, 'e_nom_extendable'] = False
-            n.stores.loc[store_i, 'capital_cost'] = 0
-        else:
-            logger.warning(f"No home battery store at bus {bus}.")
-
-        charger_i = bus + " home battery charger"
-        if charger_i in n.links.index:
-            n.links.loc[charger_i, 'p_nom'] = cap
-            n.links.loc[charger_i, 'p_nom_extendable'] = False
-            n.links.loc[charger_i, 'capital_cost'] = 0
-        else:
-            logger.warning(f"No home battery charger at bus {bus}.")
-
-        discharger_i = bus + " home battery discharger"
-        if discharger_i in n.links.index:
-            n.links.loc[discharger_i, 'p_nom'] = cap
-            n.links.loc[discharger_i, 'p_nom_extendable'] = False
-            n.links.loc[discharger_i, 'capital_cost'] = 0
-        else:
-            logger.warning(f"No home battery discharger at bus {bus}.")
-
-        logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")
-    
-    return n
+   
