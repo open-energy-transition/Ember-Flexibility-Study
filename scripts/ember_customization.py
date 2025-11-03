@@ -163,7 +163,7 @@ def apply_custom_pf_constraint(n,
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
     
     
-def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, filter_chps):
+def include_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, filter_chps):
     focus_full = country_code_map.keys()
     focus_full= country_code_map.keys()
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1').rename(columns={'lon': 'x', 'lat': 'y'})
