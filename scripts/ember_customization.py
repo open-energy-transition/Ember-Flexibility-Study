@@ -356,39 +356,3 @@ def add_LV_capacities(n, ppl_path):
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")
     
     return n
-
-
-    grid_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'battery') & (ppl['Duration'] == 4)]
-    agg_capacity_grid = grid_battery_df.groupby('bus')['Capacity'].sum()
-
-    for bus, cap in agg_capacity_grid.items():
-        matching_stor = n.storage_units[(n.storage_units.bus == bus) & (n.storage_units.carrier == 'battery') & (n.storage_units.max_hours == 4)]
-        if not matching_stor.empty:
-            num = len(matching_stor)
-            add_cap = cap / num
-            n.storage_units.loc[matching_stor.index, 'p_nom'] = add_cap
-            n.storage_units.loc[matching_stor.index, 'p_nom_min'] = add_cap
-            n.storage_units.loc[matching_stor.index, 'p_nom_extendable'] = False
-            n.storage_units.loc[matching_stor.index, 'capital_cost'] = 0
-            logger.info(f"Fixed {add_cap:.2f} MW each to {num} grid-scale battery storage at bus {bus}.")
-        else:
-           
-            n.add(
-                "StorageUnit",
-                f"{bus} grid battery",
-                bus=bus,
-                carrier='battery',
-                p_nom=cap,
-                p_nom_extendable=False,
-                capital_cost=0,
-                marginal_cost=costs.at['battery', 'marginal_cost'],
-                max_hours=4,
-                efficiency_store=costs.at['battery inverter', 'efficiency'] ** 0.5,
-                efficiency_dispatch=costs.at['battery inverter', 'efficiency'] ** 0.5,
-                cyclic_state_of_charge=True,
-            )
-            logger.info(f"Added grid-scale battery storage at bus {bus} with p_nom {cap:.2f} MW.")
-
-    
-    
-    return n
