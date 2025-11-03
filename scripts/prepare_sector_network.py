@@ -48,8 +48,6 @@ from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emiss
 from scripts.ember_customization import (
     apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_chps_for_selected_countries, set_line_s_nom_to_ntc, add_LV_capacities
 )
-import sys
-sys.setrecursionlimit(5000)
 spatial = SimpleNamespace()
 logger = logging.getLogger(__name__)
 
