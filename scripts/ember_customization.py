@@ -303,7 +303,7 @@ def apply_hourly_price_fix(n):
         if store in n.stores.index:
             n.remove("Store", store)
 
-def fix_distribution_capacities(n, ppl_path): 
+def add_LV_capacities(n, ppl_path): 
     ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
     # For rooftop solar
     rooftop_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'solar') & (ppl['Technology'].str.strip().str.lower() == 'solar-rooftop')]
