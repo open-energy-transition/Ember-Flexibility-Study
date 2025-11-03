@@ -389,6 +389,4 @@ def add_LV_capacities(n, ppl_path):
             )
             logger.info(f"Added grid-scale battery storage at bus {bus} with p_nom {cap:.2f} MW.")
 
-    
-    
     return n
