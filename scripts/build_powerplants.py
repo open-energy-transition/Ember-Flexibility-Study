@@ -182,9 +182,8 @@ if __name__ == "__main__":
 
     ppl = pd.DataFrame(columns=['Name', 'Fueltype', 'Technology', 'Set', 'Country', 'Capacity', 'Efficiency', 'DateIn', 'DateRetrofit', 'DateOut', 'lat', 'lon', 'EIC', 'projectID', 'DateMothball', 'Unnamed: 19', 'Unnamed: 20', 'Unnamed: 21', 'Unnamed: 22', 'Unnamed: 23', 'Unnamed: 24', 'Unnamed: 25'])
     custom_ppl_query = snakemake.params.custom_powerplants
-    custom_powerplants_file = snakemake.input.custom_powerplants 
     ppl = add_custom_powerplants(
-        ppl, custom_powerplants_file, custom_ppl_query
+        ppl, snakemake.input.custom_powerplants, custom_ppl_query
     )
 
     if countries_wo_ppl := set(countries) - set(ppl.Country.unique()):
