@@ -68,6 +68,7 @@ electricity:
     StorageUnit: []
     Store: []
   transmission_limit: v1.0
+  custom_powerplants_fn: "data/custom_ppl_2030.csv"
   custom_powerplants: (DateIn <= 2030 and DateOut >= 2030)
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2030 and DateOut >= 2030)
   estimate_renewable_capacities:
@@ -161,13 +162,13 @@ clustering:
 simplify_network:
   remove_stubs_across_borders: true
 ember_settings:
-  ntc: false
+  ntc_data: "data/ember_data/ntc.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
   ember_gas_price: true
   hourly_carbon_prices: false
-  historical_flows: false
+  historical_ntc: false
   chp_countries:
     Poland: PL
     Czechia: CZ
@@ -176,4 +177,4 @@ ember_settings:
     Italy: IT
     Netherlands: NL
   filter_chps: "DateIn <= 2030 and DateOut >= 2030"
-  custom_powerplant_path: "data/custom_ppl_2030.csv"
+  chp_data: "data/combined_chp_2030.csv"

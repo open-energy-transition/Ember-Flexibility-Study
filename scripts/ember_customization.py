@@ -354,3 +354,4 @@ def add_LV_capacities(n, ppl_path):
             logger.warning(f"No home battery discharger at bus {bus}.")
 
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")
+        return n 

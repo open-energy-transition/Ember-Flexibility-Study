@@ -148,6 +148,7 @@ simplify_network:
   remove_stubs_across_borders: true
 
 ember_settings:
+  ntc_data: "data/ember_data/ntc.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: true
@@ -162,3 +163,4 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
+  chp_data: "data/combined_chp_2030.csv"

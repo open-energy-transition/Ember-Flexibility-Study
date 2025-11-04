@@ -6,7 +6,7 @@ scenario:
   opts:
   - ''
   sector_opts:
-  - 23H
+  - 17H
   planning_horizons:
   - 2030
 snapshots:
@@ -162,13 +162,13 @@ clustering:
 simplify_network:
   remove_stubs_across_borders: true
 ember_settings:
-  ntc: false
+  ntc_data: "data/ember_data/ntc.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
   ember_gas_price: true
   hourly_carbon_prices: false
-  historical_ntc: false
+  historical_ntc: true
   chp_countries:
     Poland: PL
     Czechia: CZ
@@ -177,4 +177,5 @@ ember_settings:
     Italy: IT
     Netherlands: NL
   filter_chps: "DateIn <= 2030 and DateOut >= 2030"
+  chp_data: "data/ember_data/combined_chp_2030.csv"
   
