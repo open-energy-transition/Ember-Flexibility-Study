@@ -6584,8 +6584,23 @@ if __name__ == "__main__":
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
-    country_code_map = snakemake.config['ember_settings']['chp_countries']
-    filter_chps = snakemake.config['ember_settings']['filter_chps']
+    ember_settings = snakemake.config.get('ember_settings', {}) 
+    ember_setting_keys = list(ember_settings.keys())
+    if 'chp_countries' in ember_setting_keys:
+        country_code_map = ember_settings.get('chp_countries', {}) 
+    else:
+        logger.error("Missing 'chp_countries' config setting in ember_settings")
+        country_code_map = {}
+    if 'filter_chps' in ember_setting_keys:
+        filter_chps = ember_settings.get('filter_chps', '')  
+    else:
+        logger.error("Missing 'filter_chps' config setting in ember_settings.")
+        filter_chps = ''
+    if 'chp_data' in ember_setting_keys:
+        chp_data = ember_settings.get('chp_data', '') 
+    else:
+        logger.error("Missing 'chp_data' config setting in ember_settings.")
+        chp_data = ''
     include_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map, filter_chps=filter_chps)
     if snakemake.config['ember_settings'].get('historical_ntc', False):
         set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
