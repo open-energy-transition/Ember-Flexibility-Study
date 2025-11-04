@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
-# SPDX-FileCopyrightText: Open Energy Transition gGmbH
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH and contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
 #
 # SPDX-License-Identifier: MIT
 """
@@ -44,14 +43,10 @@ from scripts.build_energy_totals import (
 from scripts.build_transport_demand import transport_degree_factor
 from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
+from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
+
 from scripts.ember_customization import (
-    apply_2023_nuclear_decommissioning,
-    apply_custom_ramping,
-    apply_hourly_fuel_prices,
-)
-from scripts.prepare_network import (
-    add_emission_prices,
-    maybe_adjust_costs_and_potentials,
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices, include_coal_chps_for_selected_countries, set_line_s_nom_to_ntc
 )
 
 spatial = SimpleNamespace()
@@ -1372,24 +1367,15 @@ def add_generation(
         )
 
         p_nom = pd.Series(0, index=nodes + " " + generator)
-        efficiency = pd.Series(
-            costs.at[generator, "efficiency"], index=nodes + " " + generator
-        )
+        efficiency = pd.Series(costs.at[generator, "efficiency"], index=nodes + " " + generator)
         if existing_capacities is not None:
-            # overwrite in case units where not aggregated
+            #overwrite in case units where not aggregated
             p_nom = pd.Series(0, index=existing_capacities[generator].index)
-            efficiency = pd.Series(
-                costs.at[generator, "efficiency"],
-                index=existing_efficiencies[generator].index,
-            )
+            efficiency = pd.Series(costs.at[generator, "efficiency"], index=existing_efficiencies[generator].index)
             nodes = existing_buses[generator]
             # NB: existing capacities are MWel
-            p_nom[existing_capacities[generator].index] = (
-                existing_capacities[generator] / existing_efficiencies[generator]
-            )
-            efficiency[existing_efficiencies[generator].index] = existing_efficiencies[
-                generator
-            ]
+            p_nom[existing_capacities[generator].index] = existing_capacities[generator] / existing_efficiencies[generator]
+            efficiency[existing_efficiencies[generator].index] = existing_efficiencies[generator]
 
         n.add(
             "Link",
@@ -1412,7 +1398,6 @@ def add_generation(
             efficiency2=costs.at[carrier, "CO2 intensity"],
             lifetime=costs.at[generator, "lifetime"],
         )
-
 
 def add_ammonia(
     n: pypsa.Network,
@@ -6257,12 +6242,10 @@ if __name__ == "__main__":
     gas_input_nodes = pd.read_csv(fn, index_col=0)
 
     if options.get("keep_existing_capacities", False):
-        existing_capacities, existing_efficiencies, existing_buses = (
-            get_capacities_from_elec(
-                n,
-                carriers=options.get("conventional_generation").keys(),
-                component="generators",
-            )
+        existing_capacities, existing_efficiencies, existing_buses = get_capacities_from_elec(
+            n,
+            carriers=options.get("conventional_generation").keys(),
+            component="generators",
         )
     else:
         existing_capacities = existing_efficiencies = existing_buses = None
@@ -6476,12 +6459,10 @@ if __name__ == "__main__":
 
     if options["allam_cycle_gas"]:
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
-
+        
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
         apply_hourly_fuel_prices(
-            n,
-            carriers=["gas", "coal", "lignite"],
-            fn_hourly_prices=snakemake.input.hourly_fuel_costs,
+            n, carriers=["gas", "coal", "lignite"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
         )
         logger.info("Applied hourly prices for gas, coal and lignite.")
 
@@ -6524,16 +6505,9 @@ if __name__ == "__main__":
         limit_individual_line_extension(n, maxext)
 
     if options["electricity_distribution_grid"]:
-        extendable_carriers_list = snakemake.params.electricity.get(
-            "extendable_carriers", []
-        )
+        extendable_carriers_list = snakemake.params.electricity.get("extendable_carriers", [])
         insert_electricity_distribution_grid(
-            n,
-            costs,
-            options,
-            pop_layout,
-            snakemake.input.solar_rooftop_potentials,
-            extendable_carriers_list,
+            n, costs, options, pop_layout, snakemake.input.solar_rooftop_potentials, extendable_carriers_list
         )
 
     if options["enhanced_geothermal"].get("enable", False):
@@ -6601,9 +6575,7 @@ if __name__ == "__main__":
     if emission_prices["enable"]:
         n.carriers.loc["oil primary", "co2_emissions"] = 0.2571
         for carrier in n.carriers.index.intersection(costs.index):
-            n.carriers.loc[carrier, "co2_emissions"] = costs.loc[
-                carrier, "CO2 intensity"
-            ]
+            n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
         if snakemake.config["ember_settings"].get("hourly_carbon_prices", False):
             hourly_emission_prices_fn = snakemake.input.hourly_co2_prices
@@ -6611,9 +6583,12 @@ if __name__ == "__main__":
             hourly_emission_prices_fn = None
 
         add_emission_prices(
-            n,
-            emission_prices=emission_prices,
-            hourly_emission_prices_fn=hourly_emission_prices_fn,
+            n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
+    country_code_map = snakemake.config['ember_settings'].get('chp_countries', {})
+    include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
+    if snakemake.config['ember_settings'].get('historical_ntc', False):
+       set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
+       logger.info("Restrict s_nom to NTC values")
 
     n.export_to_netcdf(snakemake.output[0])

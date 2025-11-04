@@ -1,5 +1,4 @@
-# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
-# SPDX-FileCopyrightText: Open Energy Transition gGmbH
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH and contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
 #
 # SPDX-License-Identifier: MIT
 
@@ -1424,7 +1423,10 @@ rule prepare_sector_network:
             else []
         ),
         hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
-        hourly_co2_prices="validation/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
+        hourly_co2_prices="data/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
+        chp_data="data/ember_data/combined_chp.csv",
+        ember_ntc_csv="data/ember_data/ntc.csv",
+
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"

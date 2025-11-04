@@ -730,7 +730,7 @@ rule add_electricity:
         ),
         aggregation_strategies=config_provider("clustering", "aggregation_strategies"),
         exclude_carriers=config_provider("clustering", "exclude_carriers"),
-        apply_ntcs=config_provider("ember_settings", "ntc"),
+        
     input:
         unpack(input_profile_tech),
         unpack(input_class_regions),
@@ -750,7 +750,7 @@ rule add_electricity:
         ),
         load=resources("electricity_demand_base_s.nc"),
         busmap=resources("busmap_base_s_{clusters}.csv"),
-        ntc_file="validation/ember_data/REF_NTC.csv",
+        
     output:
         resources("networks/base_s_{clusters}_elec.nc"),
     log:

@@ -185,3 +185,137 @@ def apply_custom_pf_constraint(
     # 7) enforce band/cap
     m.add_constraints(energy >= E_min, name=f"{link_name}_annual_min")
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
+    
+    
+def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map):
+    focus_full= country_code_map.keys()
+    df = pd.read_csv(CHP_ppl_fn, encoding='latin-1').rename(columns={'lon': 'x', 'lat': 'y'})
+    df = df.query("type == 'chp' and status == 'operating' and bus in @focus_full")
+    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas'}
+    
+    for orig_carrier in df['carrier'].unique():
+        if orig_carrier not in carrier_mapping:
+            continue
+        map_carrier = carrier_mapping[orig_carrier]
+        sub_df = df.query('carrier == @orig_carrier').copy()
+        n.add("Carrier", f"urban central {map_carrier} CHP", overwrite=True)
+        sub_df['country'] = sub_df['bus'].map(country_code_map)
+        sub_df = sub_df.dropna(subset=['country', 'x', 'y'])
+        unique_countries = sub_df['country'].unique()
+        power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
+        power_buses = power_buses.reset_index().rename(
+                  columns={
+                              'Bus': 'bus_id', 
+                              'x': 'bus_x',    
+                              'y': 'bus_y'      
+                          }
+                                                       )
+        if power_buses.empty:
+            continue
+        sub_df = sub_df.reset_index(drop=True)
+        sub_df['plant_id'] = sub_df.index
+        pairs = pd.merge(sub_df, power_buses, on='country')
+        pairs['dx'] = pairs['x'] - pairs['bus_x']
+        pairs['dy'] = pairs['y'] - pairs['bus_y']
+        pairs['dist'] = (pairs['dx']**2 + pairs['dy']**2)**0.5
+        min_dist_idx = pairs.groupby('plant_id')['dist'].idxmin()
+        min_dist_idx = min_dist_idx.dropna()
+        if min_dist_idx.empty:
+            continue
+        nearest_pairs = pairs.loc[min_dist_idx]
+        nearest_pairs['nearest_bus'] = nearest_pairs['bus_id']
+        nearest_pairs['heat_bus'] = nearest_pairs['nearest_bus'] + ' urban central heat'
+        nearest_pairs = nearest_pairs.query('heat_bus in @n.buses.index')
+        
+        if nearest_pairs.empty:
+            continue
+        nearest_pairs['eff'] = nearest_pairs['efficiency'].fillna(0.32)
+        nearest_pairs['heat_eff'] = nearest_pairs['heat_efficiency'].fillna(0.35)
+        link_names = (nearest_pairs['nearest_bus'] + '_' + map_carrier + '_chp_' + nearest_pairs['id'].str.replace(' ', '_')).tolist()
+        
+        if link_names:
+            n.add(
+                "Link",
+                link_names,
+                bus0=f"EU {map_carrier}",
+                bus1=nearest_pairs['nearest_bus'].tolist(),
+                bus2=nearest_pairs['heat_bus'].tolist(),
+                bus3="co2 atmosphere",
+                carrier=f"urban central {map_carrier} CHP",
+                p_nom_extendable=False,
+                p_nom=(nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist(),
+                capital_cost=0,
+                marginal_cost=costs.at[map_carrier, 'VOM'],
+                efficiency=nearest_pairs['eff'].tolist(),
+                efficiency2=nearest_pairs['heat_eff'].tolist(),
+                efficiency3=costs.at[map_carrier, 'CO2 intensity'],
+                lifetime=25,
+                reversed=False
+            )
+            logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
+
+def set_line_s_nom_to_ntc(n, ntc_fn):
+    n_clusters = len(n.buses.query("carrier == 'AC'"))
+    if n_clusters > 39:
+         raise ValueError("This feature doesn't work for n_clusters > 39")
+    df = pd.read_csv(ntc_fn)
+    
+    iso3_to_iso2 = {
+        'ALB': 'AL', 'ARM': 'AM', 'AUT': 'AT', 'AZE': 'AZ', 'BEL': 'BE', 'BGR': 'BG',
+        'BIH': 'BA', 'BLR': 'BY', 'CHE': 'CH', 'CZE': 'CZ', 'DEU': 'DE', 'DNK': 'DK',
+        'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB', 'GEO': 'GE',
+        'GRC': 'GR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE', 'ITA': 'IT', 'LTU': 'LT',
+        'LUX': 'LU', 'LVA': 'LV', 'MDA': 'MD', 'MKD': 'MK', 'MLT': 'MT', 'MNE': 'ME',
+        'NLD': 'NL', 'NOR': 'NO', 'POL': 'PL', 'PRT': 'PT', 'ROU': 'RO', 'RUS': 'RU',
+        'SRB': 'RS', 'SVK': 'SK', 'SVN': 'SI', 'SWE': 'SE', 'TUR': 'TR', 'UKR': 'UA',
+        'XKX': 'XK', 'CYP': 'CY', 'ISR': 'IL', 'DZA': 'DZ', 'MAR': 'MA', 'EGY': 'EG',
+        'SAU': 'SA', 'PSE': 'PS', 'LBY': 'LY', 'TUN': 'TN'
+    }
+    df['source_iso2'] = df['source_country_code'].map(iso3_to_iso2)
+    df['target_iso2'] = df['target_country_code'].map(iso3_to_iso2)
+    df = df.dropna(subset=['source_iso2', 'target_iso2'])
+    pairs = []
+    for index, row in df.iterrows():
+        pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
+        pairs.append(pair)
+    df['pair'] = pairs
+    pair_to_ntc = df.groupby('pair')['NTC_2030_MW'].mean()
+    focus_countries_3 = ['CZ', 'DE', 'GR', 'IT', 'NL', 'PL']
+    for pair, avg_flow in pair_to_ntc.items():
+        if avg_flow == 0:
+            continue
+        country1, country2 = pair
+        if country1 not in focus_countries_3 and country2 not in focus_countries_3:
+            continue
+        buses1 = n.buses.query('country == @country1').index
+        buses2 = n.buses.query('country == @country2').index
+        lines_between = n.lines.query('(bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1)')
+        links_between = n.links.query("carrier == 'DC' and ((bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1))")
+        updated = False
+        if not lines_between.empty:
+            current_total_s_nom = lines_between['s_nom'].sum()
+            if current_total_s_nom > 0:
+                scale_factor = avg_flow / current_total_s_nom
+                n.lines.loc[lines_between.index, 's_nom'] *= scale_factor
+            else:
+                n.lines.loc[lines_between.index, 's_nom'] = avg_flow / len(lines_between)
+            updated = True
+        if not links_between.empty:
+            current_total_p_nom = links_between['p_nom'].sum()
+            if current_total_p_nom > 0:
+                scale_factor = avg_flow / current_total_p_nom
+                n.links.loc[links_between.index, 'p_nom'] *= scale_factor
+            else:
+                n.links.loc[links_between.index, 'p_nom'] = avg_flow / len(links_between)
+            updated = True
+        if updated:
+            logger.info(f"Set capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
+        else:
+            logger.warning(f"No interconnections found between {country1} and {country2}")
+
+
+def apply_hourly_price_fix(n):
+    for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
+        if store in n.stores.index:
+            n.remove("Store", store)
+
