@@ -121,6 +121,7 @@ costs:
     coal: 10.7
     lignite: 8.5
     oil: 28.2
+    uranium: 1.8 
   VOM:
     OCGT: 1
     CCGT: 1
