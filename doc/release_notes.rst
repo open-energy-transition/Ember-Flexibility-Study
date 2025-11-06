@@ -8,8 +8,14 @@
 Release Notes
 ##########################################
 
-Upcoming Release
-================
+PyPEmber-Flexibility-Study Upcoming Release
+===========================================
+
+* Custom EV, ICE and Fuel Cell shares can be passed in a .CSV file, specifying the share per country.
+
+
+Upcoming Release (PyPSA-Eur)
+============================
 
 * Fixed `ValueError` in `prepare_sector_network.py` in function `add_storage_and_grids`
   when running with few nodes such that they are all already connected by existing gas
