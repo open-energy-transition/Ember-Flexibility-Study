@@ -107,9 +107,6 @@ sector:
   bev_dsm_restriction_value: 0.4
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
-  Residential_heat_dsm: true
-  residential_heat_restriction_value: 0.27
-  residential_heat_restriction_time: [10,22]
   conventional_generation:
     OCGT: gas
     CCGT: gas

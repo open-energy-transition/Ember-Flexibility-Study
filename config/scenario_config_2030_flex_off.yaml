@@ -108,8 +108,7 @@ sector:
   bev_dsm_restriction_value: 0.4
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
-
-conventional_generation:
+  conventional_generation:
     OCGT: gas
     CCGT: gas
     coal: coal

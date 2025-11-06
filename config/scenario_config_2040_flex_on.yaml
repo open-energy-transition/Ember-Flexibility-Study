@@ -98,10 +98,6 @@ sector:
   bev_dsm_restriction_value: 0.4
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
-  Residential_heat_dsm: true
-  residential_heat_restriction_value: 0.27
-  residential_heat_restriction_time: [10,22]
-  
   conventional_generation:
     OCGT: gas
     CCGT: gas
@@ -110,6 +106,7 @@ sector:
     nuclear: uranium
     oil: oil
   keep_existing_capacities: true
+
 costs:
   year: 2040
   fuel:
@@ -132,8 +129,10 @@ clustering:
   - coal
   - nuclear
   - lignite
+
 simplify_network:
   remove_stubs_across_borders: true
+
 ember_settings:
   ntc_data: "data/ember_data/ntc.csv"
   ntc_cross_country_pf_restriction: false
