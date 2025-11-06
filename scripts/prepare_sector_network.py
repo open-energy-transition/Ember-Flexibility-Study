@@ -6607,7 +6607,8 @@ if __name__ == "__main__":
         )
 
     # Project specific changes
-    ember_settings = snakemake.config.get('ember_settings', {}) 
+    ember_settings = snakemake.config.get('ember_settings', {})
+    print(ember_settings)
     if ember_settings.get('chp_data', None) is not None:
         include_chps_for_selected_countries(
             n,
@@ -6621,6 +6622,7 @@ if __name__ == "__main__":
         set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
         logger.info("Set line capacities to provided NTC values.")
 
-    n = add_LV_capacities(n, snakemake.input.ppl_path)
+    if ember_settings.get('add_LV_capacities', False):
+        n = add_LV_capacities(n, snakemake.input.ppl_path, snakemake.params.max_hours)
 
     n.export_to_netcdf(snakemake.output[0])
