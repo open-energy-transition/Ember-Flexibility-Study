@@ -80,7 +80,7 @@ logger = logging.getLogger(__name__)
 def add_custom_powerplants(ppl, custom_powerplants, custom_ppl_query=False):
     if not custom_ppl_query:
         return ppl
-    add_ppls = pd.read_csv(custom_powerplants, dtype={"bus": "str"}, encoding='latin1')
+    add_ppls = pd.read_csv(custom_powerplants, dtype={"bus": "str"})
     add_ppls["DateOut"] = add_ppls["DateOut"].fillna(add_ppls.DateOut.max())
     add_ppls.loc[add_ppls["DateIn"] == 0, "DateIn"] = add_ppls.DateIn.min()
     if isinstance(custom_ppl_query, str):
@@ -180,7 +180,7 @@ if __name__ == "__main__":
     if isinstance(ppl_query, str):
         ppl.query(ppl_query, inplace=True)
 
-    # add carriers from own powerplgant files:
+    # add carriers from own powerplant files:
     custom_ppl_query = snakemake.params.custom_powerplants
     ppl = add_custom_powerplants(
         ppl, snakemake.input.custom_powerplants, custom_ppl_query
