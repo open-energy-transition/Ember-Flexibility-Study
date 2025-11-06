@@ -89,21 +89,9 @@ sector:
   bev_dsm_restriction_value: 0.4
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
-  transport_heating_deadband_upper: 20
-  transport_heating_deadband_lower: 15
-  EV_lower_degree_factor: 0.98
-  EV_upper_degree_factor: 0.8
-  time_dep_hp_cop: true
-  tes: true
-  tes_tau:
-    decentral: 3
-    central: 180
-  marginal_cost_heat_vent: 0.02
-  heat_pump_sink_T: 55
-  heat_source_cooling: 6
-  heat_pump_cop_approximation:
-  refrigerant: ammonia
-  home_battery_storage: true
+  Residential_heat_dsm: false
+  residential_heat_restriction_value: 0.27
+  residential_heat_restriction_time: [10,22]
   
   conventional_generation:
     OCGT: gas
