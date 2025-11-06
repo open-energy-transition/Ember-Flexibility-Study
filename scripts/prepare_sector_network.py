@@ -46,8 +46,9 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices,  include_chps_for_selected_countries, set_line_s_nom_to_ntc, add_LV_capacities
+    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices, include_chps_for_selected_countries, set_line_s_nom_to_ntc, add_LV_capacities
 )
+
 spatial = SimpleNamespace()
 logger = logging.getLogger(__name__)
 
@@ -6604,27 +6605,22 @@ if __name__ == "__main__":
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
+
+    # Project specific changes
     ember_settings = snakemake.config.get('ember_settings', {}) 
-    ember_setting_keys = list(ember_settings.keys())
-    if 'chp_countries' in ember_setting_keys:
-        country_code_map = ember_settings.get('chp_countries', {}) 
-    else:
-        logger.error("Missing 'chp_countries' config setting in ember_settings")
-        country_code_map = {}
-    if 'filter_chps' in ember_setting_keys:
-        filter_chps = ember_settings.get('filter_chps', '')  
-    else:
-        logger.error("Missing 'filter_chps' config setting in ember_settings.")
-        filter_chps = ''
-    if 'chp_data' in ember_setting_keys:
-        chp_data = ember_settings.get('chp_data', '') 
-    else:
-        logger.error("Missing 'chp_data' config setting in ember_settings.")
-        chp_data = ''
-    include_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map, filter_chps=filter_chps)
-    if snakemake.config['ember_settings'].get('historical_ntc', False):
+    if ember_settings.get('chp_data', None) is not None:
+        include_chps_for_selected_countries(
+            n,
+            costs,
+            CHP_ppl_fn=snakemake.input.chp_data,
+            country_code_map=ember_settings.get('chp_countries', {}),
+            filter_chps=ember_settings.get('filter_chps', '')
+        )
+
+    if ember_settings.get('ntc_data', None) is not None:
         set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
-        logger.info("Set line s_nom based on max historical flows.")
-    n=add_LV_capacities(n, snakemake.input.ppl_path)
-    
+        logger.info("Set line capacities to provided NTC values.")
+
+    n = add_LV_capacities(n, snakemake.input.ppl_path)
+
     n.export_to_netcdf(snakemake.output[0])
