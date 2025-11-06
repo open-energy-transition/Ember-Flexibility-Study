@@ -294,4 +294,6 @@ def apply_hourly_price_fix(n):
     for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
         if store in n.stores.index:
             n.remove("Store", store)
-
+            logger.info(
+                f"Removing {store} to account for hourly prices for {store.split(" ")[1]}."
+            )
