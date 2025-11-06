@@ -7,8 +7,11 @@
 Release Notes
 ##########################################
 
-PyPEmber-Flexibility-Study Upcoming Release
+Ember-Flexibility-Study Upcoming Release
 ===========================================
+
+* Adding LV capacities for solar rooftop and home batteries from the given powerplant database.
+  Expansion of those carriers is assumed False under this setting.
 
 * Custom EV, ICE and Fuel Cell shares can be passed in a .CSV file, specifying the share per country.
 
