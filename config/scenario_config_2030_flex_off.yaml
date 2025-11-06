@@ -25,6 +25,9 @@ electricity:
     from_entsoe: false
     year: 2030
 
+  max_hours:
+    home_battery: 2.5
+
   extendable_carriers:
     Generator: []
     StorageUnit: []
@@ -157,5 +160,6 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
   chp_data: "data/ember_data/combined_chp_2030.csv"
+  add_LV_capacities: true

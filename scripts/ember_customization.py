@@ -164,21 +164,21 @@ def apply_custom_pf_constraint(n,
     
     
 def include_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, filter_chps):
+
     focus_full = country_code_map.keys()
-    focus_full= country_code_map.keys()
+
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1').rename(columns={'lon': 'x', 'lat': 'y'})
     df = df.query(filter_chps)
-    df = df.query("type == 'chp' and status == 'operating' and bus in @focus_full")
-    carrier_mapping = {'hard coal': 'coal', 'lignite': 'lignite', 'gas': 'gas'}
-
+    carrier_mapping = {
+        'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas',
+        'hard coal': 'coal', 'lignite': 'lignite', 'gas': 'gas'
+    }
     
     for orig_carrier in df['carrier'].unique():
         if orig_carrier not in carrier_mapping:
             continue
         map_carrier = carrier_mapping[orig_carrier]
         sub_df = df.query('carrier == @orig_carrier').copy()
-        if sub_df.empty:
-            continue
         n.add("Carrier", f"urban central {map_carrier} CHP", overwrite=True)
         sub_df['country'] = sub_df['bus'].map(country_code_map)
         sub_df = sub_df.dropna(subset=['country', 'x', 'y'])
@@ -187,11 +187,11 @@ def include_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, 
         unique_countries = sub_df['country'].unique()
         power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
         power_buses = power_buses.reset_index().rename(
-                            columns={
-                                'Bus': 'bus_id', 
-                                'x': 'bus_x',    
-                                'y': 'bus_y'      
-                           }
+            columns={
+                'Bus': 'bus_id',
+                'x': 'bus_x',
+                'y': 'bus_y'
+            }
         )
                                                        
         if power_buses.empty:
@@ -303,7 +303,8 @@ def apply_hourly_price_fix(n):
         if store in n.stores.index:
             n.remove("Store", store)
 
-def add_LV_capacities(n, ppl_path): 
+
+def add_LV_capacities(n, ppl_path, max_hours):
     ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
     # For rooftop solar
     rooftop_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'solar') & (ppl['Technology'].str.strip().str.lower() == 'solar-rooftop')]
@@ -318,40 +319,40 @@ def add_LV_capacities(n, ppl_path):
             n.generators.loc[matching_gens.index, 'p_nom'] = add_cap
             n.generators.loc[matching_gens.index, 'p_nom_min'] = add_cap
             n.generators.loc[matching_gens.index, 'p_nom_extendable'] = False
-            n.generators.loc[matching_gens.index, 'capital_cost'] = 0
-            logger.info(f"Fixed {add_cap:.2f} MW each to {num} solar-rooftop generators at bus {bus} low voltage.")
+            logger.info(f"Fixed {add_cap:.2f} MW solar-rooftop generators at bus {bus} low voltage.")
         else:
             logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
 
    # Home batteries 
     home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'home battery') & (ppl['Duration'] == 2.5)]
     agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
-    duration = 2.5
 
     for bus, cap in agg_capacity_home.items():
         store_i = bus + " home battery"
         if store_i in n.stores.index:
-            n.stores.loc[store_i, 'e_nom'] = cap * duration
+            home_max_hours = max_hours.get("home_battery", 0)
+            print(home_max_hours)
+            n.stores.loc[store_i, 'e_nom'] = cap * home_max_hours
+            n.stores.loc[store_i, 'e_nom_min'] = cap * home_max_hours
             n.stores.loc[store_i, 'e_nom_extendable'] = False
-            n.stores.loc[store_i, 'capital_cost'] = 0
         else:
             logger.warning(f"No home battery store at bus {bus}.")
 
         charger_i = bus + " home battery charger"
         if charger_i in n.links.index:
             n.links.loc[charger_i, 'p_nom'] = cap
+            n.links.loc[charger_i, 'p_nom_min'] = cap
             n.links.loc[charger_i, 'p_nom_extendable'] = False
-            n.links.loc[charger_i, 'capital_cost'] = 0
         else:
             logger.warning(f"No home battery charger at bus {bus}.")
 
         discharger_i = bus + " home battery discharger"
         if discharger_i in n.links.index:
             n.links.loc[discharger_i, 'p_nom'] = cap
+            n.links.loc[discharger_i, 'p_nom_min'] = cap
             n.links.loc[discharger_i, 'p_nom_extendable'] = False
-            n.links.loc[discharger_i, 'capital_cost'] = 0
         else:
             logger.warning(f"No home battery discharger at bus {bus}.")
 
-        logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * duration:.2f} MWh.")
-        return n 
+        logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * home_max_hours:.2f} MWh.")
+        return n

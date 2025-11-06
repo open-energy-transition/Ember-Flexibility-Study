@@ -1299,6 +1299,7 @@ rule prepare_sector_network:
         temperature_limited_stores=config_provider(
             "sector", "district_heating", "temperature_limited_stores"
         ),
+        max_hours=config_provider("electricity", "max_hours"),
     input:
         unpack(input_profile_offwind),
         unpack(input_heat_source_power),
