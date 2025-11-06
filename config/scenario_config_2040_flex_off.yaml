@@ -34,7 +34,7 @@ electricity:
 
   custom_powerplants: true
   custom_powerplants_fn: "data/custom_ppl_2040.csv"
-  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2040 and DateOut >= 2040)
+  powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
     enable: false
