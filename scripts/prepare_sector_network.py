@@ -46,7 +46,12 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices, include_coal_chps_for_selected_countries, set_line_s_nom_to_ntc
+    apply_custom_ramping,
+    apply_2023_nuclear_decommissioning,
+    apply_hourly_fuel_prices,
+    apply_hourly_price_fix,
+    include_coal_chps_for_selected_countries,
+    set_line_s_nom_to_ntc
 )
 
 spatial = SimpleNamespace()
@@ -6590,5 +6595,8 @@ if __name__ == "__main__":
     if snakemake.config['ember_settings'].get('historical_ntc', False):
        set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
        logger.info("Restrict s_nom to NTC values")
+
+    if snakemake.config["ember_settings"].get("ember_gas_price", False):
+        apply_hourly_price_fix(n)
 
     n.export_to_netcdf(snakemake.output[0])
