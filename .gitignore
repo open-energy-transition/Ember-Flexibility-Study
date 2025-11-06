@@ -24,6 +24,7 @@ gurobi.log
 /logs
 /notebooks
 /data
+!data/ember_data/
 /cutouts
 /tmp
 doc/_build
