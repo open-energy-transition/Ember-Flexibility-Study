@@ -24,18 +24,21 @@ electricity:
   conventional_generation:
     from_entsoe: false
     year: 2030
+
   extendable_carriers:
     Generator: []
     StorageUnit: []
     Store: []
+
   transmission_limit: v1.0
+
   custom_powerplants: true
   custom_powerplants_fn: "data/custom_ppl_2030.csv"
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2030 and DateOut >= 2030)
+
   estimate_renewable_capacities:
     enable: false
     from_gem: false
-    technology_mapping:
 
 atlite:
   default_cutout: europe-2023-sarah3-era5

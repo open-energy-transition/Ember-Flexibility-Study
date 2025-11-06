@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -80,7 +81,8 @@ electricity:
     Store: []
   transmission_limit: v1.0  # keep today’s NTCs (default)
 
-  custom_powerplants: (DateIn <= 2023 and DateOut >= 2023)
+  custom_powerplants: true
+  custom_powerplants_fn: data/custom_powerplants.csv
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2023 and DateOut >= 2023)
 
   estimate_renewable_capacities:

@@ -1,5 +1,11 @@
+# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH
+#
+# SPDX-License-Identifier: CC0-1.0
+
 run:
   name: scenario_2040_flex_on
+
 scenario:
   clusters:
   - 39
@@ -7,10 +13,33 @@ scenario:
   - 3H
   planning_horizons:
   - 2040
+
 snapshots:
   start: '2023-01-01'
   end: '2024-01-01'
+
 countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
+
+electricity:
+  conventional_generation:
+    from_entsoe: false
+    year: 2030
+
+  extendable_carriers:
+    Generator: []
+    StorageUnit: []
+    Store: []
+
+  transmission_limit: v1.0
+
+  custom_powerplants: true
+  custom_powerplants_fn: "data/custom_ppl_2040.csv"
+  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2040 and DateOut >= 2040)
+
+  estimate_renewable_capacities:
+    enable: false
+    from_gem: false
+
 atlite:
   default_cutout: europe-2023-sarah3-era5
   nprocesses: 4
@@ -21,18 +50,23 @@ atlite:
       # module: era5
     europe-2023-sarah3-era5:
       time: ['2023', '2023']
+
 renewable:
   onwind:
     correction_factor: 0.93
   solar:
     correction_factor: 0.854337
+
 lines:
   s_max_pu: 1
+
 links:
   under_construction: remove
   max_extension: 0
+
 transmission_projects:
   enable: false
+
 pypsa_eur:
   Generator:
   - onwind
@@ -49,25 +83,6 @@ pypsa_eur:
   - battery
   - home_battery_storage
   
-electricity:
-  conventional_generation:
-    from_entsoe: false
-    year: 2030
-  extendable_carriers:
-    Generator: []
-    StorageUnit: []
-    Store: []
-  transmission_limit: v1.0
-  custom_powerplants: (DateIn <= 2040 and DateOut >= 2040)
-  powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2040 and DateOut >= 2040)
-  estimate_renewable_capacities:
-    enable: false
-    from_gem: false
-    technology_mapping:
-  
-load:
-  manual_adjustments: false
-  scaling_factor: 1.0
 sector:
   transport: true
   heating: true
@@ -92,9 +107,6 @@ sector:
   bev_dsm_restriction_value: 0.4
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
-  Residential_heat_dsm: false
-  residential_heat_restriction_value: 0.27
-  residential_heat_restriction_time: [10,22]
   
   conventional_generation:
     OCGT: gas
@@ -103,7 +115,9 @@ sector:
     lignite: lignite
     nuclear: uranium
     oil: oil
+
   keep_existing_capacities: true
+
 costs:
   year: 2040
   fuel:
@@ -126,8 +140,10 @@ clustering:
   - coal
   - nuclear
   - lignite
+
 simplify_network:
   remove_stubs_across_borders: true
+
 ember_settings:
   ntc_data: "data/ember_data/ntc.csv"
   ntc_cross_country_pf_restriction: false
