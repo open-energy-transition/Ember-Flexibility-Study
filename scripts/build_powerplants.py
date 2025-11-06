@@ -180,7 +180,7 @@ if __name__ == "__main__":
     if isinstance(ppl_query, str):
         ppl.query(ppl_query, inplace=True)
 
-    ppl = pd.DataFrame(columns=['Name', 'Fueltype', 'Technology', 'Set', 'Country', 'Capacity', 'Efficiency', 'DateIn', 'DateRetrofit', 'DateOut', 'lat', 'lon', 'EIC', 'projectID', 'DateMothball', 'Unnamed: 19', 'Unnamed: 20', 'Unnamed: 21', 'Unnamed: 22', 'Unnamed: 23', 'Unnamed: 24', 'Unnamed: 25'])
+    # add carriers from own powerplgant files:
     custom_ppl_query = snakemake.params.custom_powerplants
     ppl = add_custom_powerplants(
         ppl, snakemake.input.custom_powerplants, custom_ppl_query

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
 # SPDX-FileCopyrightText: Open Energy Transition gGmbH
+#
 # SPDX-License-Identifier: MIT
 
 """
@@ -59,6 +60,7 @@ import powerplantmatching as pm
 import pypsa
 import xarray as xr
 from pypsa.clustering.spatial import DEFAULT_ONE_PORT_STRATEGIES, normed_or_uniform
+
 
 
 from scripts._helpers import (
@@ -635,6 +637,7 @@ def attach_wind_and_solar(
                 p_max_pu=p_max_pu,
                 lifetime=costs.at[supcar, "lifetime"],
             )
+
 
 def attach_conventional_generators(
     n: pypsa.Network,
