@@ -2210,10 +2210,10 @@ def add_storage_and_grids(
 
 def check_land_transport_shares(shares):
     # Sums up the shares, ignoring None values
-    total_share = sum(filter(None, shares))
-    if total_share != 1:
+    total_share = shares.sum(axis=1)
+    if total_share.mean() != 1:
         logger.warning(
-            f"Total land transport shares sum up to {total_share:.2%},"
+            f"Total land transport shares sum up to {total_share[total_share != 1]},"
             "corresponding to increased or decreased demand assumptions."
         )
 
@@ -2675,19 +2675,27 @@ def add_land_transport(
     # exogenous share of passenger car type
     engine_types = ["fuel_cell", "electric", "ice"]
     shares = pd.DataFrame(index=n.buses.country.unique(), columns=engine_types, data=0)
+    shares = shares.loc[shares.index.notna()]
     for engine in engine_types:
         share_key = f"land_transport_{engine}_share"
         if isinstance(get(options[share_key], investment_year), str):
             engine_shares = pd.read_csv(
                 get(options[share_key], investment_year), index_col=[0]
             )
-            shares.loc[engine_shares.index, engine] = engine_shares.values
+            given_countries = list(
+                set(shares.index).intersection(set(engine_shares.index))
+            )
+            shares.loc[given_countries, engine] = engine_shares.loc[given_countries].values
+            missing_countries = list(
+                set(shares.index) - set(engine_shares.index)
+            )
+            shares.loc[missing_countries, engine] = engine_shares.loc["default"].values[0]
         else:
             shares[engine] = get(options[share_key], investment_year)
         if logger:
             logger.info(f"average {engine} share: {shares[engine].mean() * 100}%")
 
-    check_land_transport_shares(shares.mean())
+    check_land_transport_shares(shares)
 
     p_set = transport[nodes]
 
