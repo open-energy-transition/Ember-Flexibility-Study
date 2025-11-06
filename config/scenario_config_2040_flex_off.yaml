@@ -79,7 +79,10 @@ sector:
   gas_network: false
   bev_dsm: false
   v2g: false 
-  land_transport_electric_share: 0.3
+  land_transport_electric_share:
+      2030: "data/ember_data/land_transport_electric_share_2040.csv"
+    land_transport_ice_share:
+      2030: "data/ember_data/land_transport_ice_share_2040.csv"
   bev_dsm_availability: 1
   bev_energy: 0.05
   bev_charge_efficiency: 0.9

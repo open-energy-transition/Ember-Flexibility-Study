@@ -2208,10 +2208,10 @@ def add_storage_and_grids(
 
 def check_land_transport_shares(shares):
     # Sums up the shares, ignoring None values
-    total_share = sum(filter(None, shares))
-    if total_share != 1:
+    total_share = shares.sum(axis=1)
+    if total_share.mean() != 1:
         logger.warning(
-            f"Total land transport shares sum up to {total_share:.2%},"
+            f"Total land transport shares sum up to {total_share[total_share != 1]},"
             "corresponding to increased or decreased demand assumptions."
         )
 
@@ -2339,6 +2339,8 @@ def add_EVs(
     efficiency *= cyclic_eff
 
     # Calculate load profile
+    country_prefix = p_set.columns.str[:2]
+    electric_share = country_prefix.map(electric_share)
     profile = electric_share * p_set.div(efficiency)
 
     # Add EV load
@@ -2470,6 +2472,8 @@ def add_fuel_cell_cars(
     )
 
     # Calculate hydrogen demand profile
+    country_prefix = p_set.columns.str[:2]
+    fuel_cell_share = country_prefix.map(fuel_cell_share)
     profile = fuel_cell_share * p_set.div(efficiency)
 
     # Add hydrogen load for fuel cell vehicles
@@ -2563,6 +2567,8 @@ def add_ice_cars(
     )
 
     # Calculate oil demand profile
+    country_prefix = p_set.columns.str[:2]
+    ice_share = country_prefix.map(ice_share)
     profile = ice_share * p_set.div(efficiency).rename(
         columns=lambda x: x + " land transport oil"
     )
@@ -2666,12 +2672,26 @@ def add_land_transport(
 
     # exogenous share of passenger car type
     engine_types = ["fuel_cell", "electric", "ice"]
-    shares = pd.Series()
+    shares = pd.DataFrame(index=n.buses.country.unique(), columns=engine_types, data=0)
+    shares = shares.loc[shares.index.notna()]
     for engine in engine_types:
         share_key = f"land_transport_{engine}_share"
-        shares[engine] = get(options[share_key], investment_year)
+        if isinstance(get(options[share_key], investment_year), str):
+            engine_shares = pd.read_csv(
+                get(options[share_key], investment_year), index_col=[0]
+            )
+            given_countries = list(
+                set(shares.index).intersection(set(engine_shares.index))
+            )
+            shares.loc[given_countries, engine] = engine_shares.loc[given_countries].values
+            missing_countries = list(
+                set(shares.index) - set(engine_shares.index)
+            )
+            shares.loc[missing_countries, engine] = engine_shares.loc["default"].values[0]
+        else:
+            shares[engine] = get(options[share_key], investment_year)
         if logger:
-            logger.info(f"{engine} share: {shares[engine] * 100}%")
+            logger.info(f"average {engine} share: {shares[engine].mean() * 100}%")
 
     check_land_transport_shares(shares)
 
@@ -2680,7 +2700,7 @@ def add_land_transport(
     # temperature for correction factor for heating/cooling
     temperature = xr.open_dataarray(temp_air_total_file).to_pandas()
 
-    if shares["electric"] > 0:
+    if (shares["electric"] > 0).any():
         add_EVs(
             n,
             avail_profile,
@@ -2693,7 +2713,7 @@ def add_land_transport(
             options,
         )
 
-    if shares["fuel_cell"] > 0:
+    if (shares["fuel_cell"] > 0).any():
         add_fuel_cell_cars(
             n=n,
             p_set=p_set,
@@ -2702,7 +2722,7 @@ def add_land_transport(
             options=options,
             spatial=spatial,
         )
-    if shares["ice"] > 0:
+    if (shares["ice"] > 0).any():
         add_ice_cars(
             n,
             costs,
