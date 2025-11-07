@@ -75,7 +75,7 @@ bev_charge_efficiency,--,float,Battery electric vehicles (BEV) charge and discha
 bev_charge_rate,MWh,float,The power consumption for one electric vehicle (EV) in MWh. Value derived from 3-phase charger with 11 kW.
 bev_avail_max,--,float,The maximum share plugged-in availability for passenger electric vehicles.
 bev_avail_mean,--,float,The average share plugged-in availability for passenger electric vehicles.
-v2g,--,"{true, false}","Allows feed-in to grid from EV battery. This is only enabled if BEV demand-side management is enabled, and the share of vehicles participating is V2G is given by `bev_dsm_availability`."
+v2g,--,"{true, false, float}","Allows feed-in to grid from EV battery. This is only enabled if BEV demand-side management is enabled, and the share of vehicles participating in V2G is given by `bev_dsm_availability` times the specified v2g share (1 if True)."
 land_transport_fuel_cell _share,--,Dictionary with planning horizons as keys.,The share of vehicles that uses fuel cells in a given year. Alternatively, a filepath can be given that specifies per-country fuel cell shares.
 land_transport_electric _share,--,Dictionary with planning horizons as keys.,The share of vehicles that uses electric vehicles (EV) in a given year. Alternatively, a filepath can be given that specifies per-country electrification shares.
 land_transport_ice _share,--,Dictionary with planning horizons as keys.,The share of vehicles that uses internal combustion engines (ICE) in a given year. What is not EV or FCEV is oil-fuelled ICE. Alternatively, a filepath can be given that specifies per-country ICE shares.
