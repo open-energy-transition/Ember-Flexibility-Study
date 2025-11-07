@@ -356,3 +356,39 @@ def add_LV_capacities(n, ppl_path, max_hours):
 
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * home_max_hours:.2f} MWh.")
         return n
+
+def apply_BEV_dsm_restiction_country_shares(dsm_profile, country_shares):
+
+    """
+    Scale BEV DSM restriction values by country-specific shares
+
+    Parameters
+    ----------
+    dsm_profile : pd.DataFrame
+        DSM profile with country-coded columns.
+
+    country_shares : str
+        Path to CSV with country share values.
+
+    Returns
+    -------
+    pd.DataFrame
+        DSM profile with columns scaled by the corresponding shares.
+    """
+
+    country_shares = pd.read_csv(country_shares, index_col=0)
+    explicit_countries = [c for c in country_shares.index if c != 'default']
+    for col in dsm_profile.columns:
+        country_code = col[:2]
+        if country_code in explicit_countries:
+            dsm_profile[col] = dsm_profile[col] * country_shares.loc[country_code].values[0]
+        elif 'default' in country_shares.index:
+            dsm_profile[col] = dsm_profile[col] * country_shares.loc['default'].values[0]
+        else:
+            logger.warning(
+                f"No 'default' share found for the BEV DSM restriction in '{country_code}'. "
+                f"Leaving it at 1, which implies that all EVs will be fully charged "
+                f"by the specified 'bev_dsm_restriction_time'."
+            )
+
+    return dsm_profile
