@@ -2391,14 +2391,20 @@ def add_EVs(
         )
 
         # Add vehicle-to-grid if enabled
-        if options["v2g"]:
+        if options["v2g"] or options["v2g"] in (True, 1):
+            v2g_share = float(options["v2g"])
+            if v2g_share > 1:
+                logging.warning(
+                    f"Value {share} exceeds 1.0. This assumes that more than 100% of EVs "
+                    f"that contribute to DSM can also contribute back to the grid."
+                )
             n.add(
                 "Link",
                 spatial.nodes,
                 suffix=" V2G",
                 bus1=spatial.nodes,
                 bus0=spatial.nodes + " EV battery",
-                p_nom=p_nom * options["bev_dsm_availability"],
+                p_nom=p_nom * options["bev_dsm_availability"] * v2g_share,
                 carrier="V2G",
                 p_max_pu=avail_profile.loc[n.snapshots, spatial.nodes],
                 lifetime=1,

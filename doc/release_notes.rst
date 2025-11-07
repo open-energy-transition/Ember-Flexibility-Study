@@ -10,6 +10,9 @@ Release Notes
 Ember-Flexibility-Study Upcoming Release
 ===========================================
 
+* Updated V2G functionality to allow specifying the share of EVs participating in DSM,
+  instead of assuming none or 100% by default.
+
 * Adding LV capacities for solar rooftop and home batteries from the given powerplant database.
   Expansion of those carriers is assumed False under this setting.
 
