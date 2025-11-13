@@ -78,7 +78,7 @@ rule download_hotmaps:
 
 rule hourly_lignite_prices:
     input:
-        "validation/ember_data/hourly_fuel_costs.csv"
+        "data/ember_data/hourly_fuel_costs.csv"
     output:
         resources("hourly_fuel_costs_with_lignite.csv")
     script:

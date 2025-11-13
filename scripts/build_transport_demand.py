@@ -20,6 +20,8 @@ from scripts._helpers import (
     set_scenario_config,
 )
 
+from ember_customization import apply_BEV_dsm_restiction_country_shares
+
 logger = logging.getLogger(__name__)
 
 
@@ -150,10 +152,15 @@ def bev_dsm_profile(snapshots, nodes, options):
     dsm_week = np.zeros((24 * 7,))
 
     # assuming that at a certain time ("bev_dsm_restriction_time") EVs have to
-    # be charged to a minimum value (defined in bev_dsm_restriction_value)
-    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"])] = options[
-        "bev_dsm_restriction_value"
-    ]
+    # be charged to a minimum value (defined in bev_dsm_restriction_value),
+    # which can also be a vary by country
+
+    if isinstance(options["bev_dsm_restriction_value"], str):
+        restriction_value = 1
+    else:
+        restriction_value = options["bev_dsm_restriction_value"]
+
+    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"])] = restriction_value
 
     return generate_periodic_profiles(
         dt_index=snapshots,
@@ -203,6 +210,11 @@ if __name__ == "__main__":
     )
 
     dsm_profile = bev_dsm_profile(snapshots, nodes, options)
+
+    if isinstance(options["bev_dsm_restriction_value"], str):
+        dsm_profile = apply_BEV_dsm_restiction_country_shares(
+            dsm_profile, options["bev_dsm_restriction_value"]
+        )
 
     nodal_transport_data.to_csv(snakemake.output.transport_data)
     transport_demand.to_csv(snakemake.output.transport_demand)

@@ -107,7 +107,7 @@ sector:
   bev_charge_rate: 0.35
   bev_avail_max: 0.95
   bev_avail_mean: 0.8
-  bev_dsm_restriction_value: 0.4
+  bev_dsm_restriction_value: data/ember_data/bev_dsm_restriction_value.csv
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
   conventional_generation:
