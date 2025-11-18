@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 39
   sector_opts:
-  - 17H
+  - 3H
   planning_horizons:
   - 2030
 
@@ -100,7 +100,7 @@ sector:
   land_transport_electric_share:
     2030: "data/ember_data/land_transport_electric_share_2030.csv"
   land_transport_ice_share:
-      2030: "data/ember_data/land_transport_ice_share_2030.csv"
+    2030: "data/ember_data/land_transport_ice_share_2030.csv"
   bev_dsm_availability: 0.5
   bev_energy: 0.8
   bev_charge_efficiency: 0.9
