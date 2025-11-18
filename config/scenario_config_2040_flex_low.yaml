@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: scenario_2030_flex_off
+  name: scenario_2040_flex_on
 
 scenario:
   clusters:
@@ -12,13 +12,13 @@ scenario:
   sector_opts:
   - 3H
   planning_horizons:
-  - 2030
-
-countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
+  - 2040
 
 snapshots:
   start: '2023-01-01'
   end: '2024-01-01'
+
+countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
 
 electricity:
   conventional_generation:
@@ -36,7 +36,7 @@ electricity:
   transmission_limit: v1.0
 
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2030.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -45,14 +45,13 @@ electricity:
 
 atlite:
   default_cutout: europe-2023-sarah3-era5
+  nprocesses: 4
   show_progress: true
   cutouts:
+    # use 'base' to determine geographical bounds and time span from config
+    # base:
+      # module: era5
     europe-2023-sarah3-era5:
-      module: [sarah, era5] # in priority order
-      x: [-12., 42.]
-      y: [33., 72.]
-      dx: 0.3
-      dy: 0.3
       time: ['2023', '2023']
 
 renewable:
@@ -86,7 +85,7 @@ pypsa_eur:
   - hydro
   - battery
   - home_battery_storage
-
+  
 sector:
   transport: true
   heating: true
@@ -97,18 +96,18 @@ sector:
   agriculture: false
   gas_network: false
   bev_dsm: false
-  v2g: false
+  v2g: 0.08 
   land_transport_electric_share:
-      2030: "data/ember_data/land_transport_electric_share_2030.csv"
-  land_transport_ice_share:
-      2030: "data/ember_data/land_transport_ice_share_2030.csv"
-  bev_dsm_availability: 1
-  bev_energy: 0.05
+      2030: "data/ember_data/land_transport_electric_share_2040.csv"
+    land_transport_ice_share:
+      2030: "data/ember_data/land_transport_ice_share_2040.csv"
+  bev_dsm_availability: 0.3
+  bev_energy: 0.09
   bev_charge_efficiency: 0.9
-  bev_charge_rate: 0.35
+  bev_charge_rate: 0.1127
   bev_avail_max: 0.95
   bev_avail_mean: 0.8
-  bev_dsm_restriction_value: 0.4
+  bev_dsm_restriction_value: 0.5
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
   conventional_generation:
@@ -118,10 +117,11 @@ sector:
     lignite: lignite
     nuclear: uranium
     oil: oil
+
   keep_existing_capacities: true
 
 costs:
-  year: 2030
+  year: 2040
   fuel:
     gas: 19.9
     coal: 10.7
@@ -160,6 +160,6 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
+  filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
