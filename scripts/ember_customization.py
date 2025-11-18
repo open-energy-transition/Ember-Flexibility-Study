@@ -302,6 +302,9 @@ def apply_hourly_price_fix(n):
     for store in ["EU gas Store", "EU coal Store", "EU lignite Store"]:
         if store in n.stores.index:
             n.remove("Store", store)
+            logger.info(
+                f"Removing {store} to account for hourly prices for {store.split(" ")[1]}."
+            )
 
 
 def add_LV_capacities(n, ppl_path, max_hours):
@@ -356,6 +359,7 @@ def add_LV_capacities(n, ppl_path, max_hours):
 
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * home_max_hours:.2f} MWh.")
         return n
+
 
 def apply_BEV_dsm_restiction_country_shares(dsm_profile, country_shares):
 

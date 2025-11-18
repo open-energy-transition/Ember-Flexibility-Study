@@ -46,7 +46,13 @@ from scripts.definitions.heat_system import HeatSystem
 from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
 
 from scripts.ember_customization import (
-    apply_custom_ramping, apply_2023_nuclear_decommissioning, apply_hourly_fuel_prices, include_chps_for_selected_countries, set_line_s_nom_to_ntc, add_LV_capacities
+    apply_custom_ramping,
+    apply_2023_nuclear_decommissioning,
+    apply_hourly_fuel_prices,
+    apply_hourly_price_fix,
+    include_chps_for_selected_countries,
+    set_line_s_nom_to_ntc,
+    add_LV_capacities
 )
 
 spatial = SimpleNamespace()
@@ -6630,5 +6636,8 @@ if __name__ == "__main__":
 
     if ember_settings.get('add_LV_capacities', False):
         n = add_LV_capacities(n, snakemake.input.ppl_path, snakemake.params.max_hours)
+
+    if snakemake.config["ember_settings"].get("ember_gas_price", False):
+        apply_hourly_price_fix(n)
 
     n.export_to_netcdf(snakemake.output[0])
