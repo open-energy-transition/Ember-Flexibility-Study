@@ -358,7 +358,8 @@ def add_LV_capacities(n, ppl_path, max_hours):
             logger.warning(f"No home battery discharger at bus {bus}.")
 
         logger.info(f"Fixed home battery at bus {bus} with p_nom {cap:.2f} MW, e_nom {cap * home_max_hours:.2f} MWh.")
-        return n
+
+    return n
 
 
 def apply_BEV_dsm_restiction_country_shares(dsm_profile, country_shares):
