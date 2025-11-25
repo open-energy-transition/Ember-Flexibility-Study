@@ -95,7 +95,7 @@ sector:
   aviation: false
   agriculture: false
   gas_network: false
-  bev_dsm: false
+  bev_dsm: true
   v2g: 0.08 
   land_transport_electric_share:
     2030: "data/ember_data/land_transport_electric_share_2040.csv"
