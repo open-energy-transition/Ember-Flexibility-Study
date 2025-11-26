@@ -65,17 +65,7 @@ electricity:
       PV: solar
 
 load:
-  fill_gaps:
-    enable: true
-    interpolate_limit: 3
-    time_shift_for_large_gaps: 1w
-  manual_adjustments: false # false
-  scaling_factor: 1.0 
-  fixed_year: false # false or year (e.g. 2013)
-  supplement_synthetic: true
-  distribution_key:
-    gdp: 0.6
-    population: 0.4
+  manual_adjustments: false
 
 costs:
   year: 2025
@@ -96,9 +86,6 @@ costs:
 clustering:
   exclude_carriers: [coal, nuclear, lignite]
 #  focus_weights: {'DE': 0.2, 'CZ': 0.06, 'PL': 0.1, 'NL': 0.05, 'IT': 0.15, 'GR': 0.05}
-
-simplify_network:
-  remove_stubs_across_borders: true
 
 ember_settings:
   ntc_data: "data/ember_data/ntc_2030.csv"

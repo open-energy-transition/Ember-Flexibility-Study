@@ -95,9 +95,6 @@ costs:
     enable: true
     co2: 69.6
 
-simplify_network:
-  remove_stubs_across_borders: true
-
 ember_settings:
   ntc_data: "data/ember_data/ntc_2030.csv"
   ntc_cross_country_pf_restriction: false
