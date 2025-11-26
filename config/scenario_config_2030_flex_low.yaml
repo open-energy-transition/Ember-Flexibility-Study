@@ -77,7 +77,6 @@ sector:
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
   hydrogen_underground_storage: false
-  hydrogen_ground_storage: false
 
 costs:
   year: 2030
