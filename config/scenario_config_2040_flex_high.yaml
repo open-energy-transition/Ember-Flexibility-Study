@@ -18,8 +18,6 @@ snapshots:
   start: '2023-01-01'
   end: '2024-01-01'
 
-countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
-
 atlite:
   default_cutout: europe-2023-sarah3-era5
   nprocesses: 4
@@ -30,22 +28,6 @@ atlite:
       # module: era5
     europe-2023-sarah3-era5:
       time: ['2023', '2023']
-
-renewable:
-  onwind:
-    correction_factor: 0.93
-  solar:
-    correction_factor: 0.854337
-
-lines:
-  s_max_pu: 1
-
-links:
-  under_construction: remove
-  max_extension: 0
-
-transmission_projects:
-  enable: false
 
 pypsa_eur:
   Generator:
@@ -64,17 +46,8 @@ pypsa_eur:
   - home_battery_storage
   
 electricity:
-  conventional_generation:
-    from_entsoe: false
-    year: 2030
-
   max_hours:
     home_battery: 2.5
-
-  extendable_carriers:
-    Generator: []
-    StorageUnit: []
-    Store: []
 
   transmission_limit: v1.0
 
@@ -90,15 +63,8 @@ electricity:
 load:
   manual_adjustments: false
   scaling_factor: 1.0
+
 sector:
-  transport: true
-  heating: true
-  biomass: true
-  industry: true
-  shipping: false
-  aviation: false
-  agriculture: false
-  gas_network: false
   bev_dsm: true
   v2g: 0.31 
   land_transport_electric_share:
@@ -114,14 +80,8 @@ sector:
   bev_dsm_restriction_value: 0.5
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
-  conventional_generation:
-    OCGT: gas
-    CCGT: gas
-    coal: coal
-    lignite: lignite
-    nuclear: uranium
-    oil: oil
-  keep_existing_capacities: true
+  hydrogen_underground_storage: false
+  hydrogen_ground_storage: false
 
 costs:
   year: 2040
@@ -139,12 +99,6 @@ costs:
   emission_prices:
     enable: true
     co2: 69.6
-  
-clustering:
-  exclude_carriers:
-  - coal
-  - nuclear
-  - lignite
 
 simplify_network:
   remove_stubs_across_borders: true
