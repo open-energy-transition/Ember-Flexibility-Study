@@ -686,7 +686,6 @@ sector:
   co2_network_cost_factor: 1
   cc_fraction: 0.9
   hydrogen_underground_storage: true
-  hydrogen_ground_storage: true
   hydrogen_underground_storage_locations:
   - onshore    # more than 50 km from sea
   - nearshore      # within 50 km of sea
