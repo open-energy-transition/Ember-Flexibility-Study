@@ -1889,6 +1889,7 @@ def add_storage_and_grids(
     if (
         not h2_caverns.empty
         and options["hydrogen_underground_storage"]
+        and "H2" in snakemake.params.electricity["extendable_carriers"].get("Store", [])
         and set(cavern_types).intersection(h2_caverns.columns)
     ):
         h2_caverns = h2_caverns[cavern_types].sum(axis=1)
@@ -1918,20 +1919,22 @@ def add_storage_and_grids(
             lifetime=costs.at["hydrogen storage underground", "lifetime"],
         )
 
-    # hydrogen stored overground (where not already underground)
-    tech = "hydrogen storage tank type 1 including compressor"
-    nodes_overground = h2_caverns.index.symmetric_difference(nodes)
+    if "H2" in snakemake.params.electricity["extendable_carriers"].get("Store", []):
 
-    n.add(
-        "Store",
-        nodes_overground + " H2 Store",
-        bus=nodes_overground + " H2",
-        e_nom_extendable=True,
-        e_cyclic=True,
-        carrier="H2 Store",
-        capital_cost=costs.at[tech, "capital_cost"],
-        lifetime=costs.at[tech, "lifetime"],
-    )
+        # hydrogen stored overground (where not already underground)
+        tech = "hydrogen storage tank type 1 including compressor"
+        nodes_overground = h2_caverns.index.symmetric_difference(nodes)
+
+        n.add(
+            "Store",
+            nodes_overground + " H2 Store",
+            bus=nodes_overground + " H2",
+            e_nom_extendable=True,
+            e_cyclic=True,
+            carrier="H2 Store",
+            capital_cost=costs.at[tech, "capital_cost"],
+            lifetime=costs.at[tech, "lifetime"],
+        )
 
     if options["H2_retrofit"]:
         gas_pipes = pd.read_csv(clustered_gas_network_file, index_col=0)
