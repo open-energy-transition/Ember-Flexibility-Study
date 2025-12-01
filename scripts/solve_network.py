@@ -642,7 +642,7 @@ def add_CCL_constraints(
             .groupby(["bus", "carrier"])
             .sum()
         )
-        links_cst = links_cst.assign(p_nom_e=links_cst.p_nom * links_cst.efficiency)
+        links_cst = links_cst.assign(p_nom_e=links_cst.p_nom)
         rhs_cst_links = (
             pd.concat(
                 [
