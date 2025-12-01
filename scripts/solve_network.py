@@ -612,12 +612,7 @@ def add_CCL_constraints(
     lhs = p_nom.groupby(grouper).sum().rename(bus="country")
 
     if not links.empty:
-        eff_links = xr.DataArray(
-            links.efficiency,
-            coords={p_nom_link.dims[0]: links.index},
-            dims=[p_nom_link.dims[0]],
-        )
-        p_nom_e = p_nom_link.loc[links.index] * eff_links
+        p_nom_e = p_nom_link.loc[links.index]
         lhs_links = p_nom_e.groupby(grouper_links).sum().rename(bus0="country")
     else:
         lhs_links = xr.DataArray([])
