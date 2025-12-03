@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 39
   sector_opts:
-  - 3000H
+  - 3H
   planning_horizons:
   - 2030
 
