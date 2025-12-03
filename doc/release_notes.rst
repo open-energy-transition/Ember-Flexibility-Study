@@ -21,6 +21,8 @@ Ember-Flexibility-Study Upcoming Release
 
 * Custom EV, ICE and Fuel Cell shares can be passed in a .CSV file, specifying the share per country.
 
+* In the sector-coupeled model, battery and H2 stores are set to extendable only if configured.
+
 
 Upcoming Release (PyPSA-Eur)
 ============================
