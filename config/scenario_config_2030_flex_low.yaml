@@ -95,6 +95,14 @@ costs:
     enable: true
     co2: 69.6
 
+solving:
+  agg_p_nom_limits:
+    agg_heat_pumps: true
+    include_existing: false
+    file: data/agg_p_nom_minmax.csv
+  constraints:
+    CCL: true
+
 ember_settings:
   ntc_data: "data/ember_data/ntc_2030.csv"
   ntc_cross_country_pf_restriction: false
