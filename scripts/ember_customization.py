@@ -189,6 +189,7 @@ def include_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, 
         power_buses = power_buses.reset_index().rename(
             columns={
                 'Bus': 'bus_id',
+                'name': 'bus_id',
                 'x': 'bus_x',
                 'y': 'bus_y'
             }
