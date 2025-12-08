@@ -76,6 +76,17 @@ sector:
   bev_dsm_restriction_value: 0.5
   bev_dsm_restriction_time: 7
   transport_electric_efficiency: 53.19
+  residential_heat:
+    dsm:
+      enable: true
+      direction:
+      - overheat
+      - undercool
+      restriction_value:
+        2030: 0.27
+      restriction_time:
+      - 10
+      - 22
   hydrogen_underground_storage: false
 
 costs:
