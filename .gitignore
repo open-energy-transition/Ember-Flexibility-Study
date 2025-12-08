@@ -23,7 +23,7 @@ gurobi.log
 /benchmarks
 /logs
 /notebooks
-/data
+/data/*
 /cutouts
 /tmp
 doc/_build
@@ -53,7 +53,6 @@ dconf
 /data/bundle/nuts*
 data/gas_network/scigrid-gas/
 data/costs_*.csv
-/validation/
 
 dask-worker-space/
 publications.jrc.ec.europa.eu/
@@ -113,3 +112,6 @@ CLAUDE.md
 .claude/
 .github/copilot-instructions.md
 CLAUDE.local.md
+# pixi environments
+.pixi/*
+!.pixi/config.toml
