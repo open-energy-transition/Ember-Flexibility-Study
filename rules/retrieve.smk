@@ -9,6 +9,18 @@ from shutil import move, unpack_archive
 from shutil import copy2 as shcopy2
 from zipfile import ZipFile
 
+
+# Configure the default storage provider for accessing remote files using http
+# and the special storage plugin for accessing Zenodo files
+storage:
+    provider="http",
+    retries=3,
+
+
+storage cached_http:
+    provider="cached-http",
+
+
 if config["enable"].get("retrieve", "auto") == "auto":
     config["enable"]["retrieve"] = has_internet_access()
 
@@ -43,8 +55,6 @@ if config["enable"]["retrieve"] and config["enable"].get("retrieve_databundle", 
         resources:
             mem_mb=1000,
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_databundle.py"
 
@@ -54,8 +64,6 @@ if config["enable"]["retrieve"] and config["enable"].get("retrieve_databundle", 
         log:
             "logs/retrieve_eurostat_data.log",
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_eurostat_data.py"
 
@@ -74,8 +82,6 @@ if config["enable"]["retrieve"] and config["enable"].get("retrieve_databundle", 
         log:
             "logs/retrieve_eurostat_household_data.log",
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_eurostat_household_data.py"
 
@@ -149,8 +155,6 @@ if config["enable"]["retrieve"]:
         resources:
             mem_mb=1000,
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_bidding_zones.py"
 
@@ -193,14 +197,12 @@ if config["enable"]["retrieve"] and config["enable"].get("retrieve_cost_data", T
         params:
             version=config_provider("costs", "version"),
         output:
-            resources("costs_{year}.csv"),
+            resources("costs_{planning_horizons}.csv"),
         log:
-            logs("retrieve_cost_data_{year}.log"),
+            logs("retrieve_cost_data_{planning_horizons}.log"),
         resources:
             mem_mb=1000,
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_cost_data.py"
 
@@ -220,8 +222,6 @@ if config["enable"]["retrieve"]:
         log:
             "logs/retrieve_gas_infrastructure_data.log",
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_gas_infrastructure_data.py"
 
@@ -238,8 +238,6 @@ if config["enable"]["retrieve"]:
         resources:
             mem_mb=5000,
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_electricity_demand.py"
 
@@ -497,16 +495,16 @@ if config["enable"]["retrieve"]:
             # If None of the three URLs are working
             url = False
 
-    assert (
-        url
-    ), f"No WDPA files found at {url_pattern} for bY='{current_monthyear}, {prev_monthyear}, or {next_monthyear}'"
+    # assert (
+    #     url
+    # ), f"No WDPA files found at {url_pattern} for bY='{current_monthyear}, {prev_monthyear}, or {next_monthyear}'"
 
     # Downloading protected area database from WDPA
     # extract the main zip and then merge the contained 3 zipped shapefiles
     # Website: https://www.protectedplanet.net/en/thematic-areas/wdpa
     rule download_wdpa:
         input:
-            zip_file=storage(url, keep_local=True),
+            zip_file=storage(url, keep_local=True) if url else [],
         params:
             zip_file="WDPA_shp.zip",
             folder_name="WDPA",
@@ -584,8 +582,6 @@ if config["enable"]["retrieve"]:
         resources:
             mem_mb=5000,
         retries: 2
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_monthly_fuel_prices.py"
 
@@ -649,8 +645,6 @@ if config["enable"]["retrieve"] and (
         log:
             "logs/retrieve_osm_data_{country}.log",
         threads: 1
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_osm_data.py"
 
@@ -691,8 +685,6 @@ if config["enable"]["retrieve"]:
         log:
             "logs/retrieve_osm_boundaries_{country}_adm1.log",
         threads: 1
-        conda:
-            "../envs/environment.yaml"
         script:
             "../scripts/retrieve_osm_boundaries.py"
 
@@ -727,6 +719,58 @@ if config["enable"]["retrieve"]:
         retries: 2
         run:
             move(input[0], output[0])
+
+    rule retrieve_seawater_temperature:
+        params:
+            default_cutout=config_provider("atlite", "default_cutout"),
+        output:
+            seawater_temperature="data/seawater_temperature_{year}.nc",
+        log:
+            "logs/retrieve_seawater_temperature_{year}.log",
+        resources:
+            mem_mb=10000,
+        script:
+            "../scripts/retrieve_seawater_temperature.py"
+
+    rule retrieve_hera_data_test_cutout:
+        input:
+            hera_data_url=storage(
+                f"https://zenodo.org/records/15828866/files/hera_be_2013-03-01_to_2013-03-08.zip"
+            ),
+        output:
+            river_discharge=f"data/hera_be_2013-03-01_to_2013-03-08/river_discharge_be_2013-03-01_to_2013-03-08.nc",
+            ambient_temperature=f"data/hera_be_2013-03-01_to_2013-03-08/ambient_temp_be_2013-03-01_to_2013-03-08.nc",
+        params:
+            folder="data",
+        log:
+            "logs/retrieve_hera_data_test_cutout.log",
+        resources:
+            mem_mb=10000,
+        retries: 2
+        run:
+            unpack_archive(input[0], params.folder)
+
+    rule retrieve_hera_data:
+        input:
+            river_discharge=storage(
+                "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/CEMS-EFAS/HERA/VER1-0/Data/NetCDF/river_discharge/dis.HERA{year}.nc"
+            ),
+            ambient_temperature=storage(
+                "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/CEMS-EFAS/HERA/VER1-0/Data/NetCDF/climate_inputs/ta6/ta6_{year}.nc"
+            ),
+        output:
+            river_discharge="data/hera_{year}/river_discharge_{year}.nc",
+            ambient_temperature="data/hera_{year}/ambient_temp_{year}.nc",
+        params:
+            snapshot_year="{year}",
+        log:
+            "logs/retrieve_hera_data_{year}.log",
+        resources:
+            mem_mb=10000,
+        retries: 2
+        run:
+            move(input.river_discharge, output.river_discharge)
+            move(input.ambient_temperature, output.ambient_temperature)
 
 
 if config["enable"]["retrieve"]:
