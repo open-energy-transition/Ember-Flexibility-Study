@@ -499,12 +499,16 @@ def attach_wind_and_solar(
             p_max_pu = ds["profile"].to_pandas()
             p_max_pu.columns = p_max_pu.columns.map(flatten)
 
-            if not ppl.query("carrier == @car").empty:
-                caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
-                caps = pd.Series(data=caps, index=ds.indexes["bus"]).fillna(0)
-            else:
-                caps = pd.Series(index=ds.indexes["bus"]).fillna(0)
+            caps = pd.Series(index=ds.indexes["bus_bin"]).fillna(0)
             caps.index = caps.index.map(flatten)
+            if not ppl.query("carrier == @car").empty:
+                existing_caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
+                caps_in_buses = (
+                    ds.indexes["bus_bin"][ds.indexes["bus_bin"].get_level_values(0).isin(existing_caps.index)]
+                )
+                existing_caps = pd.Series(data=existing_caps.values, index=caps_in_buses).fillna(0)
+                existing_caps.index = existing_caps.index.map(flatten)
+                caps.loc[existing_caps.index] = existing_caps
 
             n.add(
                 "Generator",
