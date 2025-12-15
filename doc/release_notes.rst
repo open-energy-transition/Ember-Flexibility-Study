@@ -23,6 +23,8 @@ Ember-Flexibility-Study Upcoming Release
 
 * In the sector-coupeled model, battery and H2 stores are set to extendable only if configured.
 
+* In low flexibility scenarios, resistive heater capacity is pulled from high flex scenarios and applied to resistive heaters.
+  They are set to non-extendable afterwards.
 
 Upcoming Release (PyPSA-Eur)
 ============================
