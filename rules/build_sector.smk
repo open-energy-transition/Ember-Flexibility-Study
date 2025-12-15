@@ -1573,7 +1573,11 @@ rule prepare_sector_network:
         chp_data=config["ember_settings"]["chp_data"],
         ember_ntc_csv=config["ember_settings"]["ntc_data"],
         ppl_path=resources("powerplants_s_{clusters}.csv"),
-
+        rh_caps = lambda w: (
+            resources("resistive_heater_capacities_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.csv")
+            if config_provider("ember_settings", "apply_rh_highflex_capacities")(w)
+            else []
+        ),
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
