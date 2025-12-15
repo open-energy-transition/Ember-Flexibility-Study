@@ -46,13 +46,10 @@ pypsa_eur:
   - home_battery_storage
   
 electricity:
-  max_hours:
-    home_battery: 2.5
-
   transmission_limit: v1.0
 
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_highflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:

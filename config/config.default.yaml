@@ -90,7 +90,8 @@ electricity:
     contingency: 4000
 
   max_hours:
-    battery: 6
+    battery: 4
+    home_battery: 2.5
     H2: 168
 
   extendable_carriers:

@@ -19,13 +19,10 @@ snapshots:
   end: '2024-01-01'
 
 electricity:
-  max_hours:
-    home_battery: 2.5
-
   transmission_limit: v1.0
 
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_lowflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
