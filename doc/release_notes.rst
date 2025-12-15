@@ -23,6 +23,8 @@ Ember-Flexibility-Study Upcoming Release
 
 * In the sector-coupeled model, battery and H2 stores are set to extendable only if configured.
 
+* Building transport demand now supports reading custom numbers of cars specified in data/ember_data/number_cars.csv,
+  where different numbers for planning_horizons can be specified. If not given for a region, default energy_totals are used.
 
 Upcoming Release (PyPSA-Eur)
 ============================
