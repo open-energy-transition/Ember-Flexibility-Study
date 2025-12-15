@@ -1023,8 +1023,8 @@ solving:
     SAFE: false
 
   solver:
-    name: gurobi
-    options: gurobi-default
+    name: highs
+    options: highs-default
 
   solver_options:
     highs-default:
