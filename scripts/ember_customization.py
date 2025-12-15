@@ -328,14 +328,13 @@ def add_LV_capacities(n, ppl_path, max_hours):
             logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
 
    # Home batteries 
-    home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'battery') & (ppl['Technology'].str.strip().str.lower() == 'home battery') & (ppl['Duration'] == 2.5)]
+    home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'home battery')]
     agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
 
     for bus, cap in agg_capacity_home.items():
         store_i = bus + " home battery"
         if store_i in n.stores.index:
             home_max_hours = max_hours.get("home_battery", 0)
-            print(home_max_hours)
             n.stores.loc[store_i, 'e_nom'] = cap * home_max_hours
             n.stores.loc[store_i, 'e_nom_min'] = cap * home_max_hours
             n.stores.loc[store_i, 'e_nom_extendable'] = False
