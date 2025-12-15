@@ -80,22 +80,21 @@ sector:
       enable: true
       direction:
       - overheat
-      - undercool
       restriction_value:
-        2030: 0.27
+        2030: 0.1
       restriction_time:
-      - 10
-      - 22
+      - 8
+      - 17
   hydrogen_underground_storage: false
 
 costs:
   year: 2030
   fuel:
-    gas: 19.9
-    coal: 10.7
-    lignite: 8.5
-    oil: 28.2
-    uranium: 1.8 
+    gas: 27.1
+    coal: 12.1
+    lignite: 8.6
+    oil: 42.2
+    uranium: 1.8
   VOM:
     OCGT: 1
     CCGT: 1
@@ -103,7 +102,7 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 69.6
+    co2: 79.9
 
 solving:
   agg_p_nom_limits:
