@@ -2,11 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from scripts._helpers import (
-    path_provider,
-    get_rdir,
-)
-
 rule retrieve_resistive_heater_capacities:
     params:
         config_provider("ember_settings", "apply_rh_highflex_capacities")
