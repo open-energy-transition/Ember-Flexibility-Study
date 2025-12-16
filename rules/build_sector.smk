@@ -1443,6 +1443,7 @@ rule prepare_sector_network:
             "sector", "district_heating", "temperature_limited_stores"
         ),
         max_hours=config_provider("electricity", "max_hours"),
+        apply_highflex_capacities = config_provider("ember_settings", "apply_highflex_capacities"),
     input:
         unpack(input_profile_offwind),
         unpack(input_heat_source_power),
@@ -1574,9 +1575,9 @@ rule prepare_sector_network:
         chp_data=config["ember_settings"]["chp_data"],
         ember_ntc_csv=config["ember_settings"]["ntc_data"],
         ppl_path=resources("powerplants_s_{clusters}.csv"),
-        rh_caps = lambda w: (
-            resources("resistive_heater_capacities_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.csv")
-            if config_provider("ember_settings", "apply_rh_highflex_capacities")(w)
+        n_highflex = lambda w: (
+            "results/scenario_{planning_horizons}_flex_on/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
+            if config_provider("ember_settings", "apply_highflex_capacities")(w)
             else []
         ),
     output:
