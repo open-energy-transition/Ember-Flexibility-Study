@@ -1248,21 +1248,22 @@ rule build_transport_demand:
             "pop_weighted_energy_totals_s_{clusters}.csv"
         ),
         transport_data=resources("transport_data.csv"),
+        transport_data_ember="data/ember_data/number_cars.csv",
         traffic_data_KFZ="data/bundle/emobility/KFZ__count",
         traffic_data_Pkw="data/bundle/emobility/Pkw__count",
         temp_air_total=resources("temp_air_total_base_s_{clusters}.nc"),
     output:
-        transport_demand=resources("transport_demand_s_{clusters}.csv"),
-        transport_data=resources("transport_data_s_{clusters}.csv"),
-        avail_profile=resources("avail_profile_s_{clusters}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}.csv"),
+        transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
+        transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
+        avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
+        dsm_profile=resources("dsm_profile_s_{clusters}_{planning_horizons}.csv"),
     threads: 1
     resources:
         mem_mb=2000,
     log:
-        logs("build_transport_demand_s_{clusters}.log"),
+        logs("build_transport_demand_s_{clusters}_{planning_horizons}.log"),
     benchmark:
-        benchmarks("build_transport_demand/s_{clusters}")
+        benchmarks("build_transport_demand/s_{clusters}_{planning_horizons}")
     script:
         "../scripts/build_transport_demand.py"
 
@@ -1480,10 +1481,10 @@ rule prepare_sector_network:
         ),
         pop_weighted_heat_totals=resources("pop_weighted_heat_totals_s_{clusters}.csv"),
         shipping_demand=resources("shipping_demand_s_{clusters}.csv"),
-        transport_demand=resources("transport_demand_s_{clusters}.csv"),
-        transport_data=resources("transport_data_s_{clusters}.csv"),
-        avail_profile=resources("avail_profile_s_{clusters}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}.csv"),
+        transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
+        transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
+        avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
+        dsm_profile=resources("dsm_profile_s_{clusters}_{planning_horizons}.csv"),
         heat_dsm_profile=resources(
             "residential_heat_dsm_profile_total_base_s_{clusters}.csv"
         ),

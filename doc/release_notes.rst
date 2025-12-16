@@ -25,6 +25,9 @@ Ember-Flexibility-Study Upcoming Release
 
 * In low flexibility scenarios, resistive heater capacity is pulled from high flex scenarios and applied to resistive heaters.
   They are set to non-extendable afterwards.
+  
+* Building transport demand now supports reading custom numbers of cars specified in data/ember_data/number_cars.csv,
+  where different numbers for planning_horizons can be specified. If not given for a region, default energy_totals are used.
 
 Upcoming Release (PyPSA-Eur)
 ============================
