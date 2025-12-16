@@ -10,6 +10,9 @@ Release Notes
 Ember-Flexibility-Study Upcoming Release
 ===========================================
 
+* Instead of using PyPSA-EUR's default transmission line capacities from OSM,
+  NTCs are applied to the lines connecting countries.
+
 * `bev_dsm_restriction_value` can now be specified per country via a DataFrame path,
   with a default used when a country-specific value is missing.
 
