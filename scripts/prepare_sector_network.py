@@ -53,7 +53,8 @@ from scripts.ember_customization import (
     apply_hourly_price_fix,
     include_chps_for_selected_countries,
     set_line_s_nom_to_ntc,
-    add_LV_capacities
+    add_LV_capacities,
+    apply_highflex_capacities
 )
 
 spatial = SimpleNamespace()
@@ -6739,16 +6740,12 @@ if __name__ == "__main__":
     if ember_settings.get('add_LV_capacities', False):
         n = add_LV_capacities(n, snakemake.input.ppl_path, snakemake.params.max_hours)
 
-    if snakemake.config["ember_settings"].get("ember_gas_price", False):
+    if ember_settings.get("ember_gas_price", False):
         apply_hourly_price_fix(n)
 
-    if snakemake.config["ember_settings"].get("apply_rh_highflex_capacities", False):
-        rh_caps = pd.read_csv(snakemake.input.rh_caps, index_col=0).squeeze()
-        n.links.loc[rh_caps.index, "p_nom"] = rh_caps
-        n.links.loc[rh_caps.index, "p_nom_min"] = rh_caps
-        n.links.loc[rh_caps.index, "p_nom_extendable"] = False
-        logger.info(
-            "Applying resistive heater capacities from high flex scenario run."
-        )
+    scenario_capacities = ember_settings.get("apply_highflex_capacities", False)
+    if scenario_capacities:
+        n_highflex = pypsa.Network(snakemake.input.n_highflex)
+        apply_highflex_capacities(n, n_highflex, scenario_capacities)
 
     n.export_to_netcdf(snakemake.output[0])

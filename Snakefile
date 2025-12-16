@@ -65,7 +65,6 @@ include: "rules/postprocess.smk"
 include: "rules/development.smk"
 include: "rules/report.smk"
 include: "rules/emberdata.smk"
-include: "rules/iterative_capacities.smk"
 
 
 if config["foresight"] == "overnight":

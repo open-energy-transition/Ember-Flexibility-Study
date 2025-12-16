@@ -23,8 +23,8 @@ Ember-Flexibility-Study Upcoming Release
 
 * In the sector-coupeled model, battery and H2 stores are set to extendable only if configured.
 
-* In low flexibility scenarios, resistive heater capacity is pulled from high flex scenarios and applied to resistive heaters.
-  They are set to non-extendable afterwards.
+* In low flexibility scenarios, capacities from resistive heaters, water tanks and water pits can be pulled from high flex scenarios.
+  If applied, they are set to non-extendable afterwards.
   
 * Building transport demand now supports reading custom numbers of cars specified in data/ember_data/number_cars.csv,
   where different numbers for planning_horizons can be specified. If not given for a region, default energy_totals are used.
