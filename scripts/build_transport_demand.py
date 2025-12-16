@@ -26,10 +26,16 @@ from ember_customization import apply_BEV_dsm_restiction_country_shares
 logger = logging.getLogger(__name__)
 
 
-def build_nodal_transport_data(fn, pop_layout, year):
+def build_nodal_transport_data(fn, fn_ember, pop_layout, energy_totals_year, planning_horizon):
     # get numbers of car and fuel efficiency per country
     transport_data = pd.read_csv(fn, index_col=[0, 1])
-    transport_data = transport_data.xs(year, level="year")
+    transport_data_ember = pd.read_csv(fn_ember, index_col=[0])
+    transport_data = transport_data.xs(energy_totals_year, level="year")
+    if planning_horizon in transport_data_ember.columns:
+        transport_data_ember = transport_data_ember[planning_horizon]
+        transport_data.loc[transport_data_ember.index, "number cars"] = (
+            transport_data_ember
+        )
 
     # break number of cars down to nodal level based on population density
     nodal_transport_data = transport_data.loc[pop_layout.ct].fillna(0.0)
@@ -196,8 +202,10 @@ if __name__ == "__main__":
     nyears = n.snapshot_weightings.generators.sum() / 8760.0
 
     energy_totals_year = snakemake.params.energy_totals_year
+    planning_horizon = snakemake.wildcards.planning_horizons
     nodal_transport_data = build_nodal_transport_data(
-        snakemake.input.transport_data, pop_layout, energy_totals_year
+        snakemake.input.transport_data, snakemake.input.transport_data_ember,
+        pop_layout, energy_totals_year, planning_horizon
     )
 
     transport_demand = build_transport_demand(
