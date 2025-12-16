@@ -397,3 +397,24 @@ def apply_BEV_dsm_restiction_country_shares(dsm_profile, country_shares):
             )
 
     return dsm_profile
+
+
+def apply_highflex_capacities(n, n_highflex, scenario_capacities):
+
+    if scenario_capacities.get("resistive_heaters", False):
+        rh_capacities = n_highflex.links[n_highflex.links.carrier.str.contains("resistive heater")].p_nom_opt
+        n.links.loc[rh_capacities.index, "p_nom"] = rh_capacities
+        n.links.loc[rh_capacities.index, "p_nom_min"] = rh_capacities
+        n.links.loc[rh_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying resistive heater capacities from high flex scenario run."
+        )
+
+    if scenario_capacities.get("water_tanks", False):
+        tank_capacities = n_highflex.stores[n_highflex.stores.carrier.str.contains("water")].e_nom_opt
+        n.stores.loc[tank_capacities.index, "e_nom"] = tank_capacities
+        n.stores.loc[tank_capacities.index, "e_nom_min"] = tank_capacities
+        n.stores.loc[tank_capacities.index, "e_nom_extendable"] = False
+        logger.info(
+            "Applying water tank and water pit capacities from high flex scenario run."
+        )
