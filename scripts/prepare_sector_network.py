@@ -6742,4 +6742,13 @@ if __name__ == "__main__":
     if snakemake.config["ember_settings"].get("ember_gas_price", False):
         apply_hourly_price_fix(n)
 
+    if snakemake.config["ember_settings"].get("apply_rh_highflex_capacities", False):
+        rh_caps = pd.read_csv(snakemake.input.rh_caps, index_col=0).squeeze()
+        n.links.loc[rh_caps.index, "p_nom"] = rh_caps
+        n.links.loc[rh_caps.index, "p_nom_min"] = rh_caps
+        n.links.loc[rh_caps.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying resistive heater capacities from high flex scenario run."
+        )
+
     n.export_to_netcdf(snakemake.output[0])
