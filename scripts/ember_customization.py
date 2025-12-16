@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 import numpy as np
+import country_converter as coco
 import xarray as xr
 import pandas as pd
 import pandas as pd
@@ -240,63 +241,125 @@ def include_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, 
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
 
 def set_line_s_nom_to_ntc(n, ntc_fn):
+   
+    """
+    Scale interconnection capacities between country pairs to match target NTCs.
+    This function reads a CSV of Net Transfer Capacities (NTC) between countries
+    and then enforces the target NTC (MW) for each country pair found in both the
+    CSV and the network.
+    If DC Links exist between the two country bus sets:
+        * Treat directions separately
+        * For each direction, set the sum of all p_nom over links in that direction
+          to the target NTC by uniformly scaling existing `p_nom` values.
+          If current sum is zero, distribute the NTC evenly across links.
+        * If DC links are found, remove any AC Lines connecting the same pair
+           (to avoid double counting parallel AC when a DC representation exists).
+    Else if AC Lines exist between the country bus sets (but no DC Links):
+         * Uniformly scale their `s_nom` such that the sum of s_nom equals
+           the target NTC. If the current sum is zero, distribute NTC evenly.
+    If neither Lines nor Links exist, add new DC Links in both directions,
+    each with p_nom equal to the target NTC.
+    Pairs with NTC == 0 are skipped.
+    Parameters
+    ----------
+    n : pypsa.Network
+        The network to modify.
+    ntc_fn : str or pathlib.Path
+        Path to CSV with columns:
+        - `source_country_code` (ISO3),
+        - `target_country_code` (ISO3),
+        - `NTC_2030_MW` (numeric, MW).
+    Returns
+    -------
+    None
+        The network `n` is modified in place.
+    """
     n_clusters = len(n.buses.query("carrier == 'AC'"))
     if n_clusters > 39:
          raise ValueError("This feature doesn't work for n_clusters > 39")
     df = pd.read_csv(ntc_fn)
-    
-    iso3_to_iso2 = {
-        'ALB': 'AL', 'ARM': 'AM', 'AUT': 'AT', 'AZE': 'AZ', 'BEL': 'BE', 'BGR': 'BG',
-        'BIH': 'BA', 'BLR': 'BY', 'CHE': 'CH', 'CZE': 'CZ', 'DEU': 'DE', 'DNK': 'DK',
-        'ESP': 'ES', 'EST': 'EE', 'FIN': 'FI', 'FRA': 'FR', 'GBR': 'GB', 'GEO': 'GE',
-        'GRC': 'GR', 'HRV': 'HR', 'HUN': 'HU', 'IRL': 'IE', 'ITA': 'IT', 'LTU': 'LT',
-        'LUX': 'LU', 'LVA': 'LV', 'MDA': 'MD', 'MKD': 'MK', 'MLT': 'MT', 'MNE': 'ME',
-        'NLD': 'NL', 'NOR': 'NO', 'POL': 'PL', 'PRT': 'PT', 'ROU': 'RO', 'RUS': 'RU',
-        'SRB': 'RS', 'SVK': 'SK', 'SVN': 'SI', 'SWE': 'SE', 'TUR': 'TR', 'UKR': 'UA',
-        'XKX': 'XK', 'CYP': 'CY', 'ISR': 'IL', 'DZA': 'DZ', 'MAR': 'MA', 'EGY': 'EG',
-        'SAU': 'SA', 'PSE': 'PS', 'LBY': 'LY', 'TUN': 'TN'
-    }
-    df['source_iso2'] = df['source_country_code'].map(iso3_to_iso2)
-    df['target_iso2'] = df['target_country_code'].map(iso3_to_iso2)
+    cc = coco.CountryConverter()
+    df['source_iso2'] = cc.convert(names=df['source_country_code'], src="ISO3", to="ISO2")
+    df['target_iso2'] = cc.convert(names=df['target_country_code'], src="ISO3", to="ISO2")
     df = df.dropna(subset=['source_iso2', 'target_iso2'])
     pairs = []
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
         pairs.append(pair)
     df['pair'] = pairs
     pair_to_ntc = df.groupby('pair')['NTC_2030_MW'].mean()
-    focus_countries_3 = ['CZ', 'DE', 'GR', 'IT', 'NL', 'PL']
-    for pair, avg_flow in pair_to_ntc.items():
-        if avg_flow == 0:
+    focus_countries = list(set(df['source_iso2']).union(df['target_iso2']).intersection(set(n.buses.country.unique())))
+    for pair, ntc in pair_to_ntc.items():
+        if ntc == 0:
             continue
         country1, country2 = pair
-        if country1 not in focus_countries_3 and country2 not in focus_countries_3:
+        if country1 not in focus_countries and country2 not in focus_countries:
+            continue
+        if country1 not in focus_countries or country2 not in focus_countries:
             continue
         buses1 = n.buses.query('country == @country1').index
         buses2 = n.buses.query('country == @country2').index
         lines_between = n.lines.query('(bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1)')
         links_between = n.links.query("carrier == 'DC' and ((bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1))")
         updated = False
-        if not lines_between.empty:
+        removed = False
+        line_or_link = None
+        if not links_between.empty:
+            links_between['reversed'] = (links_between.bus0.isin(buses2) & links_between.bus1.isin(buses1))
+            current_total_p_nom_1 = links_between.query("reversed == False")['p_nom'].sum()
+            current_total_p_nom_2 = links_between.query("reversed == True")['p_nom'].sum()
+            if current_total_p_nom_1 > 0:
+                scale_factor = ntc / current_total_p_nom_1
+                direction = links_between.query("reversed == False").index
+                n.links.loc[direction, 'p_nom'] *= scale_factor
+            else:
+                direction = links_between.query("reversed == False").index
+                n.links.loc[direction, 'p_nom'] = ntc / len(direction)
+            if current_total_p_nom_2 > 0:
+                scale_factor = ntc / current_total_p_nom_2
+                direction = links_between.query("reversed == True").index
+                n.links.loc[direction, 'p_nom'] *= scale_factor
+            else:
+                direction = links_between.query("reversed == True").index
+                n.links.loc[direction, 'p_nom'] = ntc / len(direction)
+            updated = True
+            line_or_link = "Link"
+        if (updated) and (not lines_between.empty):
+            removed = True
+            removed_lines = lines_between.index
+            n.remove("Line", removed_lines)
+            lines_between = n.lines.query('(bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1)')
+        if (not updated) and (not lines_between.empty):
             current_total_s_nom = lines_between['s_nom'].sum()
             if current_total_s_nom > 0:
-                scale_factor = avg_flow / current_total_s_nom
+                scale_factor = ntc / current_total_s_nom
                 n.lines.loc[lines_between.index, 's_nom'] *= scale_factor
             else:
-                n.lines.loc[lines_between.index, 's_nom'] = avg_flow / len(lines_between)
+                n.lines.loc[lines_between.index, 's_nom'] = ntc / len(lines_between)
             updated = True
-        if not links_between.empty:
-            current_total_p_nom = links_between['p_nom'].sum()
-            if current_total_p_nom > 0:
-                scale_factor = avg_flow / current_total_p_nom
-                n.links.loc[links_between.index, 'p_nom'] *= scale_factor
+            line_or_link = "Line"
+        if not updated:
+            # No existing connections: add new DC links in both directions
+            if not buses1.empty and not buses2.empty:
+                bus_from_1 = buses1[0]
+                bus_to_1 = buses2[0]
+                link_name_1 = f"Link {country1}-{country2}"
+                n.add("Link", link_name_1, bus0=bus_from_1, bus1=bus_to_1, carrier="DC", p_nom=ntc)
+                bus_from_2 = buses2[0]
+                bus_to_2 = buses1[0]
+                link_name_2 = f"Link {country2}-{country1}"
+                n.add("Link", link_name_2, bus0=bus_from_2, bus1=bus_to_2, carrier="DC", p_nom=ntc)
+                updated = True
+                line_or_link = "Link"
+                logger.info(f"Added new DC links '{link_name_1}' and '{link_name_2}' with capacity {ntc} MW each between {country1} and {country2}")
             else:
-                n.links.loc[links_between.index, 'p_nom'] = avg_flow / len(links_between)
-            updated = True
+                logger.warning(f"Cannot add links between {country1} and {country2}: missing buses in one or both countries")
         if updated:
-            logger.info(f"Set capacity to total {avg_flow} MW for interconnections between {country1} and {country2}")
+            logger.info(f"Set {line_or_link} capacity to a total of {ntc} MW for interconnections between {country1} and {country2}")
         else:
-            logger.warning(f"No interconnections found between {country1} and {country2}")
+            logger.warning(f"No interconnections found or added between {country1} and {country2}")
+        if removed:
+            logger.info(f"Removed lines {removed_lines}, because there was already a valid link connection {links_between.index}.")
 
 
 def apply_hourly_price_fix(n):
