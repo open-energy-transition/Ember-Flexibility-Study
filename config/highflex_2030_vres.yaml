@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: scenario_2040_flex_on
+  name: highflex_2030_vres
 
 scenario:
   clusters:
@@ -12,17 +12,15 @@ scenario:
   sector_opts:
   - 3H
   planning_horizons:
-  - 2040
+  - 2030
 
 snapshots:
-  start: '2023-01-01'
-  end: '2024-01-01'
+  start: '2022-01-01'
+  end: '2023-01-01'
 
 electricity:
-  transmission_limit: v1.0
-
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040_lowflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2030_highflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -30,15 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2023-sarah3-era5
-  nprocesses: 4
-  show_progress: true
-  cutouts:
-    # use 'base' to determine geographical bounds and time span from config
-    # base:
-      # module: era5
-    europe-2023-sarah3-era5:
-      time: ['2023', '2023']
+  default_cutout: europe-2022-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -55,18 +45,18 @@ pypsa_eur:
   - hydro
   - battery
   - home_battery_storage
-  
+
 sector:
   bev_dsm: true
-  v2g: 0.08 
+  v2g: 0.21 
   land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2040.csv"
+    2030: "data/ember_data/land_transport_electric_share_2030.csv"
   land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2040.csv"
-  bev_dsm_availability: 0.3
-  bev_energy: 0.09
+    2030: "data/ember_data/land_transport_ice_share_2030.csv"
+  bev_dsm_availability: 0.5
+  bev_energy: 0.8
   bev_charge_efficiency: 0.9
-  bev_charge_rate: 0.1127
+  bev_charge_rate: 0.0449
   bev_avail_max: 0.95
   bev_avail_mean: 0.8
   bev_dsm_restriction_value: 0.5
@@ -78,20 +68,20 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2040: 0.05
+        2030: 0.1
       restriction_time:
       - 8
       - 17
   hydrogen_underground_storage: false
 
 costs:
-  year: 2040
+  year: 2030
   fuel:
-    gas: 30.7
-    coal: 11.5
+    gas: 27.1
+    coal: 12.1
     lignite: 8.6
-    oil: 47.8
-    uranium: 1.8 
+    oil: 42.2
+    uranium: 1.8
   VOM:
     OCGT: 1
     CCGT: 1
@@ -99,7 +89,7 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 243.8
+    co2: 79.9
 
 solving:
   agg_p_nom_limits:
@@ -123,9 +113,7 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2040 and DateOut >= 2040"
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities:
-    resistive_heaters: true
-    water_tanks: true
+  apply_rh_highflex_capacities: false
