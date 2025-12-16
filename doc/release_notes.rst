@@ -7,6 +7,12 @@
 Release Notes
 ##########################################
 
+Ember-Flexibility-Study Upcoming Release
+===========================================
+
+* Instead of using PyPSA-EUR's default transmission line capacities from OSM,
+  NTCs are applied to the lines connecting countries.
+
 Upcoming Release
 ================
 
