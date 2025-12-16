@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: scenario_2040_flex_on
+  name: highflex_2040_central
 
 scenario:
   clusters:
@@ -15,14 +15,12 @@ scenario:
   - 2040
 
 snapshots:
-  start: '2023-01-01'
-  end: '2024-01-01'
+  start: '2009-01-01'
+  end: '2010-01-01'
 
 electricity:
-  transmission_limit: v1.0
-
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040_lowflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_highflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -30,15 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2023-sarah3-era5
-  nprocesses: 4
-  show_progress: true
-  cutouts:
-    # use 'base' to determine geographical bounds and time span from config
-    # base:
-      # module: era5
-    europe-2023-sarah3-era5:
-      time: ['2023', '2023']
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -55,15 +45,15 @@ pypsa_eur:
   - hydro
   - battery
   - home_battery_storage
-  
+
 sector:
   bev_dsm: true
-  v2g: 0.08 
+  v2g: 0.31 
   land_transport_electric_share:
     2030: "data/ember_data/land_transport_electric_share_2040.csv"
   land_transport_ice_share:
     2030: "data/ember_data/land_transport_ice_share_2040.csv"
-  bev_dsm_availability: 0.3
+  bev_dsm_availability: 0.7
   bev_energy: 0.09
   bev_charge_efficiency: 0.9
   bev_charge_rate: 0.1127
@@ -78,7 +68,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2040: 0.05
+        2040: 0.26
       restriction_time:
       - 8
       - 17
@@ -126,4 +116,4 @@ ember_settings:
   filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_rh_highflex_capacities: true
+  apply_rh_highflex_capacities: false

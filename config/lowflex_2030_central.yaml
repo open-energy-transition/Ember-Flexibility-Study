@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: scenario_2030_flex_off
+  name: lowflex_2030_central
 
 scenario:
   clusters:
@@ -15,12 +15,10 @@ scenario:
   - 2030
 
 snapshots:
-  start: '2023-01-01'
-  end: '2024-01-01'
+  start: '2009-01-01'
+  end: '2010-01-01'
 
 electricity:
-  transmission_limit: v1.0
-
   custom_powerplants: true
   custom_powerplants_fn: "data/custom_ppl_2030_lowflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
@@ -30,16 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2023-sarah3-era5
-  show_progress: true
-  cutouts:
-    europe-2023-sarah3-era5:
-      module: [sarah, era5] # in priority order
-      x: [-12., 42.]
-      y: [33., 72.]
-      dx: 0.3
-      dy: 0.3
-      time: ['2023', '2023']
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -75,7 +64,7 @@ sector:
   transport_electric_efficiency: 53.19
   residential_heat:
     dsm:
-      enable: false
+      enable: true
       direction:
       - overheat
       restriction_value:

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: scenario_2030_flex_on
+  name: lowflex_2030_vres
 
 scenario:
   clusters:
@@ -15,14 +15,12 @@ scenario:
   - 2030
 
 snapshots:
-  start: '2023-01-01'
-  end: '2024-01-01'
+  start: '2022-01-01'
+  end: '2023-01-01'
 
 electricity:
-  transmission_limit: v1.0
-
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2030_highflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2030_lowflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -30,15 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2023-sarah3-era5
-  nprocesses: 4
-  show_progress: true
-  cutouts:
-    # use 'base' to determine geographical bounds and time span from config
-    # base:
-      # module: era5
-    europe-2023-sarah3-era5:
-      time: ['2023', '2023']
+  default_cutout: europe-2022-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -58,12 +48,12 @@ pypsa_eur:
 
 sector:
   bev_dsm: true
-  v2g: 0.21 
+  v2g: 0
   land_transport_electric_share:
     2030: "data/ember_data/land_transport_electric_share_2030.csv"
   land_transport_ice_share:
     2030: "data/ember_data/land_transport_ice_share_2030.csv"
-  bev_dsm_availability: 0.5
+  bev_dsm_availability: 0.15
   bev_energy: 0.8
   bev_charge_efficiency: 0.9
   bev_charge_rate: 0.0449
@@ -78,7 +68,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2030: 0.1
+        2030: 0.03
       restriction_time:
       - 8
       - 17
@@ -123,7 +113,7 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_rh_highflex_capacities: false
+  apply_rh_highflex_capacities: true
