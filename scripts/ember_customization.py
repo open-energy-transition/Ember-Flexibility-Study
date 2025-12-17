@@ -380,7 +380,6 @@ def add_LV_capacities(n, ppl_path, max_hours):
    # Home batteries 
     home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'home battery')]
     agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
-
     for bus, cap in agg_capacity_home.items():
         store_i = bus + " home battery"
         if store_i in n.stores.index:
@@ -406,6 +405,14 @@ def add_LV_capacities(n, ppl_path, max_hours):
             n.links.loc[discharger_i, 'p_nom_extendable'] = False
         else:
             logger.warning(f"No home battery discharger at bus {bus}.")
+
+    # make all remaining ones non-extendable
+    hb_store_idx = n.stores.query("carrier == 'home battery'").index
+    hb_charg_idx = n.links.query("carrier == 'home battery charger'").index
+    hb_disch_idx = n.links.query("carrier == 'home battery discharger'").index
+    n.stores.loc[hb_store_idx, "e_nom_extendable"] = False
+    n.links.loc[hb_charg_idx, "p_nom_extendable"] = False
+    n.links.loc[hb_disch_idx, "p_nom_extendable"] = False
 
     return n
 
