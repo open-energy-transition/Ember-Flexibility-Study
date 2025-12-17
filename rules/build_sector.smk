@@ -1407,6 +1407,10 @@ def input_heat_source_power(w):
         ).keys()
     }
 
+highflex_run_name = config["run"]["name"]
+if len(highflex_run_name)>3:
+  if highflex_run_name.split("_")[0] == "lowflex":
+      highflex_run_name = "highflex" + highflex_run_name[7:]
 
 rule prepare_sector_network:
     params:
@@ -1572,11 +1576,11 @@ rule prepare_sector_network:
         ),
         hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
         hourly_co2_prices="data/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
-        chp_data=config["ember_settings"]["chp_data"],
-        ember_ntc_csv=config["ember_settings"]["ntc_data"],
+        chp_data=config_provider("ember_settings", "chp_data"),
+        ember_ntc_csv=config_provider("ember_settings", "ntc_data"),
         ppl_path=resources("powerplants_s_{clusters}.csv"),
         n_highflex = lambda w: (
-            "results/scenario_{planning_horizons}_flex_on/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
+            "results/"+highflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
             if config_provider("ember_settings", "apply_highflex_capacities")(w)
             else []
         ),
