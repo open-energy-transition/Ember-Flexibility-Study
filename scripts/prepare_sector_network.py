@@ -44,7 +44,7 @@ from scripts.build_energy_totals import (
 from scripts.build_transport_demand import transport_degree_factor
 from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
-from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
+from scripts.prepare_network import maybe_adjust_costs_and_potentials
 
 from scripts.ember_customization import (
     apply_custom_ramping,
@@ -6716,10 +6716,6 @@ if __name__ == "__main__":
             hourly_emission_prices_fn = snakemake.input.hourly_co2_prices
         else:
             hourly_emission_prices_fn = None
-
-        add_emission_prices(
-            n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
-        )
 
     # Project specific changes
     ember_settings = snakemake.config.get('ember_settings', {})
