@@ -72,6 +72,8 @@ sector:
       restriction_time:
       - 8
       - 17
+  chp:
+    enable: false
   hydrogen_underground_storage: false
 
 costs:
