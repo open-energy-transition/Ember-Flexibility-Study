@@ -22,7 +22,6 @@ gurobi.log
 /networks
 /benchmarks
 /logs
-/data
 !data/ember_data/
 /cutouts
 /tmp
