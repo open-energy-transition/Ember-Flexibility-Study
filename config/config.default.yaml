@@ -933,7 +933,7 @@ costs:
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#clustering
 clustering:
-  mode: busmap
+  mode: custom_busmap
   administrative:
     level: 1
   focus_weights: false
