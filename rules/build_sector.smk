@@ -1256,7 +1256,6 @@ rule build_transport_demand:
         transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
         transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
         avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}_{planning_horizons}.csv"),
     threads: 1
     resources:
         mem_mb=2000,
@@ -1489,7 +1488,6 @@ rule prepare_sector_network:
         transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
         transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
         avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}_{planning_horizons}.csv"),
         heat_dsm_profile=resources(
             "residential_heat_dsm_profile_total_base_s_{clusters}.csv"
         ),

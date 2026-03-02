@@ -11,7 +11,7 @@ import logging
 import os
 from itertools import product
 from types import SimpleNamespace
-
+import pytz
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -2269,7 +2269,6 @@ def get_temp_efficency(
 def add_EVs(
     n: pypsa.Network,
     avail_profile: pd.DataFrame,
-    dsm_profile: pd.DataFrame,
     p_set: pd.Series,
     electric_share: pd.Series,
     number_cars: pd.Series,
@@ -2377,7 +2376,7 @@ def add_EVs(
         p_set=profile.loc[n.snapshots],
     )
 
-    # Add BEV chargers
+    # Add BEV charger
     p_nom = number_cars * options["bev_charge_rate"] * electric_share
     n.add(
         "Link",
@@ -2392,33 +2391,40 @@ def add_EVs(
         efficiency=options["bev_charge_efficiency"],
     )
 
-    # Add demand-side management components if enabled
-    if options["bev_dsm"]:
-        e_nom = (
+
+    # Create BEV battery availability profile
+    e_nom = (
             number_cars
             * options["bev_energy"]
-            * options["bev_dsm_availability"]
             * electric_share
         )
-
-        n.add(
-            "Store",
-            spatial.nodes,
-            suffix=" EV battery",
-            bus=spatial.nodes + " EV battery",
-            carrier="EV battery",
-            e_cyclic=True,
-            e_nom=e_nom,
-            e_max_pu=1,
-            e_min_pu=dsm_profile.loc[n.snapshots, spatial.nodes],
+    p_nom_t = p_nom * avail_profile
+    p_flow_t = p_nom_t * (
+        profile.groupby(profile.index.date).transform("sum") /
+        p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
+    e_soc = (p_flow_t - profile) * n.snapshot_weightings.stores / e_nom + options["bev_battery_central_soc"]
+    e_soc = e_soc.shift(1, fillna=0)
+    nodes = pd.read_csv(snakemake.input.clustered_pop_layout, index_col=0).index
+    tz_corrected_df = pd.DataFrame(index=e_soc.index)
+    for node in nodes:
+        ct = node[:2] if node[:2] != "XK" else "RS"
+        timezone = pytz.timezone(pytz.country_timezones[ct][0])
+        tz_corrected_df[node] = range(len(e_soc.index.tz_convert(timezone))).map(e_soc[node])
+    e_soc = tz_corrected_df.tz_localize(None)
+
+    # Add BEV charging flexibility
+    if options["bev_dsm"]:
+        e_soc_dev = (e_soc.max(axis=1) - e_soc.min(axis=1)) * options["bev_dsm_availability"] * 0.5
+        e_max_pu = (e_soc + e_soc_dev).clip(upper=1)
+        e_min_pu = (e_soc - e_soc_dev).clip(lower=0)
 
         # Add vehicle-to-grid if enabled
         if options["v2g"] or options["v2g"] in (True, 1):
             v2g_share = float(options["v2g"])
             if v2g_share > 1:
                 logging.warning(
-                    f"Value {share} exceeds 1.0. This assumes that more than 100% of EVs "
+                    f"Value {v2g_share} exceeds 1.0. This assumes that more than 100% of EVs "
                     f"that contribute to DSM can also contribute back to the grid."
                 )
             n.add(
@@ -2433,7 +2439,21 @@ def add_EVs(
                 lifetime=1,
                 efficiency=options["bev_charge_efficiency"],
             )
+    else: 
+        e_max_pu = e_soc.clip(upper=1)
+        e_min_pu = e_soc.clip(lower=0)
 
+    n.add(
+        "Store",
+        spatial.nodes,
+        suffix=" EV battery",
+        bus=spatial.nodes + " EV battery",
+        e_cyclic=True,
+        e_nom=e_nom,
+        e_max_pu=e_max_pu.loc[n.snapshots, spatial.nodes],
+        e_min_pu=e_min_pu.loc[n.snapshots, spatial.nodes],
+        )
+        
 
 def add_fuel_cell_cars(
     n: pypsa.Network,
@@ -2643,7 +2663,6 @@ def add_land_transport(
     transport_demand_file,
     transport_data_file,
     avail_profile_file,
-    dsm_profile_file,
     temp_air_total_file,
     cf_industry,
     options,
@@ -2665,8 +2684,6 @@ def add_land_transport(
         Path to CSV file containing number of cars per region
     avail_profile_file : str
         Path to CSV file containing availability profiles
-    dsm_profile_file : str
-        Path to CSV file containing demand-side management profiles
     temp_air_total_file : str
         Path to netCDF file containing air temperature data
     options : dict
@@ -2698,7 +2715,6 @@ def add_land_transport(
     transport = pd.read_csv(transport_demand_file, index_col=0, parse_dates=True)
     number_cars = pd.read_csv(transport_data_file, index_col=0)["number cars"]
     avail_profile = pd.read_csv(avail_profile_file, index_col=0, parse_dates=True)
-    dsm_profile = pd.read_csv(dsm_profile_file, index_col=0, parse_dates=True)
 
     # exogenous share of passenger car type
     engine_types = ["fuel_cell", "electric", "ice"]
@@ -2734,7 +2750,6 @@ def add_land_transport(
         add_EVs(
             n,
             avail_profile,
-            dsm_profile,
             p_set,
             shares["electric"],
             number_cars,
@@ -6459,7 +6474,6 @@ if __name__ == "__main__":
             transport_demand_file=snakemake.input.transport_demand,
             transport_data_file=snakemake.input.transport_data,
             avail_profile_file=snakemake.input.avail_profile,
-            dsm_profile_file=snakemake.input.dsm_profile,
             temp_air_total_file=snakemake.input.temp_air_total,
             cf_industry=cf_industry,
             options=options,
