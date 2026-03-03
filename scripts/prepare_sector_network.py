@@ -3075,7 +3075,7 @@ def add_heat(
                 "restriction_value"
             ].get(investment_year)
             heat_dsm_profile = heat_dsm_profile * heat_dsm_restriction_value
-            e_nom = e_nom.max()
+            e_nom = e_nom.groupby(e_nom.index.date).sum().max() * n.snapshot_weightings.stores.max()
 
             # Allow to overshoot or undercool the target temperatures / heat demand in dsm
             e_min_pu, e_max_pu = 0, 0
