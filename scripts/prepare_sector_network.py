@@ -54,6 +54,7 @@ from scripts.ember_customization import (
     include_chps_for_selected_countries,
     set_line_s_nom_to_ntc,
     add_LV_capacities,
+    remove_heat_water_storage,
     apply_highflex_capacities
 )
 
@@ -6753,6 +6754,9 @@ if __name__ == "__main__":
     if ember_settings.get("ember_gas_price", False):
         apply_hourly_price_fix(n)
 
+    if ember_settings.get("remove_heat_storage", False):
+        remove_heat_water_storage(n)
+    
     scenario_capacities = ember_settings.get("apply_highflex_capacities", False)
     if scenario_capacities:
         n_highflex = pypsa.Network(snakemake.input.n_highflex)

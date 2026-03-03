@@ -417,6 +417,13 @@ def add_LV_capacities(n, ppl_path, max_hours):
     return n
 
 
+def remove_heat_water_storage(n):
+
+    hs_capacities = n.stores[n.stores.carrier.str.contains("water")]
+    n.stores.loc[hs_capacities.index, "e_nom"] = 0
+    n.stores.loc[hs_capacities.index, "e_nom_extendable"] = False
+    
+
 def apply_highflex_capacities(n, n_highflex, scenario_capacities):
 
     if scenario_capacities.get("resistive_heaters", False):

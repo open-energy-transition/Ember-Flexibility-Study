@@ -118,6 +118,7 @@ ember_settings:
   filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
+  remove_heat_storage: true
   apply_highflex_capacities:
     resistive_heaters: true
     water_tanks: true
