@@ -21,8 +21,6 @@ from scripts._helpers import (
     set_scenario_config,
 )
 
-from ember_customization import apply_BEV_dsm_restiction_country_shares
-
 logger = logging.getLogger(__name__)
 
 
