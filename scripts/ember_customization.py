@@ -269,7 +269,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         Path to CSV with columns:
         - `source_country_code` (ISO3),
         - `target_country_code` (ISO3),
-        - `NTC_2030_MW` (numeric, MW).
+        - `ntc_mw` (numeric, MW).
 
     Returns
     -------
@@ -289,7 +289,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
         pairs.append(pair)
     df['pair'] = pairs
-    pair_to_ntc = df.groupby('pair')['NTC_2030_MW'].mean()
+    pair_to_ntc = df.groupby('pair')['ntc_mw'].mean()
     focus_countries = list(set(df['source_iso2']).union(df['target_iso2']).intersection(set(n.buses.country.unique())))
     for pair, ntc in pair_to_ntc.items():
         if ntc == 0:
@@ -422,7 +422,7 @@ def remove_heat_water_storage(n):
     hs_capacities = n.stores[n.stores.carrier.str.contains("water")]
     n.stores.loc[hs_capacities.index, "e_nom"] = 0
     n.stores.loc[hs_capacities.index, "e_nom_extendable"] = False
-    
+
 
 def apply_highflex_capacities(n, n_highflex, scenario_capacities):
 

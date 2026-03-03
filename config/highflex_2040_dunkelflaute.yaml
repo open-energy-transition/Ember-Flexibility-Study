@@ -102,7 +102,7 @@ solving:
     CCL: true
 
 ember_settings:
-  ntc_data: "data/ember_data/ntc_2030.csv"
+  ntc_data: "data/ember_data/ntc_2040.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
@@ -119,4 +119,4 @@ ember_settings:
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
   remove_heat_storage: true
-  apply_rh_highflex_capacities: false
+  apply_highflex_capacities: false
