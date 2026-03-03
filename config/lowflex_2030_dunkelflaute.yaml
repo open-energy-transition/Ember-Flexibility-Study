@@ -91,6 +91,7 @@ costs:
   emission_prices:
     enable: true
     co2: 79.9
+  custom_cost_fn: data/custom_costs_ember.csv
 
 solving:
   agg_p_nom_limits:
