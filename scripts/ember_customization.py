@@ -443,3 +443,12 @@ def apply_highflex_capacities(n, n_highflex, scenario_capacities):
         logger.info(
             "Applying water tank and water pit capacities from high flex scenario run."
         )
+
+    if scenario_capacities.get("heat_pumps", False):
+        hp_capacities = n_highflex.links[n_highflex.links.carrier.str.contains("heat pump")].p_nom_opt
+        n.links.loc[hp_capacities.index, "p_nom"] = hp_capacities
+        n.links.loc[hp_capacities.index, "p_nom_min"] = hp_capacities
+        n.links.loc[hp_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying heat pump capacities from high flex scenario run."
+        )

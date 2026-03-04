@@ -122,3 +122,4 @@ ember_settings:
   apply_highflex_capacities:
     resistive_heaters: true
     water_tanks: true
+    heat_pumps: true
