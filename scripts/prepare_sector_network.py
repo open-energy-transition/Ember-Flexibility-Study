@@ -2403,14 +2403,13 @@ def add_EVs(
         profile.groupby(profile.index.date).transform("sum") /
         p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
-    e_soc = (p_flow_t - profile) * n.snapshot_weightings.stores / e_nom + options["bev_battery_central_soc"]
-    e_soc = e_soc.shift(1, fillna=0)
+    e_soc = ((p_flow_t - profile) / e_nom).shift(1, fill_value=0) + options["bev_battery_central_soc"]
 
     # Add BEV charging flexibility
     if options["bev_dsm"]:
-        e_soc_dev = (e_soc.max(axis=1) - e_soc.min(axis=1)) * options["bev_dsm_availability"] * 0.5
-        e_max_pu = (e_soc + e_soc_dev).clip(upper=1)
-        e_min_pu = (e_soc - e_soc_dev).clip(lower=0)
+        e_soc_dev = ((e_soc.max(axis=1) - e_soc.min(axis=1)) * options["bev_dsm_availability"] * 0.5).squeeze()
+        e_max_pu = e_soc.add(e_soc_dev, axis=0).clip(upper=1)
+        e_min_pu = e_soc.sub(e_soc_dev, axis=0).clip(lower=0)
 
         # Add vehicle-to-grid if enabled
         if options["v2g"] or options["v2g"] in (True, 1):
@@ -3067,7 +3066,7 @@ def add_heat(
                 "restriction_value"
             ].get(investment_year)
             heat_dsm_profile = heat_dsm_profile * heat_dsm_restriction_value
-            e_nom = e_nom.groupby(e_nom.index.date).sum().max() * n.snapshot_weightings.stores.max()
+            e_nom = e_nom.groupby(e_nom.index.date).sum().max()
 
             # Allow to overshoot or undercool the target temperatures / heat demand in dsm
             e_min_pu, e_max_pu = 0, 0
