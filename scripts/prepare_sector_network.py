@@ -2392,7 +2392,6 @@ def add_EVs(
         efficiency=options["bev_charge_efficiency"],
     )
 
-
     # Create BEV battery availability profile
     e_nom = (
             number_cars
@@ -2406,13 +2405,6 @@ def add_EVs(
         )
     e_soc = (p_flow_t - profile) * n.snapshot_weightings.stores / e_nom + options["bev_battery_central_soc"]
     e_soc = e_soc.shift(1, fillna=0)
-    nodes = pd.read_csv(snakemake.input.clustered_pop_layout, index_col=0).index
-    tz_corrected_df = pd.DataFrame(index=e_soc.index)
-    for node in nodes:
-        ct = node[:2] if node[:2] != "XK" else "RS"
-        timezone = pytz.timezone(pytz.country_timezones[ct][0])
-        tz_corrected_df[node] = range(len(e_soc.index.tz_convert(timezone))).map(e_soc[node])
-    e_soc = tz_corrected_df.tz_localize(None)
 
     # Add BEV charging flexibility
     if options["bev_dsm"]:
