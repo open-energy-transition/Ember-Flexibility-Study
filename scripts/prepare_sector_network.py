@@ -2439,6 +2439,7 @@ def add_EVs(
         spatial.nodes,
         suffix=" EV battery",
         bus=spatial.nodes + " EV battery",
+        carrier="EV battery",
         e_cyclic=True,
         e_nom=e_nom,
         e_max_pu=e_max_pu.loc[n.snapshots, spatial.nodes],
