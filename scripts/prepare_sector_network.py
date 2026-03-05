@@ -2392,16 +2392,20 @@ def add_EVs(
 
     # Create BEV battery availability profile
     e_nom = (
-            number_cars
-            * options["bev_energy"]
-            * electric_share
-        )
+        number_cars
+        * options["bev_energy"]
+        * electric_share
+    )
+    
     p_nom_t = p_nom * avail_profile
     p_flow_t = p_nom_t * (
         profile.groupby(profile.index.date).transform("sum") /
         p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
-    e_soc = ((p_flow_t - profile) / e_nom).shift(1, fill_value=0) + options["bev_battery_central_soc"]
+
+    e_soc = (
+        ((p_flow_t - profile) / e_nom).shift(1, fill_value=0) + options["bev_battery_central_soc"]
+    ).fillna(0)
 
     # Add BEV charging flexibility
     if options["bev_dsm"]:
@@ -2443,7 +2447,7 @@ def add_EVs(
         e_nom=e_nom,
         e_max_pu=e_max_pu.loc[n.snapshots, spatial.nodes],
         e_min_pu=e_min_pu.loc[n.snapshots, spatial.nodes],
-        )
+    )
         
 
 def add_fuel_cell_cars(
