@@ -53,7 +53,6 @@ from scripts.ember_customization import (
     include_chps_for_selected_countries,
     set_line_s_nom_to_ntc,
     add_LV_capacities,
-    remove_heat_water_storage,
     apply_highflex_capacities
 )
 
