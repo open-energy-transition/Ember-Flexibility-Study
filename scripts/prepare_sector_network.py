@@ -11,7 +11,6 @@ import logging
 import os
 from itertools import product
 from types import SimpleNamespace
-import pytz
 import networkx as nx
 import numpy as np
 import pandas as pd
