@@ -652,7 +652,7 @@ sector:
     annualise_cost: true
     tax_weighting: false
     construction_index: true
-  tes: true
+  tes: false
   boilers: true
   resistive_heaters: true
   oil_boilers: false
