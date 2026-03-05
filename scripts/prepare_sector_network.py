@@ -6745,8 +6745,6 @@ if __name__ == "__main__":
     if ember_settings.get("ember_gas_price", False):
         apply_hourly_price_fix(n)
 
-    if ember_settings.get("remove_heat_storage", False):
-        remove_heat_water_storage(n)
     
     scenario_capacities = ember_settings.get("apply_highflex_capacities", False)
     if scenario_capacities:
