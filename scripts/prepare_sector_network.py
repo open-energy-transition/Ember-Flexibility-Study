@@ -2376,7 +2376,7 @@ def add_EVs(
         p_set=profile.loc[n.snapshots],
     )
 
-    # Add BEV charger
+    # Add BEV chargers
     p_nom = number_cars * options["bev_charge_rate"] * electric_share
     n.add(
         "Link",
