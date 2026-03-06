@@ -2396,22 +2396,18 @@ def add_EVs(
         * options["bev_energy"]
         * electric_share
     )
-    
     p_nom_t = p_nom * avail_profile
     p_flow_t = p_nom_t * (
         profile.groupby(profile.index.date).transform("sum") /
         p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
-
-    e_soc = (
-        ((p_flow_t - profile) / e_nom).shift(1, fill_value=0) + options["bev_battery_central_soc"]
-    ).fillna(0)
+    e_soc = ((p_flow_t - profile) / e_nom).shift(1).fillna(0) + options["bev_battery_central_soc"]
 
     # Add BEV charging flexibility
     if options["bev_dsm"]:
-        e_soc_dev = ((e_soc.max(axis=1) - e_soc.min(axis=1)) * options["bev_dsm_availability"] * 0.5).squeeze()
-        e_max_pu = e_soc.add(e_soc_dev, axis=0).clip(upper=1)
-        e_min_pu = e_soc.sub(e_soc_dev, axis=0).clip(lower=0)
+        e_soc_dev = ((e_soc.max(axis=0) - e_soc.min(axis=0)) * options["bev_dsm_availability"] * 0.5).squeeze()
+        e_max_pu = e_soc.add(e_soc_dev, axis=1).clip(upper=1)
+        e_min_pu = e_soc.sub(e_soc_dev, axis=1).clip(lower=0)
 
         # Add vehicle-to-grid if enabled
         if options["v2g"] or options["v2g"] in (True, 1):
