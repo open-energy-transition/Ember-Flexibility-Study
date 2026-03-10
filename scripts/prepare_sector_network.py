@@ -2401,7 +2401,9 @@ def add_EVs(
         profile.groupby(profile.index.date).transform("sum") /
         p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
-    e_soc = ((p_flow_t - profile) / e_nom).shift(1).fillna(0) + options["bev_battery_central_soc"]
+    e_soc = ((p_flow_t.cumsum(axis=0) - profile.cumsum(axis=0)) / e_nom).shift(1).fillna(0) + options["bev_battery_central_soc"]
+    e_max_pu = (e_soc * 1.000001).clip(upper=1)
+    e_min_pu = (e_soc * 0.999999).clip(lower=0)
 
     # Add BEV charging flexibility
     if options["bev_dsm"]:
@@ -2429,9 +2431,6 @@ def add_EVs(
                 lifetime=1,
                 efficiency=options["bev_charge_efficiency"],
             )
-    else: 
-        e_max_pu = e_soc.clip(upper=1)
-        e_min_pu = e_soc.clip(lower=0)
 
     n.add(
         "Store",
