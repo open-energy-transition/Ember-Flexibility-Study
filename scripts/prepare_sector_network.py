@@ -5892,12 +5892,7 @@ def set_temporal_aggregation(n, resolution, snapshot_weightings):
             pnl = getattr(m, c.list_name + "_t")
             for k, df in c.pnl.items():
                 if not df.empty:
-                    if c.list_name == "stores" and k == "e_max_pu":
-                        pnl[k] = df.groupby(aggregation_map).min()
-                    elif c.list_name == "stores" and k == "e_min_pu":
-                        pnl[k] = df.groupby(aggregation_map).max()
-                    else:
-                        pnl[k] = df.groupby(aggregation_map).mean()
+                    pnl[k] = df.groupby(aggregation_map).mean()
 
         return m
 
