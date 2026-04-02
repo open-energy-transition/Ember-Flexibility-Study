@@ -2397,7 +2397,6 @@ def add_EVs(
         e_nom = (
             number_cars
             * options["bev_energy"]
-            * options["bev_dsm_availability"]
             * electric_share
         )
 
@@ -5888,9 +5887,9 @@ def set_temporal_aggregation(n, resolution, snapshot_weightings):
             for k, df in c.pnl.items():
                 if not df.empty:
                     if c.list_name == "stores" and k == "e_max_pu":
-                        pnl[k] = df.groupby(aggregation_map).min()
+                        pnl[k] = df.groupby(aggregation_map).mean()
                     elif c.list_name == "stores" and k == "e_min_pu":
-                        pnl[k] = df.groupby(aggregation_map).max()
+                        pnl[k] = df.groupby(aggregation_map).mean()
                     else:
                         pnl[k] = df.groupby(aggregation_map).mean()
 
