@@ -136,11 +136,14 @@ def bev_availability_profile(fn, snapshots, nodes, options):
     avail_max = options["bev_avail_max"]
     # average share plugged-in availability for passenger electric vehicles
     avail_mean = options["bev_avail_mean"]
+    # minumum share plugged-in availability for passenger electric vehicles
+    avail_min = options["bev_avail_min"]
 
     # linear scaling, highest when traffic is lowest, decreases if traffic increases
     avail = avail_max - (avail_max - avail_mean) * (traffic - traffic.min()) / (
         traffic.mean() - traffic.min()
     )
+    avail = np.clip(avail, a_min=avail_min, a_max=avail_max)
 
     if not avail[avail < 0].empty:
         logger.warning(
@@ -162,12 +165,18 @@ def bev_dsm_profile(snapshots, nodes, options):
     # be charged to a minimum value (defined in bev_dsm_restriction_value),
     # which can also be a vary by country
 
-    if isinstance(options["bev_dsm_restriction_value"], str):
-        restriction_value = 1
+    if isinstance(options["bev_dsm_restriction_value_1"], str):
+        restriction_value_1 = 1
     else:
-        restriction_value = options["bev_dsm_restriction_value"]
+        restriction_value_1 = options["bev_dsm_restriction_value_1"]
 
-    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"])] = restriction_value
+    if isinstance(options["bev_dsm_restriction_value_2"], str):
+        restriction_value_2 = 1
+    else:
+        restriction_value_2 = options["bev_dsm_restriction_value_2"]
+
+    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"][0])] = restriction_value_1
+    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"][1])] = restriction_value_2
 
     return generate_periodic_profiles(
         dt_index=snapshots,
@@ -218,7 +227,6 @@ if __name__ == "__main__":
     avail_profile = bev_availability_profile(
         snakemake.input.traffic_data_Pkw, snapshots, nodes, options
     )
-
     dsm_profile = bev_dsm_profile(snapshots, nodes, options)
 
     if isinstance(options["bev_dsm_restriction_value"], str):
