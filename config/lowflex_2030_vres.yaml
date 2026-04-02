@@ -54,7 +54,7 @@ sector:
   land_transport_ice_share:
     2030: "data/ember_data/land_transport_ice_share_2030.csv"
   bev_dsm_availability: 0.15
-  bev_energy: 0.8
+  bev_energy: 0.08
   bev_charge_efficiency: 0.9
   bev_charge_rate: 0.0449
   bev_avail_max: 0.95

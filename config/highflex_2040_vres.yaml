@@ -50,9 +50,9 @@ sector:
   bev_dsm: true
   v2g: 0.31 
   land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2040.csv"
+    2040: "data/ember_data/land_transport_electric_share_2040.csv"
   land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2040.csv"
+    2040: "data/ember_data/land_transport_ice_share_2040.csv"
   bev_dsm_availability: 0.7
   bev_energy: 0.09
   bev_charge_efficiency: 0.9

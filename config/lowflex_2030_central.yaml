@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2009-sarah3-era5
+  default_cutout: europe-2009-era5
 
 pypsa_eur:
   Generator:
@@ -50,17 +50,20 @@ sector:
   bev_dsm: true
   v2g: 0
   land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2030.csv"
+    2030: "data/ember_data/land_transport_electric_share_2030_low.csv"
   land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2030.csv"
-  bev_dsm_availability: 0.15
-  bev_energy: 0.8
+    2030: "data/ember_data/land_transport_ice_share_2030_low.csv"
+  bev_energy: 0.08
   bev_charge_efficiency: 0.9
-  bev_charge_rate: 0.0449
-  bev_avail_max: 0.95
-  bev_avail_mean: 0.8
-  bev_dsm_restriction_value: 0.5
-  bev_dsm_restriction_time: 7
+  bev_charge_rate: 0.01012
+  bev_avail_max: 0.2
+  bev_avail_mean: 0.08
+  bev_avail_min: 0.02
+  bev_dsm_restriction_value_1: 0.9
+  bev_dsm_restriction_value_2: 0.8
+  bev_dsm_restriction_time:
+    - 7
+    - 19
   transport_electric_efficiency: 53.19
   residential_heat:
     dsm:
@@ -92,12 +95,13 @@ costs:
   emission_prices:
     enable: true
     co2: 79.9
+    custom_cost_fn: data/custom_costs_ember.csv
 
 solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax.csv
+    file: data/agg_p_nom_minmax_low.csv
   constraints:
     CCL: true
 
@@ -119,5 +123,5 @@ ember_settings:
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
   apply_highflex_capacities:
-    resistive_heaters: true
-    water_tanks: true
+    resistive_heaters: false
+    water_tanks: false
