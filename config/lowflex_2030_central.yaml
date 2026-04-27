@@ -67,7 +67,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2030: 0.03
+        2030: 0.02
       restriction_time:
       - 8
       - 17
