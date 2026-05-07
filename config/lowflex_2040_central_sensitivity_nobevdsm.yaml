@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: highflex_2030_central
+  name: lowflex_2040_central_sensitivity_nobevdsm
 
 scenario:
   clusters:
@@ -12,7 +12,7 @@ scenario:
   sector_opts:
   - 3H
   planning_horizons:
-  - 2030
+  - 2040
 
 snapshots:
   start: '2009-01-01'
@@ -20,7 +20,7 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2030_highflex_highele.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_lowflex.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2009-era5
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -45,19 +45,19 @@ pypsa_eur:
   - hydro
   - battery
   - home_battery_storage
-
+  
 sector:
-  bev_dsm: true
-  v2g: 0.21
-  bev_dsm_availability: 0.5
+  bev_dsm: false
+  v2g: 0.08
+  bev_dsm_availability: 0.3
   land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2030_high.csv"
+    2040: "data/ember_data/land_transport_electric_share_2040.csv"
   land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2030_high.csv"
-  bev_energy: 0.08
+    2040: "data/ember_data/land_transport_ice_share_2040.csv"
+  bev_energy: 0.09
   bev_charge_efficiency: 0.9
   bev_battery_central_soc: 0.5
-  bev_charge_rate: 0.01012
+  bev_charge_rate: 0.01220
   bev_avail_max: 0.2
   bev_avail_min: 0.02
   transport_electric_efficiency: 53.19
@@ -67,7 +67,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2030: 0.15
+        2040: 0.05
       restriction_time:
       - 8
       - 17
@@ -76,13 +76,13 @@ sector:
   hydrogen_underground_storage: false
 
 costs:
-  year: 2030
+  year: 2040
   fuel:
-    gas: 27.1
-    coal: 12.1
+    gas: 30.7
+    coal: 11.5
     lignite: 8.6
-    oil: 42.2
-    uranium: 1.8
+    oil: 47.8
+    uranium: 1.8 
   VOM:
     OCGT: 1
     CCGT: 1
@@ -90,19 +90,19 @@ costs:
     lignite: 2.3
   emission_prices:
     enable: true
-    co2: 79.9
+    co2: 243.8
   custom_cost_fn: data/custom_costs_ember.csv
 
 solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax_highflex_highele_2030.csv
+    file: data/agg_p_nom_minmax.csv
   constraints:
     CCL: true
 
 ember_settings:
-  ntc_data: "data/ember_data/ntc_2030.csv"
+  ntc_data: "data/ember_data/ntc_2040.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
@@ -115,7 +115,10 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
+  filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities: false
+  apply_highflex_capacities:
+    resistive_heaters: true
+    water_tanks: true
+    heat_pumps: true

@@ -20,7 +20,7 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2030_lowflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2030_lowflex_lowele.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -97,7 +97,7 @@ solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax_low.csv
+    file: data/agg_p_nom_minmax_lowflex_lowele_2030.csv
   constraints:
     CCL: true
 
