@@ -1,7 +1,7 @@
 ,land_transport_electric_share
 AT,0.43
 BE,0.43
-BG,0
+BG,0.28
 CH,0.3
 CY,0.34
 CZ,0.21
@@ -17,8 +17,8 @@ HU,0.17
 IE,0.37
 IT,0.24
 LT,0.32
-LU,0.04
-LV,0
+LU,0.28
+LV,0.28
 MT,0.27
 NL,0.42
 NO,1
