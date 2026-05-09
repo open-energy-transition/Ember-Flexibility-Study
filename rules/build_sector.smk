@@ -1411,6 +1411,11 @@ if len(highflex_run_name)>3:
   if highflex_run_name.split("_")[0] == "lowflex":
       highflex_run_name = "highflex" + highflex_run_name[7:]
 
+lowflex_run_name = config["run"]["name"]
+if len(lowflex_run_name)>3:
+  if lowflex_run_name.split("_")[0] == "highflex":
+      lowflex_run_name = "lowflex" + highflex_run_name[8:]
+
 rule prepare_sector_network:
     params:
         time_resolution=config_provider("clustering", "temporal", "resolution_sector"),
@@ -1580,6 +1585,11 @@ rule prepare_sector_network:
         n_highflex = lambda w: (
             "results/"+highflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
             if config_provider("ember_settings", "apply_highflex_capacities")(w)
+            else []
+        ),
+        n_lowflex = lambda w: (
+            "results/"+lowflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
+            if config_provider("ember_settings", "apply_lowflex_capacities")(w)
             else []
         ),
     output:
