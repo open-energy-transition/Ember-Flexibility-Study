@@ -417,34 +417,40 @@ def add_LV_capacities(n, ppl_path, max_hours):
     return n
 
 
-
-
-
-def apply_highflex_capacities(n, n_highflex, scenario_capacities):
+def apply_scenario_capacities(n, n_scenario, scenario_capacities):
 
     if scenario_capacities.get("resistive_heaters", False):
-        rh_capacities = n_highflex.links[n_highflex.links.carrier.str.contains("resistive heater")].p_nom_opt
+        rh_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("resistive heater")].p_nom_opt
         n.links.loc[rh_capacities.index, "p_nom"] = rh_capacities
         n.links.loc[rh_capacities.index, "p_nom_min"] = rh_capacities
         n.links.loc[rh_capacities.index, "p_nom_extendable"] = False
         logger.info(
-            "Applying resistive heater capacities from high flex scenario run."
+            "Applying resistive heater capacities from other scenario run."
         )
 
     if scenario_capacities.get("water_tanks", False):
-        tank_capacities = n_highflex.stores[n_highflex.stores.carrier.str.contains("water")].e_nom_opt
+        tank_capacities = n_scenario.stores[n_scenario.stores.carrier.str.contains("water")].e_nom_opt
         n.stores.loc[tank_capacities.index, "e_nom"] = tank_capacities
         n.stores.loc[tank_capacities.index, "e_nom_min"] = tank_capacities
         n.stores.loc[tank_capacities.index, "e_nom_extendable"] = False
         logger.info(
-            "Applying water tank and water pit capacities from high flex scenario run."
+            "Applying water tank and water pit capacities from other scenario run."
         )
 
     if scenario_capacities.get("heat_pumps", False):
-        hp_capacities = n_highflex.links[n_highflex.links.carrier.str.contains("heat pump")].p_nom_opt
+        hp_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("heat pump")].p_nom_opt
         n.links.loc[hp_capacities.index, "p_nom"] = hp_capacities
         n.links.loc[hp_capacities.index, "p_nom_min"] = hp_capacities
         n.links.loc[hp_capacities.index, "p_nom_extendable"] = False
         logger.info(
-            "Applying heat pump capacities from high flex scenario run."
+            "Applying heat pump capacities from other scenario run."
+        )
+
+    if scenario_capacities.get("biomass_boiler", False):
+        bio_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("biomass boiler")].p_nom_opt
+        n.links.loc[bio_capacities.index, "p_nom"] = bio_capacities
+        n.links.loc[bio_capacities.index, "p_nom_min"] = bio_capacities
+        n.links.loc[bio_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying biomass boiler capacities from other scenario run."
         )

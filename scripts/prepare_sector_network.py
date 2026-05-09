@@ -53,7 +53,7 @@ from scripts.ember_customization import (
     include_chps_for_selected_countries,
     set_line_s_nom_to_ntc,
     add_LV_capacities,
-    apply_highflex_capacities
+    apply_scenario_capacities
 )
 
 spatial = SimpleNamespace()
@@ -6739,9 +6739,14 @@ if __name__ == "__main__":
         apply_hourly_price_fix(n)
 
     
-    scenario_capacities = ember_settings.get("apply_highflex_capacities", False)
-    if scenario_capacities:
+    scenario_capacities_high = ember_settings.get("apply_highflex_capacities", False)
+    if scenario_capacities_high:
         n_highflex = pypsa.Network(snakemake.input.n_highflex)
-        apply_highflex_capacities(n, n_highflex, scenario_capacities)
+        apply_scenario_capacities(n, n_highflex, scenario_capacities_high)
+
+    scenario_capacities_low = ember_settings.get("apply_lowflex_capacities", False)
+    if scenario_capacities_low:
+        n_lowflex = pypsa.Network(snakemake.input.n_lowflex)
+        apply_scenario_capacities(n, n_lowflex, scenario_capacities_low)
 
     n.export_to_netcdf(snakemake.output[0])
