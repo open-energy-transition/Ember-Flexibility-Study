@@ -119,3 +119,6 @@ ember_settings:
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
   apply_highflex_capacities: false
+  apply_lowflex_capacities:
+      resistive_heaters: true
+      biomass_boiler: true
