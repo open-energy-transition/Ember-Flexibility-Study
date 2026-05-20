@@ -20,7 +20,7 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040_highflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_highflex_highele.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2009-sarah3-era5
+  default_cutout: europe-2009-era5
 
 pypsa_eur:
   Generator:
@@ -49,18 +49,17 @@ pypsa_eur:
 sector:
   bev_dsm: true
   v2g: 0.31 
-  land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2040.csv"
-  land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2040.csv"
   bev_dsm_availability: 0.7
+  land_transport_electric_share:
+    2040: "data/ember_data/land_transport_electric_share_2040_high.csv"
+  land_transport_ice_share:
+    2040: "data/ember_data/land_transport_ice_share_2040_high.csv"
   bev_energy: 0.09
   bev_charge_efficiency: 0.9
-  bev_charge_rate: 0.1127
-  bev_avail_max: 0.95
-  bev_avail_mean: 0.8
-  bev_dsm_restriction_value: 0.5
-  bev_dsm_restriction_time: 7
+  bev_battery_central_soc: 0.5
+  bev_charge_rate: 0.01220
+  bev_avail_max: 0.2
+  bev_avail_min: 0.02
   transport_electric_efficiency: 53.19
   residential_heat:
     dsm:
@@ -68,7 +67,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2040: 0.26
+        2040: 0.54
       restriction_time:
       - 8
       - 17
@@ -92,17 +91,18 @@ costs:
   emission_prices:
     enable: true
     co2: 243.8
+  custom_cost_fn: data/custom_costs_ember.csv
 
 solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax.csv
+    file: data/agg_p_nom_minmax_highflex_highele_2040.csv
   constraints:
     CCL: true
 
 ember_settings:
-  ntc_data: "data/ember_data/ntc_2030.csv"
+  ntc_data: "data/ember_data/ntc_2040.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
@@ -119,3 +119,6 @@ ember_settings:
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
   apply_highflex_capacities: false
+  apply_lowflex_capacities:
+      resistive_heaters: true
+      biomass_boiler: true

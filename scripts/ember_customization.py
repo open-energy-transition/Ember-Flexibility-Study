@@ -269,7 +269,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         Path to CSV with columns:
         - `source_country_code` (ISO3),
         - `target_country_code` (ISO3),
-        - `NTC_2030_MW` (numeric, MW).
+        - `ntc_mw` (numeric, MW).
 
     Returns
     -------
@@ -289,7 +289,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
         pairs.append(pair)
     df['pair'] = pairs
-    pair_to_ntc = df.groupby('pair')['NTC_2030_MW'].mean()
+    pair_to_ntc = df.groupby('pair')['ntc_mw'].mean()
     focus_countries = list(set(df['source_iso2']).union(df['target_iso2']).intersection(set(n.buses.country.unique())))
     for pair, ntc in pair_to_ntc.items():
         if ntc == 0:
@@ -362,7 +362,7 @@ def apply_hourly_price_fix(n):
 def add_LV_capacities(n, ppl_path, max_hours):
     ppl = pd.read_csv(ppl_path, index_col=0, dtype={"Capacity": float, "bus": str})
     # For rooftop solar
-    rooftop_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'solar') & (ppl['Technology'].str.strip().str.lower() == 'solar-rooftop')]
+    rooftop_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'solar btm') & (ppl['Technology'].str.strip().str.lower() == 'solar-rooftop')]
     agg_capacity_rooftop = rooftop_df.groupby('bus')['Capacity'].sum()
 
     for bus, cap in agg_capacity_rooftop.items():
@@ -417,59 +417,40 @@ def add_LV_capacities(n, ppl_path, max_hours):
     return n
 
 
-def apply_BEV_dsm_restiction_country_shares(dsm_profile, country_shares):
-
-    """
-    Scale BEV DSM restriction values by country-specific shares
-
-    Parameters
-    ----------
-    dsm_profile : pd.DataFrame
-        DSM profile with country-coded columns.
-
-    country_shares : str
-        Path to CSV with country share values.
-
-    Returns
-    -------
-    pd.DataFrame
-        DSM profile with columns scaled by the corresponding shares.
-    """
-
-    country_shares = pd.read_csv(country_shares, index_col=0)
-    explicit_countries = [c for c in country_shares.index if c != 'default']
-    for col in dsm_profile.columns:
-        country_code = col[:2]
-        if country_code in explicit_countries:
-            dsm_profile[col] = dsm_profile[col] * country_shares.loc[country_code].values[0]
-        elif 'default' in country_shares.index:
-            dsm_profile[col] = dsm_profile[col] * country_shares.loc['default'].values[0]
-        else:
-            logger.warning(
-                f"No 'default' share found for the BEV DSM restriction in '{country_code}'. "
-                f"Leaving it at 1, which implies that all EVs will be fully charged "
-                f"by the specified 'bev_dsm_restriction_time'."
-            )
-
-    return dsm_profile
-
-
-def apply_highflex_capacities(n, n_highflex, scenario_capacities):
+def apply_scenario_capacities(n, n_scenario, scenario_capacities):
 
     if scenario_capacities.get("resistive_heaters", False):
-        rh_capacities = n_highflex.links[n_highflex.links.carrier.str.contains("resistive heater")].p_nom_opt
+        rh_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("resistive heater")].p_nom_opt
         n.links.loc[rh_capacities.index, "p_nom"] = rh_capacities
         n.links.loc[rh_capacities.index, "p_nom_min"] = rh_capacities
         n.links.loc[rh_capacities.index, "p_nom_extendable"] = False
         logger.info(
-            "Applying resistive heater capacities from high flex scenario run."
+            "Applying resistive heater capacities from other scenario run."
         )
 
     if scenario_capacities.get("water_tanks", False):
-        tank_capacities = n_highflex.stores[n_highflex.stores.carrier.str.contains("water")].e_nom_opt
+        tank_capacities = n_scenario.stores[n_scenario.stores.carrier.str.contains("water")].e_nom_opt
         n.stores.loc[tank_capacities.index, "e_nom"] = tank_capacities
         n.stores.loc[tank_capacities.index, "e_nom_min"] = tank_capacities
         n.stores.loc[tank_capacities.index, "e_nom_extendable"] = False
         logger.info(
-            "Applying water tank and water pit capacities from high flex scenario run."
+            "Applying water tank and water pit capacities from other scenario run."
+        )
+
+    if scenario_capacities.get("heat_pumps", False):
+        hp_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("heat pump")].p_nom_opt
+        n.links.loc[hp_capacities.index, "p_nom"] = hp_capacities
+        n.links.loc[hp_capacities.index, "p_nom_min"] = hp_capacities
+        n.links.loc[hp_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying heat pump capacities from other scenario run."
+        )
+
+    if scenario_capacities.get("biomass_boiler", False):
+        bio_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("biomass boiler")].p_nom_opt
+        n.links.loc[bio_capacities.index, "p_nom"] = bio_capacities
+        n.links.loc[bio_capacities.index, "p_nom_min"] = bio_capacities
+        n.links.loc[bio_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying biomass boiler capacities from other scenario run."
         )

@@ -553,8 +553,9 @@ sector:
       - 22
   cluster_heat_buses: true
   heat_demand_cutout: default
-  bev_dsm_restriction_value: 0.8
-  bev_dsm_restriction_time: 7
+  bev_battery_central_soc: 0.5
+  # bev_dsm_restriction_value: 0.8
+  # bev_dsm_restriction_time: 7
   transport_heating_deadband_upper: 20.
   transport_heating_deadband_lower: 15.
   ICE_lower_degree_factor: 0.375
@@ -566,8 +567,9 @@ sector:
   bev_energy: 0.05
   bev_charge_efficiency: 0.9
   bev_charge_rate: 0.011
-  bev_avail_max: 0.95
-  bev_avail_mean: 0.8
+  bev_avail_max: 0.1
+  # bev_avail_mean: 0.05
+  bev_avail_min: 0.01
   v2g: true
   land_transport_fuel_cell_share:
     2020: 0
@@ -650,7 +652,7 @@ sector:
     annualise_cost: true
     tax_weighting: false
     construction_index: true
-  tes: true
+  tes: false
   boilers: true
   resistive_heaters: true
   oil_boilers: false
@@ -978,7 +980,7 @@ adjustments:
 solving:
   options:
     clip_p_max_pu: 1.e-2
-    load_shedding: false
+    load_shedding: true
     curtailment_mode: false
     noisy_costs: true
     skip_iterations: true

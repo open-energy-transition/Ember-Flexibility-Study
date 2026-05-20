@@ -11,7 +11,6 @@ import logging
 import os
 from itertools import product
 from types import SimpleNamespace
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -54,7 +53,7 @@ from scripts.ember_customization import (
     include_chps_for_selected_countries,
     set_line_s_nom_to_ntc,
     add_LV_capacities,
-    apply_highflex_capacities
+    apply_scenario_capacities
 )
 
 spatial = SimpleNamespace()
@@ -2269,7 +2268,6 @@ def get_temp_efficency(
 def add_EVs(
     n: pypsa.Network,
     avail_profile: pd.DataFrame,
-    dsm_profile: pd.DataFrame,
     p_set: pd.Series,
     electric_share: pd.Series,
     number_cars: pd.Series,
@@ -2392,33 +2390,33 @@ def add_EVs(
         efficiency=options["bev_charge_efficiency"],
     )
 
-    # Add demand-side management components if enabled
-    if options["bev_dsm"]:
-        e_nom = (
-            number_cars
-            * options["bev_energy"]
-            * options["bev_dsm_availability"]
-            * electric_share
+    # Create BEV battery availability profile
+    e_nom = (
+        number_cars
+        * options["bev_energy"]
+        * electric_share
+    )
+    p_nom_t = p_nom * avail_profile
+    p_flow_t = p_nom_t * (
+        profile.groupby(profile.index.date).transform("sum") /
+        p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
+    e_soc = ((p_flow_t.cumsum(axis=0) - profile.cumsum(axis=0)) / e_nom).shift(1).fillna(0) + options["bev_battery_central_soc"]
+    e_max_pu = (e_soc * 1.000001).clip(upper=1)
+    e_min_pu = (e_soc * 0.999999).clip(lower=0)
 
-        n.add(
-            "Store",
-            spatial.nodes,
-            suffix=" EV battery",
-            bus=spatial.nodes + " EV battery",
-            carrier="EV battery",
-            e_cyclic=True,
-            e_nom=e_nom,
-            e_max_pu=1,
-            e_min_pu=dsm_profile.loc[n.snapshots, spatial.nodes],
-        )
+    # Add BEV charging flexibility
+    if options["bev_dsm"]:
+        e_soc_dev = ((e_soc.max(axis=0) - e_soc.min(axis=0)) * options["bev_dsm_availability"] * 0.5).squeeze()
+        e_max_pu = e_soc.add(e_soc_dev, axis=1).clip(upper=1)
+        e_min_pu = e_soc.sub(e_soc_dev, axis=1).clip(lower=0)
 
         # Add vehicle-to-grid if enabled
         if options["v2g"] or options["v2g"] in (True, 1):
             v2g_share = float(options["v2g"])
             if v2g_share > 1:
                 logging.warning(
-                    f"Value {share} exceeds 1.0. This assumes that more than 100% of EVs "
+                    f"Value {v2g_share} exceeds 1.0. This assumes that more than 100% of EVs "
                     f"that contribute to DSM can also contribute back to the grid."
                 )
             n.add(
@@ -2434,6 +2432,18 @@ def add_EVs(
                 efficiency=options["bev_charge_efficiency"],
             )
 
+    n.add(
+        "Store",
+        spatial.nodes,
+        suffix=" EV battery",
+        bus=spatial.nodes + " EV battery",
+        carrier="EV battery",
+        e_cyclic=True,
+        e_nom=e_nom,
+        e_max_pu=e_max_pu.loc[n.snapshots, spatial.nodes],
+        e_min_pu=e_min_pu.loc[n.snapshots, spatial.nodes],
+    )
+        
 
 def add_fuel_cell_cars(
     n: pypsa.Network,
@@ -2643,7 +2653,6 @@ def add_land_transport(
     transport_demand_file,
     transport_data_file,
     avail_profile_file,
-    dsm_profile_file,
     temp_air_total_file,
     cf_industry,
     options,
@@ -2665,8 +2674,6 @@ def add_land_transport(
         Path to CSV file containing number of cars per region
     avail_profile_file : str
         Path to CSV file containing availability profiles
-    dsm_profile_file : str
-        Path to CSV file containing demand-side management profiles
     temp_air_total_file : str
         Path to netCDF file containing air temperature data
     options : dict
@@ -2698,7 +2705,6 @@ def add_land_transport(
     transport = pd.read_csv(transport_demand_file, index_col=0, parse_dates=True)
     number_cars = pd.read_csv(transport_data_file, index_col=0)["number cars"]
     avail_profile = pd.read_csv(avail_profile_file, index_col=0, parse_dates=True)
-    dsm_profile = pd.read_csv(dsm_profile_file, index_col=0, parse_dates=True)
 
     # exogenous share of passenger car type
     engine_types = ["fuel_cell", "electric", "ice"]
@@ -2734,7 +2740,6 @@ def add_land_transport(
         add_EVs(
             n,
             avail_profile,
-            dsm_profile,
             p_set,
             shares["electric"],
             number_cars,
@@ -3059,7 +3064,7 @@ def add_heat(
                 "restriction_value"
             ].get(investment_year)
             heat_dsm_profile = heat_dsm_profile * heat_dsm_restriction_value
-            e_nom = e_nom.max()
+            e_nom = e_nom.groupby(e_nom.index.date).sum().max()
 
             # Allow to overshoot or undercool the target temperatures / heat demand in dsm
             e_min_pu, e_max_pu = 0, 0
@@ -5887,12 +5892,7 @@ def set_temporal_aggregation(n, resolution, snapshot_weightings):
             pnl = getattr(m, c.list_name + "_t")
             for k, df in c.pnl.items():
                 if not df.empty:
-                    if c.list_name == "stores" and k == "e_max_pu":
-                        pnl[k] = df.groupby(aggregation_map).min()
-                    elif c.list_name == "stores" and k == "e_min_pu":
-                        pnl[k] = df.groupby(aggregation_map).max()
-                    else:
-                        pnl[k] = df.groupby(aggregation_map).mean()
+                    pnl[k] = df.groupby(aggregation_map).mean()
 
         return m
 
@@ -6459,7 +6459,6 @@ if __name__ == "__main__":
             transport_demand_file=snakemake.input.transport_demand,
             transport_data_file=snakemake.input.transport_data,
             avail_profile_file=snakemake.input.avail_profile,
-            dsm_profile_file=snakemake.input.dsm_profile,
             temp_air_total_file=snakemake.input.temp_air_total,
             cf_industry=cf_industry,
             options=options,
@@ -6739,9 +6738,15 @@ if __name__ == "__main__":
     if ember_settings.get("ember_gas_price", False):
         apply_hourly_price_fix(n)
 
-    scenario_capacities = ember_settings.get("apply_highflex_capacities", False)
-    if scenario_capacities:
+    
+    scenario_capacities_high = ember_settings.get("apply_highflex_capacities", False)
+    if scenario_capacities_high:
         n_highflex = pypsa.Network(snakemake.input.n_highflex)
-        apply_highflex_capacities(n, n_highflex, scenario_capacities)
+        apply_scenario_capacities(n, n_highflex, scenario_capacities_high)
+
+    scenario_capacities_low = ember_settings.get("apply_lowflex_capacities", False)
+    if scenario_capacities_low:
+        n_lowflex = pypsa.Network(snakemake.input.n_lowflex)
+        apply_scenario_capacities(n, n_lowflex, scenario_capacities_low)
 
     n.export_to_netcdf(snakemake.output[0])

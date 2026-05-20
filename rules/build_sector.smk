@@ -1256,7 +1256,6 @@ rule build_transport_demand:
         transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
         transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
         avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}_{planning_horizons}.csv"),
     threads: 1
     resources:
         mem_mb=2000,
@@ -1412,6 +1411,11 @@ if len(highflex_run_name)>3:
   if highflex_run_name.split("_")[0] == "lowflex":
       highflex_run_name = "highflex" + highflex_run_name[7:]
 
+lowflex_run_name = config["run"]["name"]
+if len(lowflex_run_name)>3:
+  if lowflex_run_name.split("_")[0] == "highflex":
+      lowflex_run_name = "lowflex" + highflex_run_name[8:]
+
 rule prepare_sector_network:
     params:
         time_resolution=config_provider("clustering", "temporal", "resolution_sector"),
@@ -1489,7 +1493,6 @@ rule prepare_sector_network:
         transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
         transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
         avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}_{planning_horizons}.csv"),
         heat_dsm_profile=resources(
             "residential_heat_dsm_profile_total_base_s_{clusters}.csv"
         ),
@@ -1582,6 +1585,11 @@ rule prepare_sector_network:
         n_highflex = lambda w: (
             "results/"+highflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
             if config_provider("ember_settings", "apply_highflex_capacities")(w)
+            else []
+        ),
+        n_lowflex = lambda w: (
+            "results/"+lowflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
+            if config_provider("ember_settings", "apply_lowflex_capacities")(w)
             else []
         ),
     output:

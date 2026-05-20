@@ -21,8 +21,6 @@ from scripts._helpers import (
     set_scenario_config,
 )
 
-from ember_customization import apply_BEV_dsm_restiction_country_shares
-
 logger = logging.getLogger(__name__)
 
 
@@ -134,45 +132,28 @@ def bev_availability_profile(fn, snapshots, nodes, options):
     traffic = pd.read_csv(fn, skiprows=2, usecols=["count"]).squeeze("columns")
     # maximum share plugged-in availability for passenger electric vehicles
     avail_max = options["bev_avail_max"]
-    # average share plugged-in availability for passenger electric vehicles
-    avail_mean = options["bev_avail_mean"]
+    # minimum share plugged-in availability for passenger electric vehicles
+    avail_min = options["bev_avail_min"]
 
-    # linear scaling, highest when traffic is lowest, decreases if traffic increases
-    avail = avail_max - (avail_max - avail_mean) * (traffic - traffic.min()) / (
-        traffic.mean() - traffic.min()
-    )
-
-    if not avail[avail < 0].empty:
+    if avail_min < 0:
         logger.warning(
-            "The BEV availability weekly profile has negative values which can "
+            "Minimum BEV availability is negative, which may lead to infeasibility."
+        )
+    if avail_max < avail_min:
+        logger.warning(
+            "Maximum BEV availability is lower than minimum, which may "
             "lead to infeasibility."
         )
+
+    # linear scaling, highest when traffic is lowest, decreases if traffic increases
+    avail = avail_max - (avail_max - avail_min) * (traffic - traffic.min()) / (
+        traffic.max() - traffic.min()
+    )
 
     return generate_periodic_profiles(
         dt_index=snapshots,
         nodes=nodes,
         weekly_profile=avail.values,
-    )
-
-
-def bev_dsm_profile(snapshots, nodes, options):
-    dsm_week = np.zeros((24 * 7,))
-
-    # assuming that at a certain time ("bev_dsm_restriction_time") EVs have to
-    # be charged to a minimum value (defined in bev_dsm_restriction_value),
-    # which can also be a vary by country
-
-    if isinstance(options["bev_dsm_restriction_value"], str):
-        restriction_value = 1
-    else:
-        restriction_value = options["bev_dsm_restriction_value"]
-
-    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"])] = restriction_value
-
-    return generate_periodic_profiles(
-        dt_index=snapshots,
-        nodes=nodes,
-        weekly_profile=dsm_week,
     )
 
 
@@ -219,14 +200,6 @@ if __name__ == "__main__":
         snakemake.input.traffic_data_Pkw, snapshots, nodes, options
     )
 
-    dsm_profile = bev_dsm_profile(snapshots, nodes, options)
-
-    if isinstance(options["bev_dsm_restriction_value"], str):
-        dsm_profile = apply_BEV_dsm_restiction_country_shares(
-            dsm_profile, options["bev_dsm_restriction_value"]
-        )
-
     nodal_transport_data.to_csv(snakemake.output.transport_data)
     transport_demand.to_csv(snakemake.output.transport_demand)
     avail_profile.to_csv(snakemake.output.avail_profile)
-    dsm_profile.to_csv(snakemake.output.dsm_profile)

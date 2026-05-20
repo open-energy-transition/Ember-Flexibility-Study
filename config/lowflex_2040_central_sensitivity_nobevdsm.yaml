@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: CC0-1.0
 
 run:
-  name: lowflex_2040_vres
+  name: lowflex_2040_central_sensitivity_nobevdsm
 
 scenario:
   clusters:
@@ -15,8 +15,8 @@ scenario:
   - 2040
 
 snapshots:
-  start: '2022-01-01'
-  end: '2023-01-01'
+  start: '2009-01-01'
+  end: '2010-01-01'
 
 electricity:
   custom_powerplants: true
@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2022-sarah3-era5
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -47,7 +47,7 @@ pypsa_eur:
   - home_battery_storage
   
 sector:
-  bev_dsm: true
+  bev_dsm: false
   v2g: 0.08
   bev_dsm_availability: 0.3
   land_transport_electric_share:

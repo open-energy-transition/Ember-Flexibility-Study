@@ -49,18 +49,17 @@ pypsa_eur:
 sector:
   bev_dsm: true
   v2g: 0
+  bev_dsm_availability: 0.15
   land_transport_electric_share:
     2030: "data/ember_data/land_transport_electric_share_2030.csv"
   land_transport_ice_share:
     2030: "data/ember_data/land_transport_ice_share_2030.csv"
-  bev_dsm_availability: 0.15
-  bev_energy: 0.8
+  bev_energy: 0.08
   bev_charge_efficiency: 0.9
-  bev_charge_rate: 0.0449
-  bev_avail_max: 0.95
-  bev_avail_mean: 0.8
-  bev_dsm_restriction_value: 0.5
-  bev_dsm_restriction_time: 7
+  bev_battery_central_soc: 0.5
+  bev_charge_rate: 0.01012
+  bev_avail_max: 0.2
+  bev_avail_min: 0.02
   transport_electric_efficiency: 53.19
   residential_heat:
     dsm:
@@ -92,6 +91,7 @@ costs:
   emission_prices:
     enable: true
     co2: 79.9
+  custom_cost_fn: data/custom_costs_ember.csv
 
 solving:
   agg_p_nom_limits:
@@ -118,4 +118,7 @@ ember_settings:
   filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_rh_highflex_capacities: true
+  apply_highflex_capacities:
+    resistive_heaters: true
+    water_tanks: true
+    heat_pumps: true

@@ -69,8 +69,7 @@ residential_heat,--,,Configuration options for residential heat demand-side mana
 -- -- restriction_value,--,Dictionary with planning horizons as keys.,Maximum state of charge (as fraction) for heat flexibility storage representing available thermal buffer capacity in buildings. Set to 0 for no flexibility or to 1.0 to assume that the entire heating demand can contribute to flexibility.
 -- -- restriction_time,--,list of int,"Checkpoint hours (0-23) at which heat flexibility storage must return to baseline state of charge, i.e. the residence surplus or missing heat be balanced. Time is the local time for each country and bus. Default: [10 22] creates 12-hour periods with checkpoints at 10am and 10pm."
 cluster_heat_buses,--,"{true, false}",Cluster residential and service heat buses in `prepare_sector_network.py <https://github.com/PyPSA/pypsa-eur-sec/blob/master/scripts/prepare_sector_network.py>`_  to one to save memory.
-bev_dsm_restriction_value,--,float or str,Adds a lower state of charge (SOC) limit for battery electric vehicles (BEV) to manage its own energy demand (DSM). A str would indicate the path to a CSV file specifying custom values per country. The file should include a column for `default`. Located in `build_transport_demand.py <https://github.com/PyPSA/pypsa-eur-sec/blob/master/scripts/build_transport_demand.py>`_. Set to 0 for no restriction on BEV DSM
-bev_dsm_restriction_time,--,float,Time at which SOC of BEV has to be dsm_restriction_value
+bev_battery_central_soc,--,float or str, Sets the central state of charge (SOC) for battery electric vehicles (BEV) to oscillate around.
 transport_heating_deadband_upper,C,float,"The maximum temperature in the vehicle. At higher temperatures, the energy required for cooling in the vehicle increases."
 transport_heating_deadband_lower,C,float,"The minimum temperature in the vehicle. At lower temperatures, the energy required for heating in the vehicle increases."
 ICE_lower_degree_factor,--,float,Share increase in energy demand in internal combustion engine (ICE) for each degree difference between the cold environment and the minimum temperature.
@@ -83,7 +82,7 @@ bev_energy,--,float,The average size of battery electric vehicles (BEV) in MWh
 bev_charge_efficiency,--,float,Battery electric vehicles (BEV) charge and discharge efficiency
 bev_charge_rate,MWh,float,The power consumption for one electric vehicle (EV) in MWh. Value derived from 3-phase charger with 11 kW.
 bev_avail_max,--,float,The maximum share plugged-in availability for passenger electric vehicles.
-bev_avail_mean,--,float,The average share plugged-in availability for passenger electric vehicles.
+bev_avail_min,--,float,The minimum share plugged-in availability for passenger electric vehicles.
 v2g,--,"{true, false, float}","Allows feed-in to grid from EV battery. This is only enabled if BEV demand-side management is enabled, and the share of vehicles participating in V2G is given by `bev_dsm_availability` times the specified v2g share (1 if True)."
 land_transport_fuel_cell _share,--,Dictionary with planning horizons as keys.,The share of vehicles that uses fuel cells in a given year. Alternatively, a filepath can be given that specifies per-country fuel cell shares.
 land_transport_electric _share,--,Dictionary with planning horizons as keys.,The share of vehicles that uses electric vehicles (EV) in a given year. Alternatively, a filepath can be given that specifies per-country electrification shares.
