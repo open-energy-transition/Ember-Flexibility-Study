@@ -48,8 +48,8 @@ pypsa_eur:
   
 sector:
   bev_dsm: true
-  v2g: 0.08
-  bev_dsm_availability: 0.3
+  v2g: 0.6
+  bev_dsm_availability: 0.5
   land_transport_electric_share:
     2040: "data/ember_data/land_transport_electric_share_2040.csv"
   land_transport_ice_share:
@@ -118,7 +118,4 @@ ember_settings:
   filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities:
-    resistive_heaters: true
-    water_tanks: true
-    heat_pumps: true
+  apply_highflex_capacities: false

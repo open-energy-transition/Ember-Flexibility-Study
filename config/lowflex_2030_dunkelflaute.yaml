@@ -115,10 +115,7 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities:
-    resistive_heaters: true
-    water_tanks: true
-    heat_pumps: true
+  apply_highflex_capacities: false

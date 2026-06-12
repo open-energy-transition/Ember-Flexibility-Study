@@ -48,7 +48,7 @@ pypsa_eur:
 
 sector:
   bev_dsm: true
-  v2g: 0.31 
+  v2g: 1.0
   bev_dsm_availability: 0.7
   land_transport_electric_share:
     2040: "data/ember_data/land_transport_electric_share_2040.csv"

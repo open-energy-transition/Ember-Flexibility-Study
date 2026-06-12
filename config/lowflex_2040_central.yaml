@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2009-era5
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -48,8 +48,8 @@ pypsa_eur:
   
 sector:
   bev_dsm: true
-  v2g: 0.08
-  bev_dsm_availability: 0.3
+  v2g: 0.6
+  bev_dsm_availability: 0.5
   land_transport_electric_share:
     2040: "data/ember_data/land_transport_electric_share_2040_low.csv"
   land_transport_ice_share:
