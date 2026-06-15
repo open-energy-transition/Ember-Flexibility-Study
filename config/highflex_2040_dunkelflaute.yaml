@@ -27,6 +27,9 @@ electricity:
     enable: false
     from_gem: false
 
+  extendable_carriers:
+    Generator: [solar, solar rooftop, onwind, offwind-ac]
+
 atlite:
   default_cutout: europe-2012-sarah3-era5
 
