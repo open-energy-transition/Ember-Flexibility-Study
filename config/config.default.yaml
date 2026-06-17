@@ -1060,7 +1060,7 @@ costs:
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#clustering
 clustering:
-  mode: custom_busmap
+  mode: busmap
   administrative:
     level: 1
     countries: {}
