@@ -108,6 +108,10 @@ solving:
 costs:
   year: 2025
 
+clustering:
+  temporal:
+    resolution_elec: false
+
 ember_settings:
    ntc: false
    ntc_cross_country_pf_restriction: false
