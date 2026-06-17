@@ -1612,9 +1612,9 @@ rule prepare_sector_network:
         ),
         pop_weighted_heat_totals=resources("pop_weighted_heat_totals_s_{clusters}.csv"),
         shipping_demand=resources("shipping_demand_s_{clusters}.csv"),
-        transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
-        transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
-        avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
+        transport_demand=resources("transport_demand_s_{clusters}.csv"),
+        transport_data=resources("transport_data_s_{clusters}.csv"),
+        avail_profile=resources("avail_profile_s_{clusters}.csv"),
         heat_dsm_profile=resources(
             "residential_heat_dsm_profile_total_base_s_{clusters}.csv"
         ),
