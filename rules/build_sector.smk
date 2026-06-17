@@ -1399,7 +1399,7 @@ rule build_transport_demand:
         avail_profile=resources("avail_profile_s_{clusters}.csv"),
         dsm_profile=resources("dsm_profile_s_{clusters}.csv"),
     log:
-        logs("build_transport_demand_s_{clusters}_{planning_horizons}.log"),
+        logs("build_transport_demand_s_{clusters}.log"),
     benchmark:
         benchmarks("build_transport_demand/s_{clusters}")
     threads: 1
@@ -1701,8 +1701,8 @@ rule prepare_sector_network:
         ),
         hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
         hourly_co2_prices="data/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
-        chp_data=config_provider("ember_settings", "chp_data"),
-        ember_ntc_csv=config_provider("ember_settings", "ntc_data"),
+        chp_data=lambda w: config_provider("ember_settings", "chp_data")(w) or [],
+        ember_ntc_csv=lambda w: config_provider("ember_settings", "ntc_data")(w) or [],
         ppl_path=resources("powerplants_s_{clusters}.csv"),
         n_highflex = lambda w: (
             "results/"+highflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
