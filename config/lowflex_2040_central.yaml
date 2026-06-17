@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2009-era5
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -92,6 +92,9 @@ costs:
     enable: true
     co2: 243.8
   custom_cost_fn: data/custom_costs_ember.csv
+
+clustering:
+  mode: custom_busmap
 
 solving:
   agg_p_nom_limits:

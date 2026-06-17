@@ -1045,7 +1045,6 @@ def get_available_storage_carriers(carriers):
 def attach_storageunits(
     n: pypsa.Network,
     costs: pd.DataFrame,
-    ppl: pd.DataFrame,
     extendable_carriers: dict,
     buses_i: list,
     max_hours: dict,
@@ -1059,8 +1058,6 @@ def attach_storageunits(
         The PyPSA network to attach the storage units to.
     costs : pd.DataFrame
         DataFrame containing the cost data.
-    ppl :  pd.DataFrame
-        DataFrame containing the storage_unit data.
     extendable_carriers : dict
         Dictionary of extendable energy carriers.
     max_hours : dict
@@ -1070,8 +1067,6 @@ def attach_storageunits(
     max_hours : dict
         Dictionary of maximum hours for storage units.
     """
-
-    carriers = list(set(ppl.carrier.unique()).intersection({"H2", "battery"}))
 
     available_carriers = get_available_storage_carriers(extendable_carriers)
     n.add("Carrier", available_carriers)
@@ -1351,7 +1346,7 @@ if __name__ == "__main__":
     update_p_nom_max(n)
 
     attach_storageunits(
-        n, costs, ppl, extendable_carriers["StorageUnit"], n.buses.index, max_hours
+        n, costs, extendable_carriers["StorageUnit"], n.buses.index, max_hours
     )
     attach_stores(n, costs, n.buses.index, extendable_carriers["Store"])
 

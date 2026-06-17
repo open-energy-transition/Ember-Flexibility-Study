@@ -1761,7 +1761,8 @@ rule prepare_sector_network:
         temperature_limited_stores=config_provider(
             "sector", "district_heating", "temperature_limited_stores"
         ),
-        apply_highflex_capacities = config_provider("ember_settings", "apply_highflex_capacities"),
+        max_hours=config_provider("electricity", "max_hours"),
+        apply_highflex_capacities=config_provider("ember_settings", "apply_highflex_capacities"),
     message:
         "Preparing integrated sector-coupled energy network for {wildcards.clusters} clusters, {wildcards.planning_horizons} planning horizon, {wildcards.opts} electric options and {wildcards.sector_opts} sector options"
     script:

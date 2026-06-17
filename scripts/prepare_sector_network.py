@@ -6788,7 +6788,6 @@ if __name__ == "__main__":
 
     # Project specific changes
     ember_settings = snakemake.config.get('ember_settings', {})
-    print(ember_settings)
     if ember_settings.get('chp_data', None) is not None:
         include_chps_for_selected_countries(
             n,
@@ -6805,8 +6804,6 @@ if __name__ == "__main__":
     if ember_settings.get('add_LV_capacities', False):
         n = add_LV_capacities(n, snakemake.input.ppl_path, snakemake.params.max_hours)
 
-    country_code_map = snakemake.config.get("ember_settings", {}).get("chp_countries", {})
-    include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
     if snakemake.config.get("ember_settings", {}).get("historical_ntc", False):
        set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
        logger.info("Restrict s_nom to NTC values")
