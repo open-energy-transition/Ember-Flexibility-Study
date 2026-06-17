@@ -383,7 +383,7 @@ def add_LV_capacities(n, ppl_path, max_hours):
     for bus, cap in agg_capacity_home.items():
         store_i = bus + " home battery"
         if store_i in n.stores.index:
-            home_max_hours = max_hours.get("home_battery", 0)
+            home_max_hours = max_hours.get("home battery", 0)
             n.stores.loc[store_i, 'e_nom'] = cap * home_max_hours
             n.stores.loc[store_i, 'e_nom_min'] = cap * home_max_hours
             n.stores.loc[store_i, 'e_nom_extendable'] = False

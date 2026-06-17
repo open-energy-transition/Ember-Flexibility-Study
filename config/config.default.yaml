@@ -91,7 +91,7 @@ electricity:
     contingency: 4000
   max_hours:
     battery: 4
-    home_battery: 2.5
+    "home battery": 2.5
     "li-ion": 6
     lfp: 6
     vanadium: 10
