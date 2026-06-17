@@ -1065,10 +1065,8 @@ def attach_storageunits(
         Dictionary of extendable energy carriers.
     max_hours : dict
         Dictionary of maximum hours for storage units.
-    """
     buses_i : list
         List of high voltage electricity buses.
-
     max_hours : dict
         Dictionary of maximum hours for storage units.
     """
@@ -1352,18 +1350,13 @@ if __name__ == "__main__":
 
     update_p_nom_max(n)
 
-<<<<<<< HEAD
-    attach_storageunits(n, costs, ppl, extendable_carriers, max_hours)
-    attach_stores(n, costs, extendable_carriers)
-=======
     attach_storageunits(
-        n, costs, n.buses.index, extendable_carriers["StorageUnit"], max_hours
+        n, costs, ppl, extendable_carriers["StorageUnit"], n.buses.index, max_hours
     )
     attach_stores(n, costs, n.buses.index, extendable_carriers["Store"])
 
     if params.electricity.get("estimate_battery_capacities", False):
         attach_existing_batteries(n, costs, ppl)
->>>>>>> update_master
 
     sanitize_carriers(n, snakemake.config)
     if "location" in n.buses:
