@@ -6594,7 +6594,7 @@ if __name__ == "__main__":
     if options["allam_cycle_gas"]:
         add_allam_gas(n, costs, pop_layout=pop_layout, spatial=spatial)
         
-    if snakemake.config["ember_settings"].get("ember_gas_price", False):
+    if snakemake.config.get("ember_settings", {}).get("ember_gas_price", False):
         apply_hourly_fuel_prices(
             n, carriers=["gas", "coal", "lignite"], fn_hourly_prices=snakemake.input.hourly_fuel_costs
         )
@@ -6693,10 +6693,10 @@ if __name__ == "__main__":
 
     sanitize_carriers(n, snakemake.config)
     sanitize_locations(n)
-    if snakemake.config["ember_settings"].get("ramping", False):
+    if snakemake.config.get("ember_settings", {}).get("ramping", False):
         apply_custom_ramping(n)
         logger.info("Ramping constraints applied to relevant units.")
-    if snakemake.config["ember_settings"].get("nuclear_decommissioning", False):
+    if snakemake.config.get("ember_settings", {}).get("nuclear_decommissioning", False):
         logger.warning(
             "Decommissioning relevant nuclear units mid-year will only work "
             "if they are represented at a unit granularity."
@@ -6711,7 +6711,7 @@ if __name__ == "__main__":
         for carrier in n.carriers.index.intersection(costs.index):
             n.carriers.loc[carrier, "co2_emissions"] = costs.loc[carrier, "CO2 intensity"]
 
-        if snakemake.config["ember_settings"].get("hourly_carbon_prices", False):
+        if snakemake.config.get("ember_settings", {}).get("hourly_carbon_prices", False):
             hourly_emission_prices_fn = snakemake.input.hourly_co2_prices
         else:
             hourly_emission_prices_fn = None
@@ -6719,13 +6719,13 @@ if __name__ == "__main__":
         add_emission_prices(
             n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
         )
-    country_code_map = snakemake.config['ember_settings'].get('chp_countries', {})
+    country_code_map = snakemake.config.get("ember_settings", {}).get("chp_countries", {})
     include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
-    if snakemake.config['ember_settings'].get('historical_ntc', False):
+    if snakemake.config.get("ember_settings", {}).get("historical_ntc", False):
        set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
        logger.info("Restrict s_nom to NTC values")
 
-    if snakemake.config["ember_settings"].get("ember_gas_price", False):
+    if snakemake.config.get("ember_settings", {}).get("ember_gas_price", False):
         apply_hourly_price_fix(n)
 
     n.export_to_netcdf(snakemake.output[0])

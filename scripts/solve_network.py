@@ -1259,7 +1259,7 @@ def extra_functionality(
         add_SAFE_constraints(n, config)
     if constraints["CCL"] and n.generators.p_nom_extendable.any():
         add_CCL_constraints(n, config, planning_horizons)
-    if config["ember_settings"].get("ntc_cross_country_pf_restriction", False):
+    if config.get("ember_settings", {}).get("ntc_cross_country_pf_restriction", False):
         apply_custom_pf_constraint(n)
 
     reserve = config["electricity"].get("operational_reserve", {})
@@ -1514,12 +1514,10 @@ if __name__ == "__main__":
         rolling_horizon=cf_solving["rolling_horizon"],
     )
 
-<<<<<<< HEAD
-    if snakemake.config["ember_settings"].get("hourly_price_fix", False):
+    if snakemake.config.get("ember_settings", {}).get("hourly_price_fix", False):
         apply_hourly_price_fix(n)
         logger.info("Removed gas, coal and lignite store components to accomodate for hourly price fix adjustments.") 
 
-=======
     # Determine solve mode
     rolling_horizon = cf_solving.get("rolling_horizon", False)
     skip_iterations = cf_solving.get("skip_iterations", False)
@@ -1527,7 +1525,6 @@ if __name__ == "__main__":
     if not n.lines.s_nom_extendable.any():
         skip_iterations = True
         logger.info("No expandable lines found. Skipping iterative solving.")
->>>>>>> upstream/master
 
     logging_frequency = snakemake.config.get("solving", {}).get(
         "mem_logging_frequency", 30
