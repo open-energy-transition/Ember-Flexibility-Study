@@ -5,9 +5,12 @@
 
 master
 
+.env
+
 .snakemake*
 .ipynb_checkpoints
 __pycache__
+*.egg-info
 *dconf
 gurobi.log
 .vscode
@@ -26,6 +29,8 @@ gurobi.log
 /cutouts
 /tmp
 doc/_build
+/validation
+_build
 
 
 /scripts/old
@@ -35,7 +40,6 @@ doc/_build
 config/config.yaml
 config/scenarios.yaml
 
-dconf
 /data/links_p_nom.csv
 /data/*totals.csv
 /data/biomass*
@@ -48,7 +52,6 @@ dconf
 /data/transport_data.csv
 /data/.nfs*
 /data/retro/*
-/data/bundle/nuts*
 data/gas_network/scigrid-gas/
 data/costs_*.csv
 
@@ -69,6 +72,8 @@ report/*.toc
 *.nc
 
 *~
+
+*.egg-info
 
 *.pyc
 
@@ -108,6 +113,11 @@ CLAUDE.md
 .claude/
 .github/copilot-instructions.md
 CLAUDE.local.md
+# generated DAGs for docs
+doc/img/dag_*.svg
+doc/img/workflow.svg
+doc/img/intro-workflow.svg
+
 # pixi environments
 .pixi/*
 !.pixi/config.toml
