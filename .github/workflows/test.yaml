@@ -124,7 +124,7 @@ jobs:
         SNAKEMAKE_STORAGE_CACHED_HTTP_CACHE: ""
         SNAKEMAKE_STORAGE_CACHED_HTTP_SKIP_REMOTE_CHECKS: "1"
       run: |
-        make ember-test
+        pixi run make ember-test
 
     - name: Upload artifacts
       if: always()
