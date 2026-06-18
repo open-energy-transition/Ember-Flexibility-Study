@@ -14,9 +14,9 @@ scenario:
   clusters:
   - 10
   opts:
-  - 'Co2L-168H'
+  - ""
   sector_opts:
-  - 'Co2L-168H'
+  - ""
   planning_horizons:
   - 2025
 
@@ -107,6 +107,11 @@ solving:
 
 costs:
   year: 2025
+
+clustering:
+  temporal:
+    resolution_elec: false
+    resolution_sector: "168H"
 
 ember_settings:
    ntc: false
