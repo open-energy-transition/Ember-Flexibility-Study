@@ -164,11 +164,16 @@ def apply_custom_pf_constraint(n,
     m.add_constraints(energy <= E_max, name=f"{link_name}_annual_max")
     
     
-def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map):
-    focus_full= country_code_map.keys()
+def include_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_map, filter_chps):
+
+    focus_full = country_code_map.keys()
+
     df = pd.read_csv(CHP_ppl_fn, encoding='latin-1').rename(columns={'lon': 'x', 'lat': 'y'})
-    df = df.query("type == 'chp' and status == 'operating' and bus in @focus_full")
-    carrier_mapping = {'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas'}
+    df = df.query(filter_chps)
+    carrier_mapping = {
+        'Hard coal': 'coal', 'Lignite': 'lignite', 'Gas':'gas',
+        'hard coal': 'coal', 'lignite': 'lignite', 'gas': 'gas'
+    }
     
     for orig_carrier in df['carrier'].unique():
         if orig_carrier not in carrier_mapping:
@@ -178,15 +183,19 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
         n.add("Carrier", f"urban central {map_carrier} CHP", overwrite=True)
         sub_df['country'] = sub_df['bus'].map(country_code_map)
         sub_df = sub_df.dropna(subset=['country', 'x', 'y'])
+        if sub_df.empty:
+            continue
         unique_countries = sub_df['country'].unique()
         power_buses = n.buses.query("carrier == 'AC' and country in @unique_countries")[['x', 'y', 'country']]
         power_buses = power_buses.reset_index().rename(
-                  columns={
-                              'Bus': 'bus_id', 
-                              'x': 'bus_x',    
-                              'y': 'bus_y'      
-                          }
-                                                       )
+            columns={
+                'Bus': 'bus_id',
+                'name': 'bus_id',
+                'x': 'bus_x',
+                'y': 'bus_y'
+            }
+        )
+                                                       
         if power_buses.empty:
             continue
         sub_df = sub_df.reset_index(drop=True)
@@ -214,30 +223,31 @@ def include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn, country_code_
             n.add(
                 "Link",
                 link_names,
-                bus0=f"EU {map_carrier}",
+                bus0=[f"EU {map_carrier}"] * len(nearest_pairs),
                 bus1=nearest_pairs['nearest_bus'].tolist(),
                 bus2=nearest_pairs['heat_bus'].tolist(),
-                bus3="co2 atmosphere",
-                carrier=f"urban central {map_carrier} CHP",
-                p_nom_extendable=False,
+                bus3=["co2 atmosphere"] * len(nearest_pairs),
+                carrier=[f"urban central {map_carrier} CHP"] * len(nearest_pairs),
+                p_nom_extendable=[False] * len(nearest_pairs),
                 p_nom=(nearest_pairs['p_nom'] / nearest_pairs['eff']).tolist(),
-                capital_cost=0,
-                marginal_cost=costs.at[map_carrier, 'VOM'],
+                capital_cost=[0] * len(nearest_pairs),
+                marginal_cost=[costs.at[map_carrier, 'VOM']] * len(nearest_pairs),
                 efficiency=nearest_pairs['eff'].tolist(),
                 efficiency2=nearest_pairs['heat_eff'].tolist(),
-                efficiency3=costs.at[map_carrier, 'CO2 intensity'],
-                lifetime=25,
-                reversed=False
+                efficiency3=[costs.at[map_carrier, 'CO2 intensity']] * len(nearest_pairs),
+                lifetime=[25] * len(nearest_pairs),
+                reversed=[False] * len(nearest_pairs)
             )
             logger.info(f"Added {len(link_names)} {map_carrier} CHPs")
 
 def set_line_s_nom_to_ntc(n, ntc_fn):
-   
     """
     Scale interconnection capacities between country pairs to match target NTCs.
+
     This function reads a CSV of Net Transfer Capacities (NTC) between countries
     and then enforces the target NTC (MW) for each country pair found in both the
     CSV and the network.
+
     If DC Links exist between the two country bus sets:
         * Treat directions separately
         * For each direction, set the sum of all p_nom over links in that direction
@@ -248,9 +258,9 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
     Else if AC Lines exist between the country bus sets (but no DC Links):
          * Uniformly scale their `s_nom` such that the sum of s_nom equals
            the target NTC. If the current sum is zero, distribute NTC evenly.
-    If neither Lines nor Links exist, add new DC Links in both directions,
-    each with p_nom equal to the target NTC.
+
     Pairs with NTC == 0 are skipped.
+
     Parameters
     ----------
     n : pypsa.Network
@@ -259,17 +269,18 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         Path to CSV with columns:
         - `source_country_code` (ISO3),
         - `target_country_code` (ISO3),
-        - `NTC_2030_MW` (numeric, MW).
+        - `ntc_mw` (numeric, MW).
+
     Returns
     -------
     None
         The network `n` is modified in place.
     """
-    n_clusters = len(n.buses.query("carrier == 'AC'"))
-    if n_clusters > 39:
-         raise ValueError("This feature doesn't work for n_clusters > 39")
+
     df = pd.read_csv(ntc_fn)
+
     cc = coco.CountryConverter()
+    
     df['source_iso2'] = cc.convert(names=df['source_country_code'], src="ISO3", to="ISO2")
     df['target_iso2'] = cc.convert(names=df['target_country_code'], src="ISO3", to="ISO2")
     df = df.dropna(subset=['source_iso2', 'target_iso2'])
@@ -278,7 +289,7 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
         pair = tuple(sorted([row['source_iso2'], row['target_iso2']]))
         pairs.append(pair)
     df['pair'] = pairs
-    pair_to_ntc = df.groupby('pair')['NTC_2030_MW'].mean()
+    pair_to_ntc = df.groupby('pair')['ntc_mw'].mean()
     focus_countries = list(set(df['source_iso2']).union(df['target_iso2']).intersection(set(n.buses.country.unique())))
     for pair, ntc in pair_to_ntc.items():
         if ntc == 0:
@@ -288,67 +299,53 @@ def set_line_s_nom_to_ntc(n, ntc_fn):
             continue
         if country1 not in focus_countries or country2 not in focus_countries:
             continue
+
         buses1 = n.buses.query('country == @country1').index
         buses2 = n.buses.query('country == @country2').index
         lines_between = n.lines.query('(bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1)')
         links_between = n.links.query("carrier == 'DC' and ((bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1))")
+
         updated = False
         removed = False
         line_or_link = None
         if not links_between.empty:
-            links_between['reversed'] = (links_between.bus0.isin(buses2) & links_between.bus1.isin(buses1))
             current_total_p_nom_1 = links_between.query("reversed == False")['p_nom'].sum()
             current_total_p_nom_2 = links_between.query("reversed == True")['p_nom'].sum()
             if current_total_p_nom_1 > 0:
                 scale_factor = ntc / current_total_p_nom_1
                 direction = links_between.query("reversed == False").index
-                n.links.loc[direction, 'p_nom'] *= scale_factor
+                n.links.loc[direction, ['p_nom', 'p_nom_min']] *= scale_factor
             else:
                 direction = links_between.query("reversed == False").index
-                n.links.loc[direction, 'p_nom'] = ntc / len(direction)
+                n.links.loc[direction, ['p_nom', 'p_nom_min']] = ntc / len(direction)
             if current_total_p_nom_2 > 0:
                 scale_factor = ntc / current_total_p_nom_2
                 direction = links_between.query("reversed == True").index
-                n.links.loc[direction, 'p_nom'] *= scale_factor
+                n.links.loc[direction, ['p_nom', 'p_nom_min']] *= scale_factor
             else:
                 direction = links_between.query("reversed == True").index
-                n.links.loc[direction, 'p_nom'] = ntc / len(direction)
+                n.links.loc[direction, ['p_nom', 'p_nom_min']] = ntc / len(direction)
             updated = True
             line_or_link = "Link"
         if (updated) and (not lines_between.empty):
             removed = True
             removed_lines = lines_between.index
             n.remove("Line", removed_lines)
+            # lines_between should be empty now
             lines_between = n.lines.query('(bus0 in @buses1 and bus1 in @buses2) or (bus0 in @buses2 and bus1 in @buses1)')
         if (not updated) and (not lines_between.empty):
             current_total_s_nom = lines_between['s_nom'].sum()
             if current_total_s_nom > 0:
                 scale_factor = ntc / current_total_s_nom
-                n.lines.loc[lines_between.index, 's_nom'] *= scale_factor
+                n.lines.loc[lines_between.index, ['s_nom', 's_nom_min']] *= scale_factor
             else:
-                n.lines.loc[lines_between.index, 's_nom'] = ntc / len(lines_between)
+                n.lines.loc[lines_between.index, ['s_nom', 's_nom_min']] = ntc / len(lines_between)
             updated = True
             line_or_link = "Line"
-        if not updated:
-            # No existing connections: add new DC links in both directions
-            if not buses1.empty and not buses2.empty:
-                bus_from_1 = buses1[0]
-                bus_to_1 = buses2[0]
-                link_name_1 = f"Link {country1}-{country2}"
-                n.add("Link", link_name_1, bus0=bus_from_1, bus1=bus_to_1, carrier="DC", p_nom=ntc)
-                bus_from_2 = buses2[0]
-                bus_to_2 = buses1[0]
-                link_name_2 = f"Link {country2}-{country1}"
-                n.add("Link", link_name_2, bus0=bus_from_2, bus1=bus_to_2, carrier="DC", p_nom=ntc)
-                updated = True
-                line_or_link = "Link"
-                logger.info(f"Added new DC links '{link_name_1}' and '{link_name_2}' with capacity {ntc} MW each between {country1} and {country2}")
-            else:
-                logger.warning(f"Cannot add links between {country1} and {country2}: missing buses in one or both countries")
         if updated:
             logger.info(f"Set {line_or_link} capacity to a total of {ntc} MW for interconnections between {country1} and {country2}")
         else:
-            logger.warning(f"No interconnections found or added between {country1} and {country2}")
+            logger.warning(f"No interconnections found between {country1} and {country2}")
         if removed:
             logger.info(f"Removed lines {removed_lines}, because there was already a valid link connection {links_between.index}.")
 
@@ -360,3 +357,99 @@ def apply_hourly_price_fix(n):
             logger.info(
                 f"Removing {store} to account for hourly prices for {store.split(" ")[1]}."
             )
+
+
+def add_LV_capacities(n, ppl, max_hours):
+    # For rooftop solar
+    rooftop_df = ppl[(ppl['carrier'].str.strip().str.lower() == 'solar btm')]
+    agg_capacity_rooftop = rooftop_df.groupby('bus')['p_nom'].sum()
+
+    for bus, cap in agg_capacity_rooftop.items():
+        rooftop_bus = bus + ' low voltage'
+        matching_gens = n.generators[(n.generators.bus == rooftop_bus) & (n.generators.carrier == 'solar rooftop')]
+        if not matching_gens.empty:
+            num = len(matching_gens)
+            add_cap = cap / num 
+            n.generators.loc[matching_gens.index, 'p_nom'] = add_cap
+            n.generators.loc[matching_gens.index, 'p_nom_min'] = add_cap
+            n.generators.loc[matching_gens.index, 'p_nom_extendable'] = False
+        else:
+            logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
+
+   # Home batteries
+    home_battery_df = ppl[(ppl['carrier'].str.strip().str.lower() == 'home battery')]
+    agg_capacity_home = home_battery_df.groupby('bus')['p_nom'].sum()
+    for bus, cap in agg_capacity_home.items():
+        store_i = bus + " home battery"
+        if store_i in n.stores.index:
+            home_max_hours = max_hours.get("home battery", 0)
+            n.stores.loc[store_i, 'e_nom'] = cap * home_max_hours
+            n.stores.loc[store_i, 'e_nom_min'] = cap * home_max_hours
+            n.stores.loc[store_i, 'e_nom_extendable'] = False
+        else:
+            logger.warning(f"No home battery store at bus {bus}.")
+
+        charger_i = bus + " home battery charger"
+        if charger_i in n.links.index:
+            n.links.loc[charger_i, 'p_nom'] = cap
+            n.links.loc[charger_i, 'p_nom_min'] = cap
+            n.links.loc[charger_i, 'p_nom_extendable'] = False
+        else:
+            logger.warning(f"No home battery charger at bus {bus}.")
+
+        discharger_i = bus + " home battery discharger"
+        if discharger_i in n.links.index:
+            n.links.loc[discharger_i, 'p_nom'] = cap
+            n.links.loc[discharger_i, 'p_nom_min'] = cap
+            n.links.loc[discharger_i, 'p_nom_extendable'] = False
+        else:
+            logger.warning(f"No home battery discharger at bus {bus}.")
+
+    # make all remaining ones non-extendable
+    hb_store_idx = n.stores.query("carrier == 'home battery'").index
+    hb_charg_idx = n.links.query("carrier == 'home battery charger'").index
+    hb_disch_idx = n.links.query("carrier == 'home battery discharger'").index
+    n.stores.loc[hb_store_idx, "e_nom_extendable"] = False
+    n.links.loc[hb_charg_idx, "p_nom_extendable"] = False
+    n.links.loc[hb_disch_idx, "p_nom_extendable"] = False
+
+    return n
+
+
+def apply_scenario_capacities(n, n_scenario, scenario_capacities):
+
+    if scenario_capacities.get("resistive_heaters", False):
+        rh_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("resistive heater")].p_nom_opt
+        n.links.loc[rh_capacities.index, "p_nom"] = rh_capacities
+        n.links.loc[rh_capacities.index, "p_nom_min"] = rh_capacities
+        n.links.loc[rh_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying resistive heater capacities from other scenario run."
+        )
+
+    if scenario_capacities.get("water_tanks", False):
+        tank_capacities = n_scenario.stores[n_scenario.stores.carrier.str.contains("water")].e_nom_opt
+        n.stores.loc[tank_capacities.index, "e_nom"] = tank_capacities
+        n.stores.loc[tank_capacities.index, "e_nom_min"] = tank_capacities
+        n.stores.loc[tank_capacities.index, "e_nom_extendable"] = False
+        logger.info(
+            "Applying water tank and water pit capacities from other scenario run."
+        )
+
+    if scenario_capacities.get("heat_pumps", False):
+        hp_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("heat pump")].p_nom_opt
+        n.links.loc[hp_capacities.index, "p_nom"] = hp_capacities
+        n.links.loc[hp_capacities.index, "p_nom_min"] = hp_capacities
+        n.links.loc[hp_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying heat pump capacities from other scenario run."
+        )
+
+    if scenario_capacities.get("biomass_boiler", False):
+        bio_capacities = n_scenario.links[n_scenario.links.carrier.str.contains("biomass boiler")].p_nom_opt
+        n.links.loc[bio_capacities.index, "p_nom"] = bio_capacities
+        n.links.loc[bio_capacities.index, "p_nom_min"] = bio_capacities
+        n.links.loc[bio_capacities.index, "p_nom_extendable"] = False
+        logger.info(
+            "Applying biomass boiler capacities from other scenario run."
+        )

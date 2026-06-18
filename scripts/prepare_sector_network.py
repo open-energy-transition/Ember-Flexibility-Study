@@ -11,7 +11,6 @@ import logging
 import os
 from itertools import product
 from types import SimpleNamespace
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -30,6 +29,7 @@ from scripts._helpers import (
     update_config_from_wildcards,
 )
 from scripts.add_electricity import (
+    load_and_aggregate_powerplants,
     attach_storageunits,
     attach_stores,
     calculate_annuity,
@@ -45,15 +45,17 @@ from scripts.build_energy_totals import (
 from scripts.build_transport_demand import transport_degree_factor
 from scripts.definitions.heat_sector import HeatSector
 from scripts.definitions.heat_system import HeatSystem
-from scripts.prepare_network import maybe_adjust_costs_and_potentials, add_emission_prices
+from scripts.prepare_network import maybe_adjust_costs_and_potentials
 
 from scripts.ember_customization import (
     apply_custom_ramping,
     apply_2023_nuclear_decommissioning,
     apply_hourly_fuel_prices,
     apply_hourly_price_fix,
-    include_coal_chps_for_selected_countries,
-    set_line_s_nom_to_ntc
+    include_chps_for_selected_countries,
+    set_line_s_nom_to_ntc,
+    add_LV_capacities,
+    apply_scenario_capacities
 )
 
 spatial = SimpleNamespace()
@@ -1904,6 +1906,7 @@ def add_h2_gas_infrastructure(
     if (
         not h2_caverns.empty
         and options["hydrogen_underground_storage"]
+        and "H2" in snakemake.params.electricity["extendable_carriers"].get("Store", [])
         and set(cavern_types).intersection(h2_caverns.columns)
     ):
         h2_caverns = h2_caverns[cavern_types].sum(axis=1)
@@ -1933,20 +1936,22 @@ def add_h2_gas_infrastructure(
             lifetime=costs.at["hydrogen storage underground", "lifetime"],
         )
 
-    # hydrogen stored overground (where not already underground)
-    tech = "hydrogen storage tank type 1 including compressor"
-    nodes_overground = h2_caverns.index.symmetric_difference(nodes)
+    if "H2" in snakemake.params.electricity["extendable_carriers"].get("Store", []):
 
-    n.add(
-        "Store",
-        nodes_overground + " H2 Store",
-        bus=nodes_overground + " H2",
-        e_nom_extendable=True,
-        e_cyclic=True,
-        carrier="H2 Store",
-        capital_cost=costs.at[tech, "capital_cost"],
-        lifetime=costs.at[tech, "lifetime"],
-    )
+        # hydrogen stored overground (where not already underground)
+        tech = "hydrogen storage tank type 1 including compressor"
+        nodes_overground = h2_caverns.index.symmetric_difference(nodes)
+
+        n.add(
+            "Store",
+            nodes_overground + " H2 Store",
+            bus=nodes_overground + " H2",
+            e_nom_extendable=True,
+            e_cyclic=True,
+            carrier="H2 Store",
+            capital_cost=costs.at[tech, "capital_cost"],
+            lifetime=costs.at[tech, "lifetime"],
+        )
 
     if options["H2_retrofit"]:
         gas_pipes = pd.read_csv(clustered_gas_network_file, index_col=0)
@@ -2122,6 +2127,46 @@ def add_h2_gas_infrastructure(
             lifetime=costs.at["H2 (g) pipeline", "lifetime"],
         )
 
+    if "battery" in snakemake.params.electricity["extendable_carriers"].get("Store", []):
+
+        n.add("Carrier", "battery")
+
+        n.add("Bus", nodes + " battery", location=nodes, carrier="battery", unit="MWh_el")
+
+        n.add(
+            "Store",
+            nodes + " battery",
+            bus=nodes + " battery",
+            e_cyclic=True,
+            e_nom_extendable=True,
+            carrier="battery",
+            capital_cost=costs.at["battery storage", "capital_cost"],
+            lifetime=costs.at["battery storage", "lifetime"],
+        )
+
+        n.add(
+            "Link",
+            nodes + " battery charger",
+            bus0=nodes,
+            bus1=nodes + " battery",
+            carrier="battery charger",
+            efficiency=costs.at["battery inverter", "efficiency"] ** 0.5,
+            capital_cost=costs.at["battery inverter", "capital_cost"],
+            p_nom_extendable=True,
+            lifetime=costs.at["battery inverter", "lifetime"],
+        )
+
+        n.add(
+            "Link",
+            nodes + " battery discharger",
+            bus0=nodes + " battery",
+            bus1=nodes,
+            carrier="battery discharger",
+            efficiency=costs.at["battery inverter", "efficiency"] ** 0.5,
+            p_nom_extendable=True,
+            lifetime=costs.at["battery inverter", "lifetime"],
+        )
+
     if options["methanation"]:
         n.add(
             "Link",
@@ -2202,10 +2247,10 @@ def add_h2_gas_infrastructure(
 
 def check_land_transport_shares(shares):
     # Sums up the shares, ignoring None values
-    total_share = sum(filter(None, shares))
-    if total_share != 1:
+    total_share = shares.sum(axis=1)
+    if total_share.mean() != 1:
         logger.warning(
-            f"Total land transport shares sum up to {total_share:.2%},"
+            f"Total land transport shares sum up to {total_share[total_share != 1]},"
             "corresponding to increased or decreased demand assumptions."
         )
 
@@ -2239,7 +2284,6 @@ def get_temp_efficency(
 def add_EVs(
     n: pypsa.Network,
     avail_profile: pd.DataFrame,
-    dsm_profile: pd.DataFrame,
     p_set: pd.Series,
     electric_share: pd.Series,
     number_cars: pd.Series,
@@ -2333,6 +2377,8 @@ def add_EVs(
     efficiency *= cyclic_eff
 
     # Calculate load profile
+    country_prefix = p_set.columns.str[:2]
+    electric_share = country_prefix.map(electric_share)
     profile = electric_share * p_set.div(efficiency)
 
     # Add EV load
@@ -2360,42 +2406,60 @@ def add_EVs(
         efficiency=options["bev_charge_efficiency"],
     )
 
-    # Add demand-side management components if enabled
-    if options["bev_dsm"]:
-        e_nom = (
-            number_cars
-            * options["bev_energy"]
-            * options["bev_dsm_availability"]
-            * electric_share
+    # Create BEV battery availability profile
+    e_nom = (
+        number_cars
+        * options["bev_energy"]
+        * electric_share
+    )
+    p_nom_t = p_nom * avail_profile
+    p_flow_t = p_nom_t * (
+        profile.groupby(profile.index.date).transform("sum") /
+        p_nom_t.groupby(p_nom_t.index.date).transform("sum")
         )
+    e_soc = ((p_flow_t.cumsum(axis=0) - profile.cumsum(axis=0)) / e_nom).shift(1).fillna(0) + options["bev_battery_central_soc"]
+    e_max_pu = (e_soc * 1.000001).clip(upper=1)
+    e_min_pu = (e_soc * 0.999999).clip(lower=0)
 
-        n.add(
-            "Store",
-            spatial.nodes,
-            suffix=" EV battery",
-            bus=spatial.nodes + " EV battery",
-            carrier="EV battery",
-            e_cyclic=True,
-            e_nom=e_nom,
-            e_max_pu=1,
-            e_min_pu=dsm_profile.loc[n.snapshots, spatial.nodes],
-        )
+    # Add BEV charging flexibility
+    if options["bev_dsm"]:
+        e_soc_dev = ((e_soc.max(axis=0) - e_soc.min(axis=0)) * options["bev_dsm_availability"] * 0.5).squeeze()
+        e_max_pu = e_soc.add(e_soc_dev, axis=1).clip(upper=1)
+        e_min_pu = e_soc.sub(e_soc_dev, axis=1).clip(lower=0)
 
         # Add vehicle-to-grid if enabled
-        if options["v2g"]:
+        if options["v2g"] or options["v2g"] in (True, 1):
+            v2g_share = float(options["v2g"])
+            if v2g_share > 1:
+                logging.warning(
+                    f"Value {v2g_share} exceeds 1.0. This assumes that more than 100% of EVs "
+                    f"that contribute to DSM can also contribute back to the grid."
+                )
             n.add(
                 "Link",
                 spatial.nodes,
                 suffix=" V2G",
                 bus1=spatial.nodes,
                 bus0=spatial.nodes + " EV battery",
-                p_nom=p_nom * options["bev_dsm_availability"],
+                p_nom=p_nom * options["bev_dsm_availability"] * v2g_share,
                 carrier="V2G",
                 p_max_pu=avail_profile.loc[n.snapshots, spatial.nodes],
                 lifetime=1,
                 efficiency=options["bev_charge_efficiency"],
             )
 
+    n.add(
+        "Store",
+        spatial.nodes,
+        suffix=" EV battery",
+        bus=spatial.nodes + " EV battery",
+        carrier="EV battery",
+        e_cyclic=True,
+        e_nom=e_nom,
+        e_max_pu=e_max_pu.loc[n.snapshots, spatial.nodes],
+        e_min_pu=e_min_pu.loc[n.snapshots, spatial.nodes],
+    )
+        
 
 def add_fuel_cell_cars(
     n: pypsa.Network,
@@ -2464,6 +2528,8 @@ def add_fuel_cell_cars(
     )
 
     # Calculate hydrogen demand profile
+    country_prefix = p_set.columns.str[:2]
+    fuel_cell_share = country_prefix.map(fuel_cell_share)
     profile = fuel_cell_share * p_set.div(efficiency)
 
     # Add hydrogen load for fuel cell vehicles
@@ -2557,6 +2623,8 @@ def add_ice_cars(
     )
 
     # Calculate oil demand profile
+    country_prefix = p_set.columns.str[:2]
+    ice_share = country_prefix.map(ice_share)
     profile = ice_share * p_set.div(efficiency).rename(
         columns=lambda x: x + " land transport oil"
     )
@@ -2601,7 +2669,6 @@ def add_land_transport(
     transport_demand_file,
     transport_data_file,
     avail_profile_file,
-    dsm_profile_file,
     temp_air_total_file,
     cf_industry,
     options,
@@ -2623,8 +2690,6 @@ def add_land_transport(
         Path to CSV file containing number of cars per region
     avail_profile_file : str
         Path to CSV file containing availability profiles
-    dsm_profile_file : str
-        Path to CSV file containing demand-side management profiles
     temp_air_total_file : str
         Path to netCDF file containing air temperature data
     options : dict
@@ -2656,16 +2721,29 @@ def add_land_transport(
     transport = pd.read_csv(transport_demand_file, index_col=0, parse_dates=True)
     number_cars = pd.read_csv(transport_data_file, index_col=0)["number cars"]
     avail_profile = pd.read_csv(avail_profile_file, index_col=0, parse_dates=True)
-    dsm_profile = pd.read_csv(dsm_profile_file, index_col=0, parse_dates=True)
 
     # exogenous share of passenger car type
     engine_types = ["fuel_cell", "electric", "ice"]
-    shares = pd.Series()
+    shares = pd.DataFrame(index=n.buses.country.unique(), columns=engine_types, data=0)
+    shares = shares.loc[shares.index.notna()]
     for engine in engine_types:
         share_key = f"land_transport_{engine}_share"
-        shares[engine] = get(options[share_key], investment_year)
+        if isinstance(get(options[share_key], investment_year), str):
+            engine_shares = pd.read_csv(
+                get(options[share_key], investment_year), index_col=[0]
+            )
+            given_countries = list(
+                set(shares.index).intersection(set(engine_shares.index))
+            )
+            shares.loc[given_countries, engine] = engine_shares.loc[given_countries].values
+            missing_countries = list(
+                set(shares.index) - set(engine_shares.index)
+            )
+            shares.loc[missing_countries, engine] = engine_shares.loc["default"].values[0]
+        else:
+            shares[engine] = get(options[share_key], investment_year)
         if logger:
-            logger.info(f"{engine} share: {shares[engine] * 100}%")
+            logger.info(f"average {engine} share: {shares[engine].mean() * 100}%")
 
     check_land_transport_shares(shares)
 
@@ -2674,11 +2752,10 @@ def add_land_transport(
     # temperature for correction factor for heating/cooling
     temperature = xr.open_dataarray(temp_air_total_file).to_pandas()
 
-    if shares["electric"] > 0:
+    if (shares["electric"] > 0).any():
         add_EVs(
             n,
             avail_profile,
-            dsm_profile,
             p_set,
             shares["electric"],
             number_cars,
@@ -2687,7 +2764,7 @@ def add_land_transport(
             options,
         )
 
-    if shares["fuel_cell"] > 0:
+    if (shares["fuel_cell"] > 0).any():
         add_fuel_cell_cars(
             n=n,
             p_set=p_set,
@@ -2696,7 +2773,7 @@ def add_land_transport(
             options=options,
             spatial=spatial,
         )
-    if shares["ice"] > 0:
+    if (shares["ice"] > 0).any():
         add_ice_cars(
             n,
             costs,
@@ -3015,7 +3092,7 @@ def add_heat(
                 "restriction_value"
             ].get(investment_year)
             heat_dsm_profile = heat_dsm_profile * heat_dsm_restriction_value
-            e_nom = e_nom.max()
+            e_nom = e_nom.groupby(e_nom.index.date).sum().max()
 
             # Allow to overshoot or undercool the target temperatures / heat demand in dsm
             e_min_pu, e_max_pu = 0, 0
@@ -5865,12 +5942,7 @@ def set_temporal_aggregation(n, resolution, snapshot_weightings):
             pnl = getattr(m, c.list_name + "_t")
             for k, df in c.dynamic.items():
                 if not df.empty:
-                    if c.list_name == "stores" and k == "e_max_pu":
-                        pnl[k] = df.groupby(aggregation_map).min()
-                    elif c.list_name == "stores" and k == "e_min_pu":
-                        pnl[k] = df.groupby(aggregation_map).max()
-                    else:
-                        pnl[k] = df.groupby(aggregation_map).mean()
+                    pnl[k] = df.groupby(aggregation_map).mean()
 
         return m
 
@@ -6436,12 +6508,21 @@ if __name__ == "__main__":
     extendable_storageunits = list(set(ext_carriers.get("StorageUnit", [])) - {"H2"})
     extendable_stores = list(set(ext_carriers.get("Store", [])) - {"H2"})
 
+    ppl = load_and_aggregate_powerplants(
+        snakemake.input.powerplants,
+        costs,
+        snakemake.params.consider_efficiency_classes,
+        snakemake.params.aggregation_strategies,
+        snakemake.params.exclude_carriers,
+    )
+
     attach_storageunits(
         n=n,
         costs=costs,
         buses_i=pop_layout.index,
         extendable_carriers=extendable_storageunits,
         max_hours=max_hours,
+        ppl=ppl,
     )
 
     attach_stores(
@@ -6458,7 +6539,6 @@ if __name__ == "__main__":
             transport_demand_file=snakemake.input.transport_demand,
             transport_data_file=snakemake.input.transport_data,
             avail_profile_file=snakemake.input.avail_profile,
-            dsm_profile_file=snakemake.input.dsm_profile,
             temp_air_total_file=snakemake.input.temp_air_total,
             cf_industry=cf_industry,
             options=options,
@@ -6716,16 +6796,40 @@ if __name__ == "__main__":
         else:
             hourly_emission_prices_fn = None
 
-        add_emission_prices(
-            n, emission_prices=emission_prices, hourly_emission_prices_fn=hourly_emission_prices_fn
+    # Project specific changes
+    ember_settings = snakemake.config.get('ember_settings', {})
+    if ember_settings.get('chp_data', None) is not None:
+        include_chps_for_selected_countries(
+            n,
+            costs,
+            CHP_ppl_fn=snakemake.input.chp_data,
+            country_code_map=ember_settings.get('chp_countries', {}),
+            filter_chps=ember_settings.get('filter_chps', '')
         )
-    country_code_map = snakemake.config.get("ember_settings", {}).get("chp_countries", {})
-    include_coal_chps_for_selected_countries(n, costs, CHP_ppl_fn=snakemake.input.chp_data, country_code_map=country_code_map )
+
+    if ember_settings.get('ntc_data', None) is not None:
+        set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
+        logger.info("Set line capacities to provided NTC values.")
+
+    if ember_settings.get('add_LV_capacities', False):
+        n = add_LV_capacities(n, ppl, snakemake.params.max_hours)
+
     if snakemake.config.get("ember_settings", {}).get("historical_ntc", False):
        set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)
        logger.info("Restrict s_nom to NTC values")
 
     if snakemake.config.get("ember_settings", {}).get("ember_gas_price", False):
         apply_hourly_price_fix(n)
+
+    
+    scenario_capacities_high = ember_settings.get("apply_highflex_capacities", False)
+    if scenario_capacities_high:
+        n_highflex = pypsa.Network(snakemake.input.n_highflex)
+        apply_scenario_capacities(n, n_highflex, scenario_capacities_high)
+
+    scenario_capacities_low = ember_settings.get("apply_lowflex_capacities", False)
+    if scenario_capacities_low:
+        n_lowflex = pypsa.Network(snakemake.input.n_lowflex)
+        apply_scenario_capacities(n, n_lowflex, scenario_capacities_low)
 
     n.export_to_netcdf(snakemake.output[0])

@@ -1389,18 +1389,18 @@ rule build_transport_demand:
             "pop_weighted_energy_totals_s_{clusters}.csv"
         ),
         transport_data=resources("transport_data.csv"),
+        transport_data_ember="data/ember_data/number_cars.csv",
         traffic_data_KFZ=f"{MOBILITY_PROFILES_DATASET['folder']}/kfz.csv",
         traffic_data_Pkw=f"{MOBILITY_PROFILES_DATASET['folder']}/pkw.csv",
         temp_air_total=resources("temp_air_total_base_s_{clusters}.nc"),
     output:
-        transport_demand=resources("transport_demand_s_{clusters}.csv"),
-        transport_data=resources("transport_data_s_{clusters}.csv"),
-        avail_profile=resources("avail_profile_s_{clusters}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}.csv"),
+        transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
+        transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
+        avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
     log:
-        logs("build_transport_demand_s_{clusters}.log"),
+        logs("build_transport_demand_s_{clusters}_{planning_horizons}.log"),
     benchmark:
-        benchmarks("build_transport_demand/s_{clusters}")
+        benchmarks("build_transport_demand/s_{clusters}_{planning_horizons}")
     threads: 1
     resources:
         mem_mb=2000,
@@ -1562,6 +1562,15 @@ def input_heat_source_power(w):
         ).keys()
     }
 
+highflex_run_name = config["run"]["name"]
+if len(highflex_run_name)>3:
+  if highflex_run_name.split("_")[0] == "lowflex":
+      highflex_run_name = "highflex" + highflex_run_name[7:]
+
+lowflex_run_name = config["run"]["name"]
+if len(lowflex_run_name)>3:
+  if lowflex_run_name.split("_")[0] == "highflex":
+      lowflex_run_name = "lowflex" + highflex_run_name[8:]
 
 rule prepare_sector_network:
     input:
@@ -1602,10 +1611,9 @@ rule prepare_sector_network:
         ),
         pop_weighted_heat_totals=resources("pop_weighted_heat_totals_s_{clusters}.csv"),
         shipping_demand=resources("shipping_demand_s_{clusters}.csv"),
-        transport_demand=resources("transport_demand_s_{clusters}.csv"),
-        transport_data=resources("transport_data_s_{clusters}.csv"),
-        avail_profile=resources("avail_profile_s_{clusters}.csv"),
-        dsm_profile=resources("dsm_profile_s_{clusters}.csv"),
+        transport_demand=resources("transport_demand_s_{clusters}_{planning_horizons}.csv"),
+        transport_data=resources("transport_data_s_{clusters}_{planning_horizons}.csv"),
+        avail_profile=resources("avail_profile_s_{clusters}_{planning_horizons}.csv"),
         heat_dsm_profile=resources(
             "residential_heat_dsm_profile_total_base_s_{clusters}.csv"
         ),
@@ -1692,9 +1700,19 @@ rule prepare_sector_network:
         ),
         hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
         hourly_co2_prices="data/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
-        chp_data="data/ember_data/combined_chp.csv",
-        ember_ntc_csv="data/ember_data/ntc.csv",
-
+        chp_data=lambda w: config_provider("ember_settings", "chp_data")(w) or [],
+        ember_ntc_csv=lambda w: config_provider("ember_settings", "ntc_data")(w) or [],
+        powerplants=resources("powerplants_s_{clusters}.csv"),
+        n_highflex = lambda w: (
+            "results/"+highflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
+            if config_provider("ember_settings", "apply_highflex_capacities")(w)
+            else []
+        ),
+        n_lowflex = lambda w: (
+            "results/"+lowflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
+            if config_provider("ember_settings", "apply_lowflex_capacities")(w)
+            else []
+        ),
     output:
         resources(
             "networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
@@ -1743,6 +1761,13 @@ rule prepare_sector_network:
         temperature_limited_stores=config_provider(
             "sector", "district_heating", "temperature_limited_stores"
         ),
+        consider_efficiency_classes=config_provider(
+            "clustering", "consider_efficiency_classes"
+        ),
+        aggregation_strategies=config_provider("clustering", "aggregation_strategies"),
+        exclude_carriers=config_provider("clustering", "exclude_carriers"),
+        max_hours=config_provider("electricity", "max_hours"),
+        apply_highflex_capacities=config_provider("ember_settings", "apply_highflex_capacities"),
     message:
         "Preparing integrated sector-coupled energy network for {wildcards.clusters} clusters, {wildcards.planning_horizons} planning horizon, {wildcards.opts} electric options and {wildcards.sector_opts} sector options"
     script:
