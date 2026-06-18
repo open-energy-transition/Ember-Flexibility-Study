@@ -362,7 +362,7 @@ def apply_hourly_price_fix(n):
 def add_LV_capacities(n, ppl, max_hours):
     # For rooftop solar
     rooftop_df = ppl[(ppl['carrier'].str.strip().str.lower() == 'solar btm')]
-    agg_capacity_rooftop = rooftop_df.groupby('bus')['Capacity'].sum()
+    agg_capacity_rooftop = rooftop_df.groupby('bus')['p_nom'].sum()
 
     for bus, cap in agg_capacity_rooftop.items():
         rooftop_bus = bus + ' low voltage'
@@ -376,9 +376,9 @@ def add_LV_capacities(n, ppl, max_hours):
         else:
             logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
 
-   # Home batteries 
-    home_battery_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'home battery')]
-    agg_capacity_home = home_battery_df.groupby('bus')['Capacity'].sum()
+   # Home batteries
+    home_battery_df = ppl[(ppl['carrier'].str.strip().str.lower() == 'home battery')]
+    agg_capacity_home = home_battery_df.groupby('bus')['p_nom'].sum()
     for bus, cap in agg_capacity_home.items():
         store_i = bus + " home battery"
         if store_i in n.stores.index:
