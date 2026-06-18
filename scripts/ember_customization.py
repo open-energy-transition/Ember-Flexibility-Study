@@ -361,7 +361,7 @@ def apply_hourly_price_fix(n):
 
 def add_LV_capacities(n, ppl, max_hours):
     # For rooftop solar
-    rooftop_df = ppl[(ppl['Fueltype'].str.strip().str.lower() == 'solar btm') & (ppl['Technology'].str.strip().str.lower() == 'solar-rooftop')]
+    rooftop_df = ppl[(ppl['carrier'].str.strip().str.lower() == 'solar btm')]
     agg_capacity_rooftop = rooftop_df.groupby('bus')['Capacity'].sum()
 
     for bus, cap in agg_capacity_rooftop.items():
