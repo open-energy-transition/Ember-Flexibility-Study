@@ -29,6 +29,7 @@ from scripts._helpers import (
     update_config_from_wildcards,
 )
 from scripts.add_electricity import (
+    load_and_aggregate_powerplants,
     attach_storageunits,
     attach_stores,
     calculate_annuity,
@@ -6507,11 +6508,13 @@ if __name__ == "__main__":
     extendable_storageunits = list(set(ext_carriers.get("StorageUnit", [])) - {"H2"})
     extendable_stores = list(set(ext_carriers.get("Store", [])) - {"H2"})
 
-    ppl = snakemake.params.electricity.get("custom_powerplants_fn", None)
-    if ppl is not None and snakemake.params.electricity.get("custom_powerplants", False):
-        ppl = pd.read_csv(ppl, index_col=0)
-    else:
-        ppl = None
+    ppl = load_and_aggregate_powerplants(
+        snakemake.input.powerplants,
+        costs,
+        snakemake.params.consider_efficiency_classes,
+        snakemake.params.aggregation_strategies,
+        snakemake.params.exclude_carriers,
+    )
 
     attach_storageunits(
         n=n,
@@ -6519,7 +6522,7 @@ if __name__ == "__main__":
         buses_i=pop_layout.index,
         extendable_carriers=extendable_storageunits,
         max_hours=max_hours,
-        ppl = ppl,
+        ppl=ppl,
     )
 
     attach_stores(
@@ -6809,7 +6812,7 @@ if __name__ == "__main__":
         logger.info("Set line capacities to provided NTC values.")
 
     if ember_settings.get('add_LV_capacities', False):
-        n = add_LV_capacities(n, snakemake.input.ppl_path, snakemake.params.max_hours)
+        n = add_LV_capacities(n, ppl, snakemake.params.max_hours)
 
     if snakemake.config.get("ember_settings", {}).get("historical_ntc", False):
        set_line_s_nom_to_ntc(n, snakemake.input.ember_ntc_csv)

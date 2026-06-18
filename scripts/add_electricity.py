@@ -1069,7 +1069,14 @@ def attach_storageunits(
         DataFrame containing the power plant data, used to determine existing storage capacities.
     """
 
-    available_carriers = get_available_storage_carriers(extendable_carriers)
+    # Determine storage carriers to add based on max_hours and existing power plant data
+    # exclude home batteries since they are added separately at LV
+    carriers = list(
+        set(max_hours.keys()).intersection(set(ppl.carrier.unique()))-set(["home battery"])
+    )
+    carriers.extend(extendable_carriers)
+
+    available_carriers = get_available_storage_carriers(carriers)
     n.add("Carrier", available_carriers)
 
     for carrier in available_carriers:
@@ -1101,7 +1108,7 @@ def attach_storageunits(
             carrier=carrier,
             p_nom=caps,
             p_nom_min=caps,
-            p_nom_extendable=True if carrier in extendable_carriers["StorageUnit"] else False,
+            p_nom_extendable=True if carrier in extendable_carriers else False,
             capital_cost=costs.at[carrier, "capital_cost"],
             marginal_cost=costs.at[carrier, "marginal_cost"],
             efficiency_store=costs.at[lookup_charge, "efficiency"]

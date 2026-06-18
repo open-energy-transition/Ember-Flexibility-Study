@@ -1702,7 +1702,7 @@ rule prepare_sector_network:
         hourly_co2_prices="data/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
         chp_data=lambda w: config_provider("ember_settings", "chp_data")(w) or [],
         ember_ntc_csv=lambda w: config_provider("ember_settings", "ntc_data")(w) or [],
-        ppl_path=resources("powerplants_s_{clusters}.csv"),
+        powerplants=resources("powerplants_s_{clusters}.csv"),
         n_highflex = lambda w: (
             "results/"+highflex_run_name+"/networks/base_s_{clusters}_{opts}_{sector_opts}_{planning_horizons}.nc"
             if config_provider("ember_settings", "apply_highflex_capacities")(w)
@@ -1761,6 +1761,11 @@ rule prepare_sector_network:
         temperature_limited_stores=config_provider(
             "sector", "district_heating", "temperature_limited_stores"
         ),
+        consider_efficiency_classes=config_provider(
+            "clustering", "consider_efficiency_classes"
+        ),
+        aggregation_strategies=config_provider("clustering", "aggregation_strategies"),
+        exclude_carriers=config_provider("clustering", "exclude_carriers"),
         max_hours=config_provider("electricity", "max_hours"),
         apply_highflex_capacities=config_provider("ember_settings", "apply_highflex_capacities"),
     message:
