@@ -6507,12 +6507,19 @@ if __name__ == "__main__":
     extendable_storageunits = list(set(ext_carriers.get("StorageUnit", [])) - {"H2"})
     extendable_stores = list(set(ext_carriers.get("Store", [])) - {"H2"})
 
+    ppl = snakemake.params.electricity.get("custom_powerplants_fn", None)
+    if ppl is not None and snakemake.params.electricity.get("custom_powerplants", False):
+        ppl = pd.read_csv(ppl, index_col=0)
+    else:
+        ppl = None
+
     attach_storageunits(
         n=n,
         costs=costs,
         buses_i=pop_layout.index,
         extendable_carriers=extendable_storageunits,
         max_hours=max_hours,
+        ppl = ppl,
     )
 
     attach_stores(
