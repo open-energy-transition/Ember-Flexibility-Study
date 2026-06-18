@@ -472,7 +472,7 @@ class SectorConfig(BaseModel):
     )
     v2g: bool | float | dict[int, str] = Field(
         True,
-    description="..."
+        description="Allows feed-in to grid from EV battery. This is only enabled if BEV demand-side management is enabled, and the share of vehicles participating is V2G is given by `bev_dsm_availability`.",
     )
 
     land_transport_fuel_cell_share: dict[int, float| str] = Field(

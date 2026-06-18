@@ -85,7 +85,7 @@ pydeck = ">0.6"  # pypsa fails to import with pydeck <0.6, lower bound was only 
 pypsa = "<1.2"
 pyscipopt = ">=5.6.0"
 pytables = ">=3.10.2"
-python = ">=3.10"
+python = "3.13.13.*"
 pytz = ">=2025.2"
 pyxlsb = ">=1.0.10"
 rasterio = ">=1.4.3"
@@ -111,6 +111,8 @@ snakemake-logger-plugin-pypsa = ">=0.1.0"
 pydeflate = ">=2.3.4"
 grpcio = "<1.78"
 snakemake-logger-plugin-snkmt = "==0.1.6" # For better pypsa-app integration
+openssl = "3.6.3.*"
+tornado = "6.5.6.*"
 
 [target.unix.dependencies]
 snakemake-executor-plugin-slurm = ">=1.9.2"

@@ -112,25 +112,6 @@ jobs:
       if: steps.filter.outputs.src == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
       run: git checkout HEAD -- data/
 
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        miniforge-version: latest
-        activate-environment: ember-study
-        channel-priority: strict
-
-    - name: Cache Conda env
-      uses: actions/cache@v4
-      with:
-        path: ${{ env.CONDA }}/envs
-        key: conda-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}', env.env_file)) }}
-      id: cache-env
-
-    - name: Update environment
-      if: steps.cache-env.outputs.cache-hit != 'true'
-      run: |
-        conda env update -n ember-study -f ${{ env.env_file }}
-        echo "Run conda list" && conda list
-
     - name: Run pylint check on scripts
       if: steps.filter.outputs.src == 'true' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
       # check for undefined variables to reuse functions across scripts
@@ -143,7 +124,7 @@ jobs:
         SNAKEMAKE_STORAGE_CACHED_HTTP_CACHE: ""
         SNAKEMAKE_STORAGE_CACHED_HTTP_SKIP_REMOTE_CHECKS: "1"
       run: |
-        make ember-test
+        pixi run make ember-test
 
     - name: Upload artifacts
       if: always()
