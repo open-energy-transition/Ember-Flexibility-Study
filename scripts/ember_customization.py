@@ -372,6 +372,9 @@ def add_LV_capacities(n, ppl, max_hours):
             add_cap = cap / num 
             n.generators.loc[matching_gens.index, 'p_nom'] = add_cap
             n.generators.loc[matching_gens.index, 'p_nom_min'] = add_cap
+            n.generators.loc[matching_gens.index, "p_nom_max"] = n.generators.loc[matching_gens.index, "p_nom_max"].clip(
+                lower=n.generators.loc[matching_gens.index, "p_nom_min"]
+            )
         else:
             logger.warning(f"No matching solar-rooftop generators at bus {bus} low voltage.")
 

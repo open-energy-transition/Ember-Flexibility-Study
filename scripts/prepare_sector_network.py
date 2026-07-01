@@ -2735,11 +2735,11 @@ def add_land_transport(
             given_countries = list(
                 set(shares.index).intersection(set(engine_shares.index))
             )
-            shares.loc[given_countries, engine] = engine_shares.loc[given_countries].values
+            shares.loc[given_countries, engine] = engine_shares.loc[given_countries, share_key].values
             missing_countries = list(
                 set(shares.index) - set(engine_shares.index)
             )
-            shares.loc[missing_countries, engine] = engine_shares.loc["default"].values[0]
+            shares.loc[missing_countries, engine] = engine_shares.loc["default", share_key].values[0]
         else:
             shares[engine] = get(options[share_key], investment_year)
         if logger:
