@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 33
   sector_opts:
-  - 3H
+  - 1H
   planning_horizons:
   - 2040
 
@@ -26,6 +26,9 @@ electricity:
   estimate_renewable_capacities:
     enable: false
     from_gem: false
+
+  extendable_carriers:
+    Generator: [solar, solar rooftop, onwind, offwind-ac]
 
 atlite:
   default_cutout: europe-2009-sarah3-era5
@@ -48,8 +51,8 @@ pypsa_eur:
   
 sector:
   bev_dsm: true
-  v2g: 0.08
-  bev_dsm_availability: 0.3
+  v2g: 0.6
+  bev_dsm_availability: 0.5
   land_transport_electric_share:
     2040: "data/ember_data/land_transport_electric_share_2040_low.csv"
   land_transport_ice_share:
@@ -118,6 +121,29 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
+    United Kingdom: GB
+    Romania: RO
+    Austria: AT
+    Spain: ES
+    France: FR
+    Finland: FI
+    Bulgaria: BG
+    Hungary: HU
+    Croatia: HR
+    Belgium: BE
+    Slovenia: SI
+    Bosnia and Herzegovina: BA
+    Lithuania: LT
+    Latvia: LV
+    Slovakia: SK
+    Sweden: SE
+    Denmark: DK
+    North Macedonia: MK
+    Serbia: RS
+    Portugal: PT
+    Estonia: EE
+    Albania: AL
+    Ireland: IE
   filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true

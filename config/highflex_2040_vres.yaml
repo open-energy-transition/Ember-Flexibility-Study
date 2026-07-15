@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 33
   sector_opts:
-  - 3H
+  - 1H
   planning_horizons:
   - 2040
 
@@ -20,12 +20,15 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040_highflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_highflex_highele.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
     enable: false
     from_gem: false
+
+  extendable_carriers:
+    Generator: [solar, solar rooftop, onwind, offwind-ac]
 
 atlite:
   default_cutout: europe-2022-sarah3-era5
@@ -48,12 +51,12 @@ pypsa_eur:
 
 sector:
   bev_dsm: true
-  v2g: 0.31 
+  v2g: 1.0
   bev_dsm_availability: 0.7
   land_transport_electric_share:
-    2040: "data/ember_data/land_transport_electric_share_2040.csv"
+    2040: "data/ember_data/land_transport_electric_share_2040_high.csv"
   land_transport_ice_share:
-    2040: "data/ember_data/land_transport_ice_share_2040.csv"
+    2040: "data/ember_data/land_transport_ice_share_2040_high.csv"
   bev_energy: 0.09
   bev_charge_efficiency: 0.9
   bev_battery_central_soc: 0.5
@@ -67,7 +70,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2040: 0.26
+        2040: 0.54
       restriction_time:
       - 8
       - 17
@@ -93,11 +96,14 @@ costs:
     co2: 243.8
   custom_cost_fn: data/custom_costs_ember.csv
 
+clustering:
+  mode: custom_busmap
+
 solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax.csv
+    file: data/agg_p_nom_minmax_highflex_highele_2040.csv
   constraints:
     CCL: true
 
@@ -115,10 +121,32 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
+    United Kingdom: GB
+    Romania: RO
+    Austria: AT
+    Spain: ES
+    France: FR
+    Finland: FI
+    Bulgaria: BG
+    Hungary: HU
+    Croatia: HR
+    Belgium: BE
+    Slovenia: SI
+    Bosnia and Herzegovina: BA
+    Lithuania: LT
+    Latvia: LV
+    Slovakia: SK
+    Sweden: SE
+    Denmark: DK
+    North Macedonia: MK
+    Serbia: RS
+    Portugal: PT
+    Estonia: EE
+    Albania: AL
+    Ireland: IE
   filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities: false
   apply_lowflex_capacities:
       resistive_heaters: true
       biomass_boiler: true

@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 33
   sector_opts:
-  - 3H
+  - 1H
   planning_horizons:
   - 2030
 
@@ -20,7 +20,7 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2030_lowflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2030_lowflex_lowele.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -51,9 +51,9 @@ sector:
   v2g: 0
   bev_dsm_availability: 0.15
   land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2030.csv"
+    2030: "data/ember_data/land_transport_electric_share_2030_low.csv"
   land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2030.csv"
+    2030: "data/ember_data/land_transport_ice_share_2030_low.csv"
   bev_energy: 0.08
   bev_charge_efficiency: 0.9
   bev_battery_central_soc: 0.5
@@ -67,7 +67,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2030: 0.03
+        2030: 0.02
       restriction_time:
       - 8
       - 17
@@ -93,11 +93,14 @@ costs:
     co2: 79.9
   custom_cost_fn: data/custom_costs_ember.csv
 
+clustering:
+  mode: custom_busmap
+
 solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax.csv
+    file: data/agg_p_nom_minmax_lowflex_lowele_2030.csv
   constraints:
     CCL: true
 
@@ -115,10 +118,30 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
+    United Kingdom: GB
+    Romania: RO
+    Austria: AT
+    Spain: ES
+    France: FR
+    Finland: FI
+    Bulgaria: BG
+    Hungary: HU
+    Croatia: HR
+    Belgium: BE
+    Slovenia: SI
+    Bosnia and Herzegovina: BA
+    Lithuania: LT
+    Latvia: LV
+    Slovakia: SK
+    Sweden: SE
+    Denmark: DK
+    North Macedonia: MK
+    Serbia: RS
+    Portugal: PT
+    Estonia: EE
+    Albania: AL
+    Ireland: IE
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities:
-    resistive_heaters: true
-    water_tanks: true
-    heat_pumps: true
+  apply_highflex_capacities: false

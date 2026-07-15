@@ -1,4 +1,4 @@
-,land_transport_electric_share
+,land_transport_ice_share
 AT,0.57
 BE,0.57
 BG,0.72
@@ -28,5 +28,5 @@ RO,0.79
 SE,0.15
 SI,0.7
 SK,0.79
-UK,0.5
+GB,0.5
 default,0.72

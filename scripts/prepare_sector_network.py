@@ -1654,7 +1654,7 @@ def insert_electricity_distribution_grid(
             suffix=" rooftop",
             bus=n.generators.loc[solar, "bus"] + " low voltage",
             carrier="solar rooftop",
-            p_nom_extendable=True if "solar rooftop" in extendable_carriers else False,
+            p_nom_extendable=True if "solar rooftop" in extendable_carriers.get("Generator", []) else False,
             p_nom_max=potential.loc[solar],
             marginal_cost=n.generators.loc[solar, "marginal_cost"],
             capital_cost=costs.at["solar-rooftop", "capital_cost"],
@@ -2735,7 +2735,7 @@ def add_land_transport(
             given_countries = list(
                 set(shares.index).intersection(set(engine_shares.index))
             )
-            shares.loc[given_countries, engine] = engine_shares.loc[given_countries].values
+            shares.loc[given_countries, engine] = engine_shares.loc[given_countries, share_key].values
             missing_countries = list(
                 set(shares.index) - set(engine_shares.index)
             )
