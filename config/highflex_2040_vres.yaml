@@ -20,13 +20,13 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2040_highflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2040_highflex_highele.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
     enable: false
     from_gem: false
-  
+
   extendable_carriers:
     Generator: [solar, solar rooftop, onwind, offwind-ac]
 
@@ -54,9 +54,9 @@ sector:
   v2g: 1.0
   bev_dsm_availability: 0.7
   land_transport_electric_share:
-    2040: "data/ember_data/land_transport_electric_share_2040.csv"
+    2040: "data/ember_data/land_transport_electric_share_2040_high.csv"
   land_transport_ice_share:
-    2040: "data/ember_data/land_transport_ice_share_2040.csv"
+    2040: "data/ember_data/land_transport_ice_share_2040_high.csv"
   bev_energy: 0.09
   bev_charge_efficiency: 0.9
   bev_battery_central_soc: 0.5
@@ -70,7 +70,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2040: 0.26
+        2040: 0.54
       restriction_time:
       - 8
       - 17
@@ -103,7 +103,7 @@ solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax.csv
+    file: data/agg_p_nom_minmax_highflex_highele_2040.csv
   constraints:
     CCL: true
 
