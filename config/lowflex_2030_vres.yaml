@@ -20,7 +20,7 @@ snapshots:
 
 electricity:
   custom_powerplants: true
-  custom_powerplants_fn: "data/custom_ppl_2030_lowflex.csv"
+  custom_powerplants_fn: "data/custom_ppl_2030_lowflex_lowele.csv"
   powerplants_filter: Fueltype in ['Remove everything']
 
   estimate_renewable_capacities:
@@ -51,9 +51,9 @@ sector:
   v2g: 0
   bev_dsm_availability: 0.15
   land_transport_electric_share:
-    2030: "data/ember_data/land_transport_electric_share_2030.csv"
+    2030: "data/ember_data/land_transport_electric_share_2030_low.csv"
   land_transport_ice_share:
-    2030: "data/ember_data/land_transport_ice_share_2030.csv"
+    2030: "data/ember_data/land_transport_ice_share_2030_low.csv"
   bev_energy: 0.08
   bev_charge_efficiency: 0.9
   bev_battery_central_soc: 0.5
@@ -67,7 +67,7 @@ sector:
       direction:
       - overheat
       restriction_value:
-        2030: 0.03
+        2030: 0.02
       restriction_time:
       - 8
       - 17
@@ -100,7 +100,7 @@ solving:
   agg_p_nom_limits:
     agg_heat_pumps: true
     include_existing: false
-    file: data/agg_p_nom_minmax.csv
+    file: data/agg_p_nom_minmax_lowflex_lowele_2030.csv
   constraints:
     CCL: true
 
