@@ -77,17 +77,18 @@ sector:
 
 costs:
   year: 2030
-  fuel:
-    gas: 27.1
-    coal: 12.1
-    lignite: 8.6
-    oil: 42.2
-    uranium: 1.8
-  VOM:
-    OCGT: 1
-    CCGT: 1
-    coal: 2.3
-    lignite: 2.3
+  overwrites:
+    fuel:
+      gas: 27.1
+      coal: 12.1
+      lignite: 8.6
+      oil: 42.2
+      uranium: 1.8
+    VOM:
+      OCGT: 1
+      CCGT: 1
+      coal: 2.3
+      lignite: 2.3
   emission_prices:
     enable: true
     co2: 79.9
