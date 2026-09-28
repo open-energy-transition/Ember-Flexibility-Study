@@ -561,12 +561,16 @@ def attach_wind_and_solar(
             p_max_pu = ds["profile"].to_pandas()
             p_max_pu.columns = p_max_pu.columns.map(flatten)
 
-            if not ppl.query("carrier == @car").empty:
-                caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
-                caps = pd.Series(data=caps, index=ds.indexes["bus"]).fillna(0)
-            else:
-                caps = pd.Series(index=ds.indexes["bus"]).fillna(0)
+            caps = pd.Series(index=ds.indexes["bus_bin"]).fillna(0)
             caps.index = caps.index.map(flatten)
+            if not ppl.query("carrier == @car").empty:
+                existing_caps = ppl.query("carrier == @car").groupby("bus").p_nom.sum()
+                caps_in_buses = (
+                    ds.indexes["bus_bin"][ds.indexes["bus_bin"].get_level_values(0).isin(existing_caps.index)]
+                )
+                existing_caps = pd.Series(data=existing_caps.values, index=caps_in_buses).fillna(0)
+                existing_caps.index = existing_caps.index.map(flatten)
+                caps.loc[existing_caps.index] = existing_caps
 
             n.add(
                 "Generator",
@@ -1044,6 +1048,7 @@ def attach_storageunits(
     buses_i: list,
     extendable_carriers: list,
     max_hours: dict,
+    ppl: pd.DataFrame,
 ):
     """
     Attach storage units to the network.
@@ -1060,8 +1065,18 @@ def attach_storageunits(
         List of extendable storage units carrier names.
     max_hours : dict
         Dictionary of maximum hours for storage units.
+    ppl : pd.DataFrame
+        DataFrame containing the power plant data, used to determine existing storage capacities.
     """
-    available_carriers = get_available_storage_carriers(extendable_carriers)
+
+    # Determine storage carriers to add based on max_hours and existing power plant data
+    # exclude home batteries since they are added separately at LV
+    carriers = list(
+        set(max_hours.keys()).intersection(set(ppl.carrier.unique()))-set(["home battery"])
+    )
+    carriers.extend(extendable_carriers)
+
+    available_carriers = get_available_storage_carriers(carriers)
     n.add("Carrier", available_carriers)
 
     for carrier in available_carriers:
@@ -1079,13 +1094,21 @@ def attach_storageunits(
 
         roundtrip_correction = lookup.get("roundtrip_correction", 1)
 
+        if not ppl.query("carrier == @carrier").empty:
+            caps = ppl.query("carrier == @carrier").groupby("bus").p_nom.sum()
+            caps = pd.Series(data=caps, index=buses_i).fillna(0)
+        else:
+            caps = pd.Series(index=buses_i).fillna(0)
+
         n.add(
             "StorageUnit",
             buses_i,
             " " + carrier,
             bus=buses_i,
             carrier=carrier,
-            p_nom_extendable=True,
+            p_nom=caps,
+            p_nom_min=caps,
+            p_nom_extendable=True if carrier in extendable_carriers else False,
             capital_cost=costs.at[carrier, "capital_cost"],
             marginal_cost=costs.at[carrier, "marginal_cost"],
             efficiency_store=costs.at[lookup_charge, "efficiency"]
@@ -1331,7 +1354,7 @@ if __name__ == "__main__":
     update_p_nom_max(n)
 
     attach_storageunits(
-        n, costs, n.buses.index, extendable_carriers["StorageUnit"], max_hours
+        n, costs, n.buses.index, extendable_carriers["StorageUnit"], max_hours, ppl
     )
     attach_stores(n, costs, n.buses.index, extendable_carriers["Store"])
 
