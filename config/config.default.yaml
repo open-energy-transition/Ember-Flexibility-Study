@@ -184,7 +184,7 @@ renewable:
       add_cutout_windspeed: true
     resource_classes: 1
     capacity_per_sqkm: 3
-    correction_factor: 0.93
+    correction_factor: 1.0
     corine:
       grid_codes:
       - 12
@@ -293,7 +293,7 @@ renewable:
       tracking:
     resource_classes: 1
     capacity_per_sqkm: 5.1
-    correction_factor: 0.854337
+    correction_factor: 1.0
     corine:
     - 1
     - 2

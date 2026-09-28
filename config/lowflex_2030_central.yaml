@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 33
   sector_opts:
-  - 3H
+  - 1H
   planning_horizons:
   - 2030
 
@@ -28,7 +28,7 @@ electricity:
     from_gem: false
 
 atlite:
-  default_cutout: europe-2009-era5
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -77,21 +77,25 @@ sector:
 
 costs:
   year: 2030
-  fuel:
-    gas: 27.1
-    coal: 12.1
-    lignite: 8.6
-    oil: 42.2
-    uranium: 1.8
-  VOM:
-    OCGT: 1
-    CCGT: 1
-    coal: 2.3
-    lignite: 2.3
+  overwrites:
+    fuel:
+      gas: 27.1
+      coal: 12.1
+      lignite: 8.6
+      oil: 42.2
+      uranium: 1.8
+    VOM:
+      OCGT: 1
+      CCGT: 1
+      coal: 2.3
+      lignite: 2.3
   emission_prices:
     enable: true
     co2: 79.9
   custom_cost_fn: data/custom_costs_ember.csv
+
+clustering:
+  mode: custom_busmap
 
 solving:
   agg_p_nom_limits:
@@ -106,8 +110,6 @@ ember_settings:
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
-  ember_gas_price: true
-  hourly_carbon_prices: false
   chp_countries:
     Poland: PL
     Czechia: CZ
@@ -115,7 +117,30 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
-  filter_chps: "DateIn <= 2030 and DateOut >= 2030 and type == 'chp' and status == 'operating' and bus in @focus_full"
+    United Kingdom: GB
+    Romania: RO
+    Austria: AT
+    Spain: ES
+    France: FR
+    Finland: FI
+    Bulgaria: BG
+    Hungary: HU
+    Croatia: HR
+    Belgium: BE
+    Slovenia: SI
+    Bosnia and Herzegovina: BA
+    Lithuania: LT
+    Latvia: LV
+    Slovakia: SK
+    Sweden: SE
+    Denmark: DK
+    North Macedonia: MK
+    Serbia: RS
+    Portugal: PT
+    Estonia: EE
+    Albania: AL
+    Ireland: IE
+  filter_chps: "DateIn <= 2030 and DateOut >= 2030"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
   apply_highflex_capacities: false

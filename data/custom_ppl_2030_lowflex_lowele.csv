@@ -25,7 +25,7 @@ utility scale battery LV,battery,Lithium Ion,Store,LV,140,,4,,,,2028,,,2032,56.9
 utility scale battery MD,battery,Lithium Ion,Store,MD,0,,4,,,,2028,,,2032,46.629,29.9397,,,,,,,,,
 utility scale battery MT,battery,Lithium Ion,Store,MT,0,,4,,,,2028,,,2032,35.83087,14.55463,,,,,,,,,
 utility scale battery NL,battery,Lithium Ion,Store,NL,920,,4,,,,2028,,,2032,51.8995694,5.68632778,,,,,,,,,
-utility scale battery NO,battery,Lithium Ion,Store,NO,10,,4,0,0,0,2028,,,2032,59.91,10.75,,,,,,,,,
+utility scale battery NO,battery,Lithium Ion,Store,NO,0,,4,0,0,0,2028,,,2032,59.91,10.75,,,,,,,,,
 utility scale battery PL,battery,Lithium Ion,Store,PL,1050,,4,,,,2028,,,2032,50.208,19.21,,,,,,,,,
 utility scale battery PT,battery,Lithium Ion,Store,PT,100,,4,,,,2028,,,2032,38.72,-9.13,,,,,,,,,
 utility scale battery RO,battery,Lithium Ion,Store,RO,890,,4,,,,2028,,,2032,44.43,26.11,,,,,,,,,

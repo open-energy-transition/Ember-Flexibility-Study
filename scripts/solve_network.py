@@ -51,9 +51,7 @@ from scripts._helpers import (
     update_config_from_wildcards,
 )
 
-from scripts.ember_customization import (
-    apply_custom_pf_constraint, apply_hourly_price_fix,
-)
+from scripts.ember_customization import apply_custom_pf_constraint
 
 logger = logging.getLogger(__name__)
 
@@ -1591,10 +1589,6 @@ if __name__ == "__main__":
         limit_max_growth=snakemake.params.get("sector", {}).get("limit_max_growth"),
         rolling_horizon=cf_solving["rolling_horizon"],
     )
-
-    if snakemake.config.get("ember_settings", {}).get("hourly_price_fix", False):
-        apply_hourly_price_fix(n)
-        logger.info("Removed gas, coal and lignite store components to accomodate for hourly price fix adjustments.") 
 
     # Determine solve mode
     rolling_horizon = cf_solving.get("rolling_horizon", False)

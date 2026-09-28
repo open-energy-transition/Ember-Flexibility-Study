@@ -1698,8 +1698,6 @@ rule prepare_sector_network:
             if config_provider("sector", "district_heating", "ates", "enable")(w)
             else []
         ),
-        hourly_fuel_costs=resources("hourly_fuel_costs_with_lignite.csv"),
-        hourly_co2_prices="data/ember_data/hourly_co2_prices_with_snapshots_2023.csv",
         chp_data=lambda w: config_provider("ember_settings", "chp_data")(w) or [],
         ember_ntc_csv=lambda w: config_provider("ember_settings", "ntc_data")(w) or [],
         powerplants=resources("powerplants_s_{clusters}.csv"),

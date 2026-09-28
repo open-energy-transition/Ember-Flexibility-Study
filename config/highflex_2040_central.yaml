@@ -10,7 +10,7 @@ scenario:
   clusters:
   - 33
   sector_opts:
-  - 3H
+  - 1H
   planning_horizons:
   - 2040
 
@@ -27,8 +27,11 @@ electricity:
     enable: false
     from_gem: false
 
+  extendable_carriers:
+    Generator: [solar, solar rooftop, onwind, offwind-ac]
+
 atlite:
-  default_cutout: europe-2009-era5
+  default_cutout: europe-2009-sarah3-era5
 
 pypsa_eur:
   Generator:
@@ -48,7 +51,7 @@ pypsa_eur:
 
 sector:
   bev_dsm: true
-  v2g: 0.31 
+  v2g: 1.0
   bev_dsm_availability: 0.7
   land_transport_electric_share:
     2040: "data/ember_data/land_transport_electric_share_2040_high.csv"
@@ -77,21 +80,25 @@ sector:
 
 costs:
   year: 2040
-  fuel:
-    gas: 30.7
-    coal: 11.5
-    lignite: 8.6
-    oil: 47.8
-    uranium: 1.8 
-  VOM:
-    OCGT: 1
-    CCGT: 1
-    coal: 2.3
-    lignite: 2.3
+  overwrites:
+    fuel:
+      gas: 30.7
+      coal: 11.5
+      lignite: 8.6
+      oil: 47.8
+      uranium: 1.8 
+    VOM:
+      OCGT: 1
+      CCGT: 1
+      coal: 2.3
+      lignite: 2.3
   emission_prices:
     enable: true
     co2: 243.8
   custom_cost_fn: data/custom_costs_ember.csv
+
+clustering:
+  mode: custom_busmap
 
 solving:
   agg_p_nom_limits:
@@ -106,8 +113,6 @@ ember_settings:
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: false
-  ember_gas_price: true
-  hourly_carbon_prices: false
   chp_countries:
     Poland: PL
     Czechia: CZ
@@ -115,10 +120,32 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
+    United Kingdom: GB
+    Romania: RO
+    Austria: AT
+    Spain: ES
+    France: FR
+    Finland: FI
+    Bulgaria: BG
+    Hungary: HU
+    Croatia: HR
+    Belgium: BE
+    Slovenia: SI
+    Bosnia and Herzegovina: BA
+    Lithuania: LT
+    Latvia: LV
+    Slovakia: SK
+    Sweden: SE
+    Denmark: DK
+    North Macedonia: MK
+    Serbia: RS
+    Portugal: PT
+    Estonia: EE
+    Albania: AL
+    Ireland: IE
   filter_chps: "DateIn <= 2040 and DateOut >= 2040"
   chp_data: "data/ember_data/combined_chp_2030.csv"
   add_LV_capacities: true
-  apply_highflex_capacities: false
   apply_lowflex_capacities:
       resistive_heaters: true
       biomass_boiler: true
