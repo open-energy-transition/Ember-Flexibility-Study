@@ -46,7 +46,41 @@ scenario:
   - 2050
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#countries
-countries: ['AL', 'AT', 'BA', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'ME', 'MK', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE', 'SI', 'SK'] #, 'XK']
+countries:
+- AL
+- AT
+- BA
+- BE
+- BG
+- CH
+- CZ
+- DE
+- DK
+- EE
+- ES
+- FI
+- FR
+- GB
+- GR
+- HR
+- HU
+- IE
+- IT
+- LT
+- LU
+- LV
+- ME
+- MK
+- NL
+- 'NO'
+- PL
+- PT
+- RO
+- RS
+- SE
+- SI
+- SK
+- XK
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#snapshots
 snapshots:
@@ -90,8 +124,7 @@ electricity:
     epsilon_vres: 0.02
     contingency: 4000
   max_hours:
-    battery: 4
-    "home battery": 2.5
+    battery: 6
     "li-ion": 6
     lfp: 6
     vanadium: 10
@@ -100,13 +133,22 @@ electricity:
     "iron-air": 100
     H2: 168
   extendable_carriers:
-    Generator: [] # solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, OCGT, CCGT
-    StorageUnit: [] # battery, H2
-    Store: [] # battery, H2
-    Link: [] # H2 pipeline
-  powerplants_filter: (DateOut >= 2024 or DateOut != DateOut) and not (Country == 'Germany' and Fueltype == 'Nuclear')
+    Generator:
+    - solar
+    - "solar-hsat"
+    - onwind
+    - "offwind-ac"
+    - "offwind-dc"
+    - "offwind-float"
+    - OCGT
+    - CCGT
+    StorageUnit: []
+    Store:
+    - battery
+    - H2
+    Link: []
+  powerplants_filter: "(DateOut > 2025 or DateOut != DateOut) and (DateIn < 2026 or DateIn != DateIn)"
   custom_powerplants: false
-  custom_powerplants_fn: "data/custom_powerplants.csv"
   everywhere_powerplants: []
   conventional_carriers:
   - nuclear
@@ -140,7 +182,7 @@ electricity:
   autarky:
     enable: false
     by_country: false
-  transmission_limit: v1.0
+  transmission_limit: vopt
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#atlite
 atlite:
@@ -401,7 +443,7 @@ lines:
     400.0: "Al/St 240/40 4-bundle 380.0"
     500.0: "Al/St 240/40 4-bundle 380.0"
     750.0: "Al/St 560/50 4-bundle 750.0"
-  s_max_pu: 1.0
+  s_max_pu: 0.7
   s_nom_max: .inf
   max_extension: 20000
   length_factor: 1.25
@@ -421,15 +463,15 @@ links:
   p_nom_max: .inf
   max_extension: 30000
   length_factor: 1.25
-  under_construction: remove # 'zero': set capacity to zero, 'remove': remove, 'keep': with full capacity for lines in grid extract
+  under_construction: keep
 
 # docs in https://pypsa-eur.readthedocs.io/en/latest/configuration.html#transmission_projects
 transmission_projects:
-  enable: false
+  enable: true
   include:
-    tyndp2020: false
-    nep: false
-    manual: false
+    tyndp2020: true
+    nep: true
+    manual: true
   skip:
   - upgraded_lines
   - upgraded_links
@@ -583,9 +625,9 @@ sector:
   heating: true
   biomass: true
   industry: true
-  shipping: false
-  aviation: false
-  agriculture: false
+  shipping: true
+  aviation: true
+  agriculture: true
   fossil_fuels: true
   district_heating:
     potential: 0.6
@@ -681,11 +723,10 @@ sector:
       - 22
   cluster_heat_buses: true
   heat_demand_cutout: default
-  bev_battery_central_soc: 0.5
-  # bev_dsm_restriction_value: 0.8
-  # bev_dsm_restriction_time: 7
-  transport_heating_deadband_upper: 20.
-  transport_heating_deadband_lower: 15.
+  bev_dsm_restriction_value: 0.8
+  bev_dsm_restriction_time: 7
+  transport_heating_deadband_upper: 20.0
+  transport_heating_deadband_lower: 15.0
   ICE_lower_degree_factor: 0.375
   ICE_upper_degree_factor: 1.6
   EV_lower_degree_factor: 0.98
@@ -695,9 +736,8 @@ sector:
   bev_energy: 0.05
   bev_charge_efficiency: 0.9
   bev_charge_rate: 0.011
-  bev_avail_max: 0.1
-  # bev_avail_mean: 0.05
-  bev_avail_min: 0.01
+  bev_avail_max: 0.95
+  bev_avail_mean: 0.8
   v2g: true
   land_transport_fuel_cell_share:
     2020: 0
@@ -777,7 +817,7 @@ sector:
     annualise_cost: true
     tax_weighting: false
     construction_index: true
-  tes: false
+  tes: true
   boilers: true
   resistive_heaters: true
   oil_boilers: false
@@ -887,7 +927,7 @@ sector:
     electricity distribution grid:
       efficiency_static: 0.97
   H2_network: true
-  gas_network: false
+  gas_network: true
   H2_retrofit: false
   H2_retrofit_capacity_per_CH4: 0.6
   gas_network_connectivity_upgrade: 1
@@ -900,11 +940,7 @@ sector:
   conventional_generation:
     OCGT: gas
     CCGT: gas
-    coal: coal
-    lignite: lignite
-    nuclear: uranium
-    oil: oil
-  keep_existing_capacities: true
+  keep_existing_capacities: false
   biomass_to_liquid: true
   biomass_to_liquid_cc: false
   electrobiofuels: true
@@ -1072,17 +1108,14 @@ clustering:
   simplify_network:
     to_substations: false
     remove_stubs: true
-    remove_stubs_across_borders: true
+    remove_stubs_across_borders: false
   cluster_network:
     algorithm: kmeans
     allow_ac_dc_mixing_in_bus_clusters: false
     hac_features:
     - wnd100m
     - influx_direct
-  exclude_carriers:
-  - coal
-  - nuclear
-  - lignite
+  exclude_carriers: []
   consider_efficiency_classes: false
   aggregation_strategies:
     generators:
@@ -1109,7 +1142,7 @@ solving:
   options:
     clip_p_max_pu: 0.01
     load_shedding:
-      enable: true
+      enable: false
       default_cost: 100000
       all_carriers: true
       carriers: {}
