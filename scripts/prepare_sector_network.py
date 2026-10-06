@@ -1787,6 +1787,7 @@ def add_h2_gas_infrastructure(
     gas_input_nodes,
     spatial,
     options,
+    ext_carriers,
 ):
     """
     Add hydrogen and gas infrastructure to the network.
@@ -1807,6 +1808,8 @@ def add_h2_gas_infrastructure(
         Path to CSV file containing gas network data
     gas_input_nodes : pd.DataFrame
         DataFrame containing gas input node information (LNG, pipeline, etc.)
+    ext_carriers : dict
+        Dictionary of extendable carriers by component type
     spatial : object, optional
         Object containing spatial information about nodes and their locations
     options : dict, optional
@@ -1904,7 +1907,7 @@ def add_h2_gas_infrastructure(
     if (
         not h2_caverns.empty
         and options["hydrogen_underground_storage"]
-        and "H2" in snakemake.params.electricity["extendable_carriers"].get("Store", [])
+        and "H2" in ext_carriers.get("Store", [])
         and set(cavern_types).intersection(h2_caverns.columns)
     ):
         h2_caverns = h2_caverns[cavern_types].sum(axis=1)
@@ -1934,7 +1937,7 @@ def add_h2_gas_infrastructure(
             lifetime=costs.at["hydrogen storage underground", "lifetime"],
         )
 
-    if "H2" in snakemake.params.electricity["extendable_carriers"].get("Store", []):
+    if "H2" in ext_carriers.get("Store", []):
 
         # hydrogen stored overground (where not already underground)
         tech = "hydrogen storage tank type 1 including compressor"
@@ -2125,7 +2128,7 @@ def add_h2_gas_infrastructure(
             lifetime=costs.at["H2 (g) pipeline", "lifetime"],
         )
 
-    if "battery" in snakemake.params.electricity["extendable_carriers"].get("Store", []):
+    if "battery" in ext_carriers.get("Store", []):
 
         n.add("Carrier", "battery")
 
@@ -6500,6 +6503,7 @@ if __name__ == "__main__":
         gas_input_nodes=gas_input_nodes,
         spatial=spatial,
         options=options,
+        ext_carriers=ext_carriers,
     )
 
     # Hydrogen already implemented in add_h2_gas_infrastructure
