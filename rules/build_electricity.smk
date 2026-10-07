@@ -32,13 +32,19 @@ rule build_electricity_demand:
         scripts("build_electricity_demand.py")
 
 
+def input_custom_powerplants(w):
+    """Return custom powerplants file if configured, else empty list."""
+    custom_fn = config_provider("electricity", "custom_powerplants_fn")(w)
+    return [custom_fn] if custom_fn else []
+
+
 rule build_powerplants:
     input:
         network=resources("networks/base_s_{clusters}.nc"),
         regions_onshore=resources("regions_onshore_base_s_{clusters}.geojson"),
         regions_offshore=resources("regions_offshore_base_s_{clusters}.geojson"),
         powerplants=rules.retrieve_powerplants.output["powerplants"],
-        custom_powerplants = config_provider("electricity", "custom_powerplants_fn"),
+        custom_powerplants=input_custom_powerplants,
     output:
         resources("powerplants_s_{clusters}.csv"),
     log:
