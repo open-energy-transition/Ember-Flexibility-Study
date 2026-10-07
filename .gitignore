@@ -25,16 +25,12 @@ gurobi.log
 /networks
 /benchmarks
 /logs
-/notebooks
-/data/*
+!data/ember_data/
 /cutouts
 /tmp
 doc/_build
-<<<<<<< HEAD
 /validation
-=======
 _build
->>>>>>> upstream/master
 
 
 /scripts/old
@@ -86,8 +82,6 @@ report/*.toc
 *.xls
 
 *.geojson
-
-*.ipynb
 
 merger-todos.md
 

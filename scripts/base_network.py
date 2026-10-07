@@ -1677,6 +1677,30 @@ if __name__ == "__main__":
 
     # Export network
     n.meta = snakemake.config
+
+    # Convert StringDtype columns to object dtype for xarray/numpy compatibility
+    # This is needed because xarray/numpy cannot handle pandas StringDtype
+    for component_name in n.all_components:
+        # Skip if component not in network
+        if component_name not in n.components.keys():
+            continue
+
+        comp = n.components[component_name]
+
+        # Convert static attributes (DataFrame)
+        df_static = comp.static
+        if isinstance(df_static, pd.DataFrame) and not df_static.empty:
+            for col in df_static.columns:
+                if pd.api.types.is_string_dtype(df_static[col]):
+                    df_static[col] = df_static[col].astype(object)
+
+        # Convert dynamic attributes (dict of DataFrames)
+        for attr_name, df_dynamic in comp.dynamic.items():
+            if isinstance(df_dynamic, pd.DataFrame) and not df_dynamic.empty:
+                for col in df_dynamic.columns:
+                    if pd.api.types.is_string_dtype(df_dynamic[col]):
+                        df_dynamic[col] = df_dynamic[col].astype(object)
+
     n.export_to_netcdf(snakemake.output.base_network)
 
     # Export shapes
