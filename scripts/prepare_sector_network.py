@@ -5864,7 +5864,10 @@ def cluster_heat_buses(n):
     logger.info("Cluster residential and service heat buses.")
     components = ["Bus", "Carrier", "Generator", "Link", "Load", "Store"]
 
-    for c in n.components[components]:
+    for comp_name in components:
+        if comp_name not in n.components.keys():
+            continue
+        c = n.components[comp_name]
         if c.static.empty:
             continue
         df = c.static
@@ -5939,7 +5942,7 @@ def set_temporal_aggregation(n, resolution, snapshot_weightings):
         m.snapshot_weightings = snapshot_weightings
 
         # Aggregation all time-varying data.
-        for c in n.components:
+        for c in n.components.values():
             pnl = getattr(m, c.list_name + "_t")
             for k, df in c.dynamic.items():
                 if not df.empty:

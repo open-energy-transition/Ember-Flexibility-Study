@@ -1680,7 +1680,7 @@ if __name__ == "__main__":
 
     # Convert StringDtype columns to object dtype for xarray compatibility
     for component in n.all_components:
-        if component in n.components:
+        if component in n.components.keys():
             # Convert static (time-invariant) attributes
             df_static = n.components[component].static
             for col in df_static.columns:
