@@ -1679,23 +1679,22 @@ if __name__ == "__main__":
     n.meta = snakemake.config
 
     # Convert StringDtype columns to object dtype for xarray compatibility
-    for component_name in n.all_components:
-        if component_name in n.components.keys():
-            comp = n.components[component_name]
+    # This is needed because xarray/numpy cannot handle pandas StringDtype
+    def convert_string_dtype_to_object(df):
+        """Convert all StringDtype columns in a DataFrame to object dtype."""
+        if df is None or df.empty:
+            return df
+        df = df.copy()
+        for col in df.columns:
+            if pd.api.types.is_string_dtype(df[col]):
+                df[col] = df[col].astype(object)
+        return df
 
-            # Convert static (time-invariant) attributes
-            df_static = comp.static.copy()
-            for col in df_static.columns:
-                if pd.api.types.is_string_dtype(df_static[col]):
-                    df_static[col] = df_static[col].astype(object)
-            comp._static = df_static
-
-            # Convert dynamic (time-varying) attributes if they exist
-            df_dynamic = comp.dynamic.copy()
-            for col in df_dynamic.columns:
-                if pd.api.types.is_string_dtype(df_dynamic[col]):
-                    df_dynamic[col] = df_dynamic[col].astype(object)
-            comp._dynamic = df_dynamic
+    # Convert ALL component dataframes (iterate over actual components, not just all_components)
+    for component_name in n.components.keys():
+        comp = n.components[component_name]
+        comp._static = convert_string_dtype_to_object(comp._static)
+        comp._dynamic = convert_string_dtype_to_object(comp._dynamic)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
