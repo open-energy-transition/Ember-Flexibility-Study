@@ -1680,10 +1680,18 @@ if __name__ == "__main__":
 
     # Convert StringDtype columns to object dtype for xarray compatibility
     for component in n.all_components:
-        df = n.df(component)
-        for col in df.columns:
-            if hasattr(df[col].dtype, "name") and df[col].dtype.name == "string":
-                df[col] = df[col].astype(object)
+        if component in n.components:
+            # Convert static (time-invariant) attributes
+            df_static = n.components[component].static
+            for col in df_static.columns:
+                if hasattr(df_static[col].dtype, "name") and df_static[col].dtype.name == "string":
+                    df_static[col] = df_static[col].astype(object)
+
+            # Convert dynamic (time-varying) attributes if they exist
+            df_dynamic = n.components[component].dynamic
+            for col in df_dynamic.columns:
+                if hasattr(df_dynamic[col].dtype, "name") and df_dynamic[col].dtype.name == "string":
+                    df_dynamic[col] = df_dynamic[col].astype(object)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
