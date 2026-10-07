@@ -1682,7 +1682,9 @@ if __name__ == "__main__":
     # This is needed because xarray/numpy cannot handle pandas StringDtype
     def convert_string_dtype_in_place(df):
         """Convert all StringDtype columns in a DataFrame to object dtype in-place."""
-        if df is None or df.empty:
+        if not isinstance(df, pd.DataFrame):
+            return
+        if len(df) == 0:
             return
         for col in df.columns:
             if pd.api.types.is_string_dtype(df[col]):
@@ -1691,9 +1693,12 @@ if __name__ == "__main__":
     # Convert ALL component dataframes (iterate over actual components, not just all_components)
     for component_name in n.components.keys():
         comp = n.components[component_name]
-        # Convert static and dynamic dataframes in-place
+        # Convert static dataframe
         convert_string_dtype_in_place(comp.static)
-        convert_string_dtype_in_place(comp.dynamic)
+        # Convert each dynamic dataframe (dynamic is a dict of DataFrames)
+        if hasattr(comp, 'dynamic') and isinstance(comp.dynamic, dict):
+            for attr_name, df in comp.dynamic.items():
+                convert_string_dtype_in_place(df)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
