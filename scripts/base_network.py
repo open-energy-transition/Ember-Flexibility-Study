@@ -1678,27 +1678,28 @@ if __name__ == "__main__":
     # Export network
     n.meta = snakemake.config
 
-    # Convert StringDtype columns to object dtype for xarray compatibility
+    # Convert StringDtype columns to object dtype for xarray/numpy compatibility
     # This is needed because xarray/numpy cannot handle pandas StringDtype
-    def convert_string_dtype_in_place(df):
-        """Convert all StringDtype columns in a DataFrame to object dtype in-place."""
-        if not isinstance(df, pd.DataFrame):
-            return
-        if len(df) == 0:
-            return
-        for col in df.columns:
-            if pd.api.types.is_string_dtype(df[col]):
-                df[col] = df[col].astype(object)
+    for component_name in n.all_components:
+        # Skip if component not in network
+        if component_name not in n.components.keys():
+            continue
 
-    # Convert ALL component dataframes (iterate over actual components, not just all_components)
-    for component_name in n.components.keys():
         comp = n.components[component_name]
-        # Convert static dataframe
-        convert_string_dtype_in_place(comp.static)
-        # Convert each dynamic dataframe (dynamic is a dict of DataFrames)
-        if hasattr(comp, 'dynamic') and isinstance(comp.dynamic, dict):
-            for attr_name, df in comp.dynamic.items():
-                convert_string_dtype_in_place(df)
+
+        # Convert static attributes (DataFrame)
+        df_static = comp.static
+        if isinstance(df_static, pd.DataFrame) and not df_static.empty:
+            for col in df_static.columns:
+                if pd.api.types.is_string_dtype(df_static[col]):
+                    df_static[col] = df_static[col].astype(object)
+
+        # Convert dynamic attributes (dict of DataFrames)
+        for attr_name, df_dynamic in comp.dynamic.items():
+            if isinstance(df_dynamic, pd.DataFrame) and not df_dynamic.empty:
+                for col in df_dynamic.columns:
+                    if pd.api.types.is_string_dtype(df_dynamic[col]):
+                        df_dynamic[col] = df_dynamic[col].astype(object)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
