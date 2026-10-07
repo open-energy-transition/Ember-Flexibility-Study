@@ -1677,6 +1677,14 @@ if __name__ == "__main__":
 
     # Export network
     n.meta = snakemake.config
+
+    # Convert StringDtype columns to object dtype for xarray compatibility
+    for component in n.all_components:
+        df = n.df(component)
+        for col in df.columns:
+            if hasattr(df[col].dtype, "name") and df[col].dtype.name == "string":
+                df[col] = df[col].astype(object)
+
     n.export_to_netcdf(snakemake.output.base_network)
 
     # Export shapes
