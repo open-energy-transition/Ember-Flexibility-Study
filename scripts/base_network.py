@@ -1714,7 +1714,7 @@ if __name__ == "__main__":
 
     # Also fix time-dependent data (dynamic / profiles)
     for component_name in n.all_components:
-        if component_name not in n.components:
+        if component_name not in n.components.keys():
             continue
         try:
             comp = n.components[component_name]
