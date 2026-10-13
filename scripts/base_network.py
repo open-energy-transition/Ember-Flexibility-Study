@@ -1678,55 +1678,29 @@ if __name__ == "__main__":
     # Export network
     n.meta = snakemake.config
 
-    # Convert StringDtype columns to object dtype for xarray/numpy compatibility
-    # This is needed because xarray/numpy cannot handle pandas StringDtype
-    # We need to modify the DataFrames directly in the network object
+    # Patch numpy.issubdtype to handle pandas StringDtype
+    # This is the cleanest fix - StringDtype fails in np.issubdtype when checking for datetime
+    _original_issubdtype = np.issubdtype
 
-    def fix_stringdtype(df):
-        """Convert StringDtype columns to object dtype in a DataFrame."""
-        if not isinstance(df, pd.DataFrame) or df.empty:
-            return
-
+    def _patched_issubdtype(arg1, arg2):
+        """Patched np.issubdtype that handles pandas StringDtype."""
         try:
-            # Convert StringDtype columns to object
-            for col in list(df.columns):  # Use list() to avoid issues with index changes
-                if isinstance(df[col].dtype, pd.StringDtype):
-                    df[col] = df[col].astype(object)
+            return _original_issubdtype(arg1, arg2)
+        except TypeError as e:
+            # If we get a TypeError about StringDtype, just return False
+            # StringDtype is not a subtype of any numpy dtype
+            if 'StringDtype' in str(e) or isinstance(arg1, pd.StringDtype):
+                return False
+            raise
 
-            # Convert index if it's StringDtype
-            if hasattr(df.index, 'dtype') and isinstance(df.index.dtype, pd.StringDtype):
-                df.index = pd.Index(df.index.astype(object))
-        except Exception as e:
-            logger.warning(f"Failed to convert StringDtype in DataFrame: {e}")
+    # Apply patch
+    np.issubdtype = _patched_issubdtype
 
-    # Fix all standard component DataFrames
-    component_attrs = ['buses', 'lines', 'links', 'transformers', 'generators',
-                       'loads', 'storage_units', 'stores', 'shunt_impedances',
-                       'carriers', 'shapes']
-
-    for attr_name in component_attrs:
-        if hasattr(n, attr_name):
-            try:
-                df = getattr(n, attr_name)
-                fix_stringdtype(df)
-            except Exception as e:
-                logger.warning(f"Failed to fix StringDtype for {attr_name}: {e}")
-
-    # Also fix time-dependent data (dynamic / profiles)
-    for component_name in n.all_components:
-        if component_name not in n.components.keys():
-            continue
-        try:
-            comp = n.components[component_name]
-            # Use 'dynamic' (modern PyPSA) or 'pnl' (deprecated but might still be used)
-            dynamic_data = getattr(comp, 'dynamic', None) or getattr(comp, 'pnl', None)
-            if dynamic_data and isinstance(dynamic_data, dict):
-                for attr, df in dynamic_data.items():
-                    fix_stringdtype(df)
-        except Exception as e:
-            logger.warning(f"Failed to fix StringDtype for {component_name} dynamic data: {e}")
-
-    n.export_to_netcdf(snakemake.output.base_network)
+    try:
+        n.export_to_netcdf(snakemake.output.base_network)
+    finally:
+        # Restore original function
+        np.issubdtype = _original_issubdtype
 
     # Export shapes
     onshore_shapes.to_file(snakemake.output.regions_onshore)
