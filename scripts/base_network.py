@@ -1678,29 +1678,66 @@ if __name__ == "__main__":
     # Export network
     n.meta = snakemake.config
 
-    # Patch numpy.issubdtype to handle pandas StringDtype
-    # This is the cleanest fix - StringDtype fails in np.issubdtype when checking for datetime
-    _original_issubdtype = np.issubdtype
+    # Convert object dtype columns to netCDF-safe types
+    # netCDF4 cannot serialize Python object dtype, so we need to convert them
+    logger.info("Converting object dtype columns to netCDF-safe types")
 
-    def _patched_issubdtype(arg1, arg2):
-        """Patched np.issubdtype that handles pandas StringDtype."""
-        try:
-            return _original_issubdtype(arg1, arg2)
-        except TypeError as e:
-            # If we get a TypeError about StringDtype, just return False
-            # StringDtype is not a subtype of any numpy dtype
-            if 'StringDtype' in str(e) or isinstance(arg1, pd.StringDtype):
-                return False
-            raise
+    for component_name in n.all_components:
+        # Skip if component not in network
+        if component_name not in n.components.keys():
+            continue
 
-    # Apply patch
-    np.issubdtype = _patched_issubdtype
+        comp = n.components[component_name]
 
-    try:
-        n.export_to_netcdf(snakemake.output.base_network)
-    finally:
-        # Restore original function
-        np.issubdtype = _original_issubdtype
+        # Handle static attributes (DataFrame)
+        df_static = comp.static
+        if isinstance(df_static, pd.DataFrame) and not df_static.empty:
+            object_cols = df_static.select_dtypes(include=["object"]).columns
+
+            for col in object_cols:
+                series = df_static[col]
+
+                # Try to convert to string if all values are string-like or NaN
+                if series.map(lambda x: isinstance(x, str) or pd.isna(x)).all():
+                    df_static[col] = series.fillna("").astype(str)
+                    logger.debug(f"{component_name}.{col} converted to string")
+                else:
+                    # Try numeric conversion
+                    try:
+                        df_static[col] = pd.to_numeric(series, errors="raise")
+                        logger.debug(f"{component_name}.{col} converted to numeric")
+                    except (ValueError, TypeError):
+                        # Last resort: drop columns that can't be safely converted
+                        logger.warning(
+                            f"Dropping {component_name}.{col} - cannot convert to netCDF-safe type"
+                        )
+                        df_static.drop(columns=[col], inplace=True)
+
+        # Handle dynamic attributes (dict of DataFrames)
+        for attr_name, df_dynamic in comp.dynamic.items():
+            if isinstance(df_dynamic, pd.DataFrame) and not df_dynamic.empty:
+                object_cols = df_dynamic.select_dtypes(include=["object"]).columns
+
+                for col in object_cols:
+                    series = df_dynamic[col]
+
+                    # Try to convert to string if all values are string-like or NaN
+                    if series.map(lambda x: isinstance(x, str) or pd.isna(x)).all():
+                        df_dynamic[col] = series.fillna("").astype(str)
+                        logger.debug(f"{component_name}.{attr_name}.{col} converted to string")
+                    else:
+                        # Try numeric conversion
+                        try:
+                            df_dynamic[col] = pd.to_numeric(series, errors="raise")
+                            logger.debug(f"{component_name}.{attr_name}.{col} converted to numeric")
+                        except (ValueError, TypeError):
+                            # Last resort: drop columns that can't be safely converted
+                            logger.warning(
+                                f"Dropping {component_name}.{attr_name}.{col} - cannot convert to netCDF-safe type"
+                            )
+                            df_dynamic.drop(columns=[col], inplace=True)
+
+    n.export_to_netcdf(snakemake.output.base_network)
 
     # Export shapes
     onshore_shapes.to_file(snakemake.output.regions_onshore)
