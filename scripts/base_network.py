@@ -1680,26 +1680,38 @@ if __name__ == "__main__":
 
     # Convert StringDtype columns to object dtype for xarray/numpy compatibility
     # This is needed because xarray/numpy cannot handle pandas StringDtype
+    def convert_stringdtype_inplace(df):
+        """Convert StringDtype columns in a DataFrame to object dtype in-place."""
+        if not isinstance(df, pd.DataFrame) or df.empty:
+            return
+
+        # Convert columns in-place
+        for col in df.columns:
+            if isinstance(df[col].dtype, pd.StringDtype) or (pd.api.types.is_string_dtype(df[col]) and not pd.api.types.is_object_dtype(df[col])):
+                # Use _set_value or direct assignment to modify in place
+                df[col] = df[col].astype(object)
+
+        # Convert index if needed
+        if hasattr(df.index, 'dtype') and isinstance(df.index.dtype, pd.StringDtype):
+            df.index = df.index.astype(object)
+
+    # Convert all network components - iterate through PyPSA component descriptors
     for component_name in n.all_components:
-        # Skip if component not in network
+        # Get the component descriptor
         if component_name not in n.components.keys():
             continue
 
         comp = n.components[component_name]
 
-        # Convert static attributes (DataFrame)
-        df_static = comp.static
-        if isinstance(df_static, pd.DataFrame) and not df_static.empty:
-            for col in df_static.columns:
-                if pd.api.types.is_string_dtype(df_static[col]):
-                    df_static[col] = df_static[col].astype(object)
+        # Convert static dataframe
+        if hasattr(comp, 'static') and isinstance(comp.static, pd.DataFrame):
+            convert_stringdtype_inplace(comp.static)
 
-        # Convert dynamic attributes (dict of DataFrames)
-        for attr_name, df_dynamic in comp.dynamic.items():
-            if isinstance(df_dynamic, pd.DataFrame) and not df_dynamic.empty:
-                for col in df_dynamic.columns:
-                    if pd.api.types.is_string_dtype(df_dynamic[col]):
-                        df_dynamic[col] = df_dynamic[col].astype(object)
+        # Convert dynamic dataframes
+        if hasattr(comp, 'dynamic') and isinstance(comp.dynamic, dict):
+            for attr_name, df_dynamic in comp.dynamic.items():
+                if isinstance(df_dynamic, pd.DataFrame):
+                    convert_stringdtype_inplace(df_dynamic)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
