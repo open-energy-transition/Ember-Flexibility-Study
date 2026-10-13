@@ -1680,38 +1680,40 @@ if __name__ == "__main__":
 
     # Convert StringDtype columns to object dtype for xarray/numpy compatibility
     # This is needed because xarray/numpy cannot handle pandas StringDtype
-    def convert_stringdtype_inplace(df):
-        """Convert StringDtype columns in a DataFrame to object dtype in-place."""
+    # We need to modify the DataFrames directly in the network object
+
+    def fix_stringdtype(df):
+        """Convert StringDtype columns to object dtype in a DataFrame."""
         if not isinstance(df, pd.DataFrame) or df.empty:
             return
 
-        # Convert columns in-place
-        for col in df.columns:
-            if isinstance(df[col].dtype, pd.StringDtype) or (pd.api.types.is_string_dtype(df[col]) and not pd.api.types.is_object_dtype(df[col])):
-                # Use _set_value or direct assignment to modify in place
+        # Convert StringDtype columns to object
+        for col in list(df.columns):  # Use list() to avoid issues with index changes
+            if isinstance(df[col].dtype, pd.StringDtype):
                 df[col] = df[col].astype(object)
 
-        # Convert index if needed
+        # Convert index if it's StringDtype
         if hasattr(df.index, 'dtype') and isinstance(df.index.dtype, pd.StringDtype):
-            df.index = df.index.astype(object)
+            df.index = pd.Index(df.index.astype(object))
 
-    # Convert all network components - iterate through PyPSA component descriptors
+    # Fix all standard component DataFrames
+    component_attrs = ['buses', 'lines', 'links', 'transformers', 'generators',
+                       'loads', 'storage_units', 'stores', 'shunt_impedances',
+                       'carriers', 'shapes']
+
+    for attr_name in component_attrs:
+        if hasattr(n, attr_name):
+            df = getattr(n, attr_name)
+            fix_stringdtype(df)
+
+    # Also fix time-dependent data (pnl / profiles)
     for component_name in n.all_components:
-        # Get the component descriptor
-        if component_name not in n.components.keys():
+        if component_name not in n.components:
             continue
-
         comp = n.components[component_name]
-
-        # Convert static dataframe
-        if hasattr(comp, 'static') and isinstance(comp.static, pd.DataFrame):
-            convert_stringdtype_inplace(comp.static)
-
-        # Convert dynamic dataframes
-        if hasattr(comp, 'dynamic') and isinstance(comp.dynamic, dict):
-            for attr_name, df_dynamic in comp.dynamic.items():
-                if isinstance(df_dynamic, pd.DataFrame):
-                    convert_stringdtype_inplace(df_dynamic)
+        if hasattr(comp, 'pnl') and isinstance(comp.pnl, dict):
+            for attr, df in comp.pnl.items():
+                fix_stringdtype(df)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
