@@ -1687,14 +1687,17 @@ if __name__ == "__main__":
         if not isinstance(df, pd.DataFrame) or df.empty:
             return
 
-        # Convert StringDtype columns to object
-        for col in list(df.columns):  # Use list() to avoid issues with index changes
-            if isinstance(df[col].dtype, pd.StringDtype):
-                df[col] = df[col].astype(object)
+        try:
+            # Convert StringDtype columns to object
+            for col in list(df.columns):  # Use list() to avoid issues with index changes
+                if isinstance(df[col].dtype, pd.StringDtype):
+                    df[col] = df[col].astype(object)
 
-        # Convert index if it's StringDtype
-        if hasattr(df.index, 'dtype') and isinstance(df.index.dtype, pd.StringDtype):
-            df.index = pd.Index(df.index.astype(object))
+            # Convert index if it's StringDtype
+            if hasattr(df.index, 'dtype') and isinstance(df.index.dtype, pd.StringDtype):
+                df.index = pd.Index(df.index.astype(object))
+        except Exception as e:
+            logger.warning(f"Failed to convert StringDtype in DataFrame: {e}")
 
     # Fix all standard component DataFrames
     component_attrs = ['buses', 'lines', 'links', 'transformers', 'generators',
@@ -1703,17 +1706,25 @@ if __name__ == "__main__":
 
     for attr_name in component_attrs:
         if hasattr(n, attr_name):
-            df = getattr(n, attr_name)
-            fix_stringdtype(df)
+            try:
+                df = getattr(n, attr_name)
+                fix_stringdtype(df)
+            except Exception as e:
+                logger.warning(f"Failed to fix StringDtype for {attr_name}: {e}")
 
-    # Also fix time-dependent data (pnl / profiles)
+    # Also fix time-dependent data (dynamic / profiles)
     for component_name in n.all_components:
         if component_name not in n.components:
             continue
-        comp = n.components[component_name]
-        if hasattr(comp, 'pnl') and isinstance(comp.pnl, dict):
-            for attr, df in comp.pnl.items():
-                fix_stringdtype(df)
+        try:
+            comp = n.components[component_name]
+            # Use 'dynamic' (modern PyPSA) or 'pnl' (deprecated but might still be used)
+            dynamic_data = getattr(comp, 'dynamic', None) or getattr(comp, 'pnl', None)
+            if dynamic_data and isinstance(dynamic_data, dict):
+                for attr, df in dynamic_data.items():
+                    fix_stringdtype(df)
+        except Exception as e:
+            logger.warning(f"Failed to fix StringDtype for {component_name} dynamic data: {e}")
 
     n.export_to_netcdf(snakemake.output.base_network)
 
