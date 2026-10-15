@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # nuts3 has columns country, gdp, pop, geometry
     # population is given in dimensions of 1e3=k
-    nuts3 = gpd.read_file(snakemake.input.nuts3_shapes).set_index("index")
+    nuts3 = gpd.read_file(snakemake.input.nuts3_shapes)
 
     # Indicator matrix NUTS3 -> grid cells
     I = atlite.cutout.compute_indicatormatrix(nuts3.geometry, grid_cells)  # noqa: E741
@@ -46,6 +46,9 @@ if __name__ == "__main__":
     # Indicator matrix grid_cells -> NUTS3; inprinciple Iinv*I is identity
     # but imprecisions mean not perfect
     Iinv = cutout.indicatormatrix(nuts3.geometry)
+
+    # Set index after indicator matrix computations
+    nuts3 = nuts3.set_index("index")
 
     countries = np.sort(nuts3.country.unique())
 
@@ -92,7 +95,7 @@ if __name__ == "__main__":
         # The first low density grid cells to reach rural fraction are rural
         asc_density_i = density_cells_ct.sort_values().index
         asc_density_cumsum = (
-            pop_cells_ct.iloc[asc_density_i].cumsum() / pop_cells_ct.sum()
+            pop_cells_ct.loc[asc_density_i].cumsum() / pop_cells_ct.sum()
         )
         rural_fraction_ct = 1 - urban_fraction[ct]
         pop_ct_rural_b = asc_density_cumsum < rural_fraction_ct

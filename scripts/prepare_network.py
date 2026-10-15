@@ -226,7 +226,7 @@ def average_every_nhours(n, offset, drop_leap_day=False):
     m.set_snapshots(snapshot_weightings.index)
     m.snapshot_weightings = snapshot_weightings
 
-    for c in n.components:
+    for c in n.components.values():
         pnl = getattr(m, c.list_name + "_t")
         for k, df in c.dynamic.items():
             if not df.empty:

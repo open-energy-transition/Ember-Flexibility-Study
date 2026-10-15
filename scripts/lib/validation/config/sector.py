@@ -470,12 +470,12 @@ class SectorConfig(BaseModel):
         0.8,
         description="The average share plugged-in availability for passenger electric vehicles.",
     )
-    v2g: bool = Field(
+    v2g: bool | float | dict[int, str] = Field(
         True,
         description="Allows feed-in to grid from EV battery. This is only enabled if BEV demand-side management is enabled, and the share of vehicles participating is V2G is given by `bev_dsm_availability`.",
     )
 
-    land_transport_fuel_cell_share: dict[int, float] = Field(
+    land_transport_fuel_cell_share: dict[int, float| str] = Field(
         default_factory=lambda: {
             2020: 0,
             2025: 0,
@@ -487,7 +487,7 @@ class SectorConfig(BaseModel):
         },
         description="The share of vehicles that uses fuel cells in a given year.",
     )
-    land_transport_electric_share: dict[int, float] = Field(
+    land_transport_electric_share: dict[int, float | str] = Field(
         default_factory=lambda: {
             2020: 0,
             2025: 0.05,
@@ -499,7 +499,7 @@ class SectorConfig(BaseModel):
         },
         description="The share of vehicles that uses electric vehicles (EV) in a given year.",
     )
-    land_transport_ice_share: dict[int, float] = Field(
+    land_transport_ice_share: dict[int, float | str] = Field(
         default_factory=lambda: {
             2020: 1,
             2025: 0.95,
