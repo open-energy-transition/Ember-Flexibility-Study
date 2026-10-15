@@ -1,4 +1,4 @@
-name: ember-study
+name: pypsa-eur
 channels:
 - conda-forge
 - bioconda
@@ -68,4 +68,6 @@ dependencies:
 - snakemake-logger-plugin-pypsa >=0.1.0
 - pydeflate >=2.3.4
 - snakemake-logger-plugin-snkmt ==0.1.6
+- openssl 3.6.3.*
+- tornado 6.5.6.*
 - snakemake-executor-plugin-slurm >=1.9.2
