@@ -1679,7 +1679,8 @@ if __name__ == "__main__":
     n.meta = snakemake.config
 
     # Convert StringDtype and object dtype columns to netCDF-safe types
-    # netCDF4 cannot serialize pandas StringDtype extension type or object dtype
+    # netCDF4 cannot serialize pandas StringDtype extension type (pandas 2.x) or object dtype
+    # This is a known compatibility issue between pandas 2.x and PyPSA's NetCDF export
     logger.info("Converting StringDtype and object dtype columns to netCDF-safe types")
 
     for component_name in n.all_components:
@@ -1692,64 +1693,60 @@ if __name__ == "__main__":
         # Handle static attributes (DataFrame)
         df_static = comp.static
         if isinstance(df_static, pd.DataFrame) and not df_static.empty:
-            for col in df_static.columns:
-                dtype = df_static[col].dtype
-
-                # Convert StringDtype to plain object dtype
-                if isinstance(dtype, pd.StringDtype):
+            # Convert all StringDtype columns to object dtype first
+            string_cols = df_static.select_dtypes(include="string").columns
+            if len(string_cols) > 0:
+                for col in string_cols:
                     df_static[col] = df_static[col].astype(object)
-                    logger.debug(f"{component_name}.{col} converted StringDtype to object")
+                logger.debug(f"{component_name}: converted {len(string_cols)} StringDtype columns to object")
 
-                # Convert object dtype to netCDF-safe types
-                elif dtype == object:
-                    series = df_static[col]
+            # Now convert object dtype columns to netCDF-safe types
+            object_cols = df_static.select_dtypes(include="object").columns
+            for col in object_cols:
+                series = df_static[col]
 
-                    # Try to convert to string if all values are string-like or NaN
-                    if series.map(lambda x: isinstance(x, str) or pd.isna(x)).all():
-                        df_static[col] = series.fillna("").astype(str)
-                        logger.debug(f"{component_name}.{col} converted object to string")
-                    else:
-                        # Try numeric conversion
-                        try:
-                            df_static[col] = pd.to_numeric(series, errors="raise")
-                            logger.debug(f"{component_name}.{col} converted object to numeric")
-                        except (ValueError, TypeError):
-                            # Last resort: drop columns that can't be safely converted
-                            logger.warning(
-                                f"Dropping {component_name}.{col} - cannot convert to netCDF-safe type"
-                            )
-                            df_static.drop(columns=[col], inplace=True)
+                # Try to convert to string if all values are string-like or NaN
+                if series.map(lambda x: isinstance(x, str) or pd.isna(x)).all():
+                    df_static[col] = series.fillna("").astype(str)
+                else:
+                    # Try numeric conversion
+                    try:
+                        df_static[col] = pd.to_numeric(series, errors="raise")
+                    except (ValueError, TypeError):
+                        # Last resort: drop columns that can't be safely converted
+                        logger.warning(
+                            f"Dropping {component_name}.{col} - cannot convert to netCDF-safe type"
+                        )
+                        df_static.drop(columns=[col], inplace=True)
 
         # Handle dynamic attributes (dict of DataFrames)
         for attr_name, df_dynamic in comp.dynamic.items():
             if isinstance(df_dynamic, pd.DataFrame) and not df_dynamic.empty:
-                for col in df_dynamic.columns:
-                    dtype = df_dynamic[col].dtype
-
-                    # Convert StringDtype to plain object dtype
-                    if isinstance(dtype, pd.StringDtype):
+                # Convert all StringDtype columns to object dtype first
+                string_cols = df_dynamic.select_dtypes(include="string").columns
+                if len(string_cols) > 0:
+                    for col in string_cols:
                         df_dynamic[col] = df_dynamic[col].astype(object)
-                        logger.debug(f"{component_name}.{attr_name}.{col} converted StringDtype to object")
+                    logger.debug(f"{component_name}.{attr_name}: converted {len(string_cols)} StringDtype columns to object")
 
-                    # Convert object dtype to netCDF-safe types
-                    elif dtype == object:
-                        series = df_dynamic[col]
+                # Now convert object dtype columns to netCDF-safe types
+                object_cols = df_dynamic.select_dtypes(include="object").columns
+                for col in object_cols:
+                    series = df_dynamic[col]
 
-                        # Try to convert to string if all values are string-like or NaN
-                        if series.map(lambda x: isinstance(x, str) or pd.isna(x)).all():
-                            df_dynamic[col] = series.fillna("").astype(str)
-                            logger.debug(f"{component_name}.{attr_name}.{col} converted object to string")
-                        else:
-                            # Try numeric conversion
-                            try:
-                                df_dynamic[col] = pd.to_numeric(series, errors="raise")
-                                logger.debug(f"{component_name}.{attr_name}.{col} converted object to numeric")
-                            except (ValueError, TypeError):
-                                # Last resort: drop columns that can't be safely converted
-                                logger.warning(
-                                    f"Dropping {component_name}.{attr_name}.{col} - cannot convert to netCDF-safe type"
-                                )
-                                df_dynamic.drop(columns=[col], inplace=True)
+                    # Try to convert to string if all values are string-like or NaN
+                    if series.map(lambda x: isinstance(x, str) or pd.isna(x)).all():
+                        df_dynamic[col] = series.fillna("").astype(str)
+                    else:
+                        # Try numeric conversion
+                        try:
+                            df_dynamic[col] = pd.to_numeric(series, errors="raise")
+                        except (ValueError, TypeError):
+                            # Last resort: drop columns that can't be safely converted
+                            logger.warning(
+                                f"Dropping {component_name}.{attr_name}.{col} - cannot convert to netCDF-safe type"
+                            )
+                            df_dynamic.drop(columns=[col], inplace=True)
 
     n.export_to_netcdf(snakemake.output.base_network)
 
