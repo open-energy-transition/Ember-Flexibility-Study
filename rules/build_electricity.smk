@@ -38,7 +38,7 @@ rule build_powerplants:
         regions_onshore=resources("regions_onshore_base_s_{clusters}.geojson"),
         regions_offshore=resources("regions_offshore_base_s_{clusters}.geojson"),
         powerplants=rules.retrieve_powerplants.output["powerplants"],
-        custom_powerplants="data/custom_powerplants.csv",
+        custom_powerplants = config_provider("electricity", "custom_powerplants_fn"),
     output:
         resources("powerplants_s_{clusters}.csv"),
     log:
@@ -814,7 +814,7 @@ rule add_electricity:
         ),
         load=resources("electricity_demand_base_s.nc"),
         busmap=resources("busmap_base_s_{clusters}.csv"),
-        
+
     output:
         resources("networks/base_s_{clusters}_elec.nc"),
     log:

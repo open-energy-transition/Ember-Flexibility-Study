@@ -1,0 +1,121 @@
+# SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH
+#
+# SPDX-License-Identifier: CC0-1.0
+
+run:
+  name: highflex_2040_central_sensitivity_lowBESS
+
+scenario:
+  clusters:
+  - 39
+  sector_opts:
+  - 3H
+  planning_horizons:
+  - 2040
+
+snapshots:
+  start: '2009-01-01'
+  end: '2010-01-01'
+
+electricity:
+  custom_powerplants: true
+  custom_powerplants_fn: "data/custom_ppl_2040_highflex_low_bess.csv"
+  powerplants_filter: Fueltype in ['Remove everything']
+
+  estimate_renewable_capacities:
+    enable: false
+    from_gem: false
+
+atlite:
+  default_cutout: europe-2009-sarah3-era5
+
+pypsa_eur:
+  Generator:
+  - onwind
+  - offwind-ac
+  - offwind-dc
+  - offwind-float
+  - solar-hsat
+  - solar
+  - ror
+  - solar-rooftop
+  StorageUnit:
+  - PHS
+  - hydro
+  - battery
+  - home_battery_storage
+
+sector:
+  bev_dsm: true
+  v2g: 0.31 
+  land_transport_electric_share:
+    2030: "data/ember_data/land_transport_electric_share_2040.csv"
+  land_transport_ice_share:
+    2030: "data/ember_data/land_transport_ice_share_2040.csv"
+  bev_dsm_availability: 0.7
+  bev_energy: 0.09
+  bev_charge_efficiency: 0.9
+  bev_charge_rate: 0.1127
+  bev_avail_max: 0.95
+  bev_avail_mean: 0.8
+  bev_dsm_restriction_value: 0.5
+  bev_dsm_restriction_time: 7
+  transport_electric_efficiency: 53.19
+  residential_heat:
+    dsm:
+      enable: true
+      direction:
+      - overheat
+      restriction_value:
+        2040: 0.26
+      restriction_time:
+      - 8
+      - 17
+  chp:
+    enable: false
+  hydrogen_underground_storage: false
+
+costs:
+  year: 2040
+  fuel:
+    gas: 30.7
+    coal: 11.5
+    lignite: 8.6
+    oil: 47.8
+    uranium: 1.8 
+  VOM:
+    OCGT: 1
+    CCGT: 1
+    coal: 2.3
+    lignite: 2.3
+  emission_prices:
+    enable: true
+    co2: 243.8
+
+solving:
+  agg_p_nom_limits:
+    agg_heat_pumps: true
+    include_existing: false
+    file: data/agg_p_nom_minmax.csv
+  constraints:
+    CCL: true
+
+ember_settings:
+  ntc_data: "data/ember_data/ntc_2030.csv"
+  ntc_cross_country_pf_restriction: false
+  ramping: false
+  nuclear_decommissioning: false
+  ember_gas_price: true
+  hourly_carbon_prices: false
+  chp_countries:
+    Poland: PL
+    Czechia: CZ
+    Greece: GR
+    Germany: DE
+    Italy: IT
+    Netherlands: NL
+  filter_chps: "DateIn <= 2040 and DateOut >= 2040"
+  chp_data: "data/ember_data/combined_chp_2030.csv"
+  add_LV_capacities: true
+  apply_highflex_capacities: false
