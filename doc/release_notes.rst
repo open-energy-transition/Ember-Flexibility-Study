@@ -13,8 +13,27 @@ Ember-Flexibility-Study Upcoming Release
 * Instead of using PyPSA-EUR's default transmission line capacities from OSM,
   NTCs are applied to the lines connecting countries.
 
-Upcoming Release
-================
+* `bev_dsm_restriction_value` can now be specified per country via a DataFrame path,
+  with a default used when a country-specific value is missing.
+
+* Updated V2G functionality to allow specifying the share of EVs participating in DSM,
+  instead of assuming none or 100% by default.
+
+* Adding LV capacities for solar rooftop and home batteries from the given powerplant database.
+  Expansion of those carriers is assumed False under this setting.
+
+* Custom EV, ICE and Fuel Cell shares can be passed in a .CSV file, specifying the share per country.
+
+* In the sector-coupeled model, battery and H2 stores are set to extendable only if configured.
+
+* In low flexibility scenarios, capacities from resistive heaters, water tanks and water pits can be pulled from high flex scenarios.
+  If applied, they are set to non-extendable afterwards.
+  
+* Building transport demand now supports reading custom numbers of cars specified in data/ember_data/number_cars.csv,
+  where different numbers for planning_horizons can be specified. If not given for a region, default energy_totals are used.
+
+Upcoming Release (PyPSA-Eur)
+============================
 
 * Fix: ValueError with `cop_heat_pump` in `prepare_sector_network.py` if `tim_dep_hp_cop` is `false`.
 

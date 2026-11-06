@@ -24,10 +24,16 @@ from scripts._helpers import (
 logger = logging.getLogger(__name__)
 
 
-def build_nodal_transport_data(fn, pop_layout, year):
+def build_nodal_transport_data(fn, fn_ember, pop_layout, energy_totals_year, planning_horizon):
     # get numbers of car and fuel efficiency per country
     transport_data = pd.read_csv(fn, index_col=[0, 1])
-    transport_data = transport_data.xs(year, level="year")
+    transport_data_ember = pd.read_csv(fn_ember, index_col=[0])
+    transport_data = transport_data.xs(energy_totals_year, level="year")
+    if planning_horizon in transport_data_ember.columns:
+        transport_data_ember = transport_data_ember[planning_horizon]
+        transport_data.loc[transport_data_ember.index, "number cars"] = (
+            transport_data_ember
+        )
 
     # break number of cars down to nodal level based on population density
     nodal_transport_data = transport_data.loc[pop_layout.ct].fillna(0.0)
@@ -126,40 +132,28 @@ def bev_availability_profile(fn, snapshots, nodes, options):
     traffic = pd.read_csv(fn, skiprows=2, usecols=["count"]).squeeze("columns")
     # maximum share plugged-in availability for passenger electric vehicles
     avail_max = options["bev_avail_max"]
-    # average share plugged-in availability for passenger electric vehicles
-    avail_mean = options["bev_avail_mean"]
+    # minimum share plugged-in availability for passenger electric vehicles
+    avail_min = options["bev_avail_min"]
 
-    # linear scaling, highest when traffic is lowest, decreases if traffic increases
-    avail = avail_max - (avail_max - avail_mean) * (traffic - traffic.min()) / (
-        traffic.mean() - traffic.min()
-    )
-
-    if not avail[avail < 0].empty:
+    if avail_min < 0:
         logger.warning(
-            "The BEV availability weekly profile has negative values which can "
+            "Minimum BEV availability is negative, which may lead to infeasibility."
+        )
+    if avail_max < avail_min:
+        logger.warning(
+            "Maximum BEV availability is lower than minimum, which may "
             "lead to infeasibility."
         )
+
+    # linear scaling, highest when traffic is lowest, decreases if traffic increases
+    avail = avail_max - (avail_max - avail_min) * (traffic - traffic.min()) / (
+        traffic.max() - traffic.min()
+    )
 
     return generate_periodic_profiles(
         dt_index=snapshots,
         nodes=nodes,
         weekly_profile=avail.values,
-    )
-
-
-def bev_dsm_profile(snapshots, nodes, options):
-    dsm_week = np.zeros((24 * 7,))
-
-    # assuming that at a certain time ("bev_dsm_restriction_time") EVs have to
-    # be charged to a minimum value (defined in bev_dsm_restriction_value)
-    dsm_week[(np.arange(0, 7, 1) * 24 + options["bev_dsm_restriction_time"])] = options[
-        "bev_dsm_restriction_value"
-    ]
-
-    return generate_periodic_profiles(
-        dt_index=snapshots,
-        nodes=nodes,
-        weekly_profile=dsm_week,
     )
 
 
@@ -189,8 +183,10 @@ if __name__ == "__main__":
     nyears = n.snapshot_weightings.generators.sum() / 8760.0
 
     energy_totals_year = snakemake.params.energy_totals_year
+    planning_horizon = snakemake.wildcards.planning_horizons
     nodal_transport_data = build_nodal_transport_data(
-        snakemake.input.transport_data, pop_layout, energy_totals_year
+        snakemake.input.transport_data, snakemake.input.transport_data_ember,
+        pop_layout, energy_totals_year, planning_horizon
     )
 
     transport_demand = build_transport_demand(
@@ -204,9 +200,6 @@ if __name__ == "__main__":
         snakemake.input.traffic_data_Pkw, snapshots, nodes, options
     )
 
-    dsm_profile = bev_dsm_profile(snapshots, nodes, options)
-
     nodal_transport_data.to_csv(snakemake.output.transport_data)
     transport_demand.to_csv(snakemake.output.transport_demand)
     avail_profile.to_csv(snakemake.output.avail_profile)
-    dsm_profile.to_csv(snakemake.output.dsm_profile)

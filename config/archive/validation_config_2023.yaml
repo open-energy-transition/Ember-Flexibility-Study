@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: Contributors to PyPSA-Eur <https://github.com/pypsa/pypsa-eur>
+# SPDX-FileCopyrightText: Open Energy Transition gGmbH
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -38,25 +39,6 @@ atlite:
       dy: 0.3
       time: ['2023', '2023']
 
-renewable:
-  onwind:
-    correction_factor: 0.93
-  solar:
-    correction_factor: 0.854337
-
-lines:
-  under_construction: remove
-  max_extension: 0
-lines:
-  s_max_pu: 1
-
-links:
-  under_construction: remove
-  max_extension: 0
-
-transmission_projects:
-  enable: false
-
 pypsa_eur:
   Generator:
   - onwind
@@ -68,19 +50,8 @@ pypsa_eur:
   - ror
 
 electricity:
-  conventional_generation:
-    from_entsoe: false
-    year: 2023
-  co2limit_enable: false
-  co2limit: 1.35e+9 # 2023 value from https://ember-energy.org/data/electricity-data-explorer/?chart=trend&data=emissions
-
-  extendable_carriers:      # forbid new generation & storage
-    Generator: []
-    StorageUnit: []
-    Store: []
-  transmission_limit: v1.0  # keep today’s NTCs (default)
-
-  custom_powerplants: (DateIn <= 2023 and DateOut >= 2023)
+  custom_powerplants: true
+  custom_powerplants_fn: data/custom_powerplants.csv
   powerplants_filter: (Fueltype not in ['Nuclear', 'Hard Coal', 'Lignite', 'Natural Gas'] and DateIn <= 2023 and DateOut >= 2023)
 
   estimate_renewable_capacities:
@@ -94,35 +65,7 @@ electricity:
       PV: solar
 
 load:
-  fill_gaps:
-    enable: true
-    interpolate_limit: 3
-    time_shift_for_large_gaps: 1w
-  manual_adjustments: false # false
-  scaling_factor: 1.0 
-  fixed_year: false # false or year (e.g. 2013)
-  supplement_synthetic: true
-  distribution_key:
-    gdp: 0.6
-    population: 0.4
-
-sector:
-  transport: true
-  heating: true
-  biomass: true
-  industry: false
-  shipping: false
-  aviation: false
-  agriculture: false
-  gas_network: false
-  conventional_generation:
-    OCGT: gas
-    CCGT: gas
-    coal: coal
-    lignite: lignite
-    nuclear: uranium
-    oil: oil
-  keep_existing_capacities: true
+  manual_adjustments: false
 
 costs:
   year: 2025
@@ -144,10 +87,8 @@ clustering:
   exclude_carriers: [coal, nuclear, lignite]
 #  focus_weights: {'DE': 0.2, 'CZ': 0.06, 'PL': 0.1, 'NL': 0.05, 'IT': 0.15, 'GR': 0.05}
 
-simplify_network:
-  remove_stubs_across_borders: true
-
 ember_settings:
+  ntc_data: "data/ember_data/ntc_2030.csv"
   ntc_cross_country_pf_restriction: false
   ramping: false
   nuclear_decommissioning: true
@@ -162,3 +103,4 @@ ember_settings:
     Germany: DE
     Italy: IT
     Netherlands: NL
+  chp_data: "data/ember_data/combined_chp_2023.csv"
